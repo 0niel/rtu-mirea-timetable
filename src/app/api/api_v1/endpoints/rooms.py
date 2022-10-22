@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/room-lessons/{room_id}", response_model=list[schemas.LessonModel], status_code=200
+    "/lessons/{room_id}", response_model=list[schemas.LessonModel], status_code=200
 )
 async def get_room_lessons(
         room_id: int,
@@ -27,7 +27,7 @@ async def get_room_lessons(
 tz = timezone(timedelta(hours=3))
 
 @router.get(
-    "/room-lessons-date/{room_id}/{date}", response_model=list[schemas.LessonModel], status_code=200,
+    "/lessons-by-date/{room_id}/{date}", response_model=list[schemas.LessonModel], status_code=200,
 )
 async def get_rooms_lesson_by_room_and_date(
         room_id: int,
@@ -50,7 +50,7 @@ async def get_rooms_lesson_by_room_and_date(
 
 
 @router.get(
-    "/room-lessons-week/{room_id}/{week}", response_model=list[schemas.LessonModel], status_code=200
+    "/lessons-by-week/{room_id}/{week}", response_model=list[schemas.LessonModel], status_code=200
 )
 async def get_rooms_lesson_by_room_and_week(
         room_id: int,
@@ -66,7 +66,7 @@ async def get_rooms_lesson_by_room_and_week(
 
 
 @router.get(
-    "/search-rooms/{name}", response_model=list[schemas.RoomModel], status_code=200
+    "/search/{name}", response_model=list[schemas.RoomModel], status_code=200
 )
 async def search_rooms(
         name: str,
@@ -89,25 +89,3 @@ async def get_workload(
     """
     workload = await schedule_crud.get_room_workload(room_id)
     return schemas.Msg(msg=workload)
-
-
-@router.get("/campuses", response_model=list[schemas.CampusModel], status_code=200)
-async def get_campuses() -> Any:
-    """
-    Get all campuses.
-    """
-    return [
-        schemas.CampusModel.from_orm(campus)
-        for campus in await schedule_crud.get_campuses()
-    ]
-
-
-@router.get("/campuses/{campus_id}/rooms", response_model=list[schemas.RoomModel], status_code=200)
-async def get_campus_rooms(campus_id: int) -> Any:
-    """
-    Get all rooms for campus.
-    """
-    return [
-        schemas.RoomModel.from_orm(room)
-        for room in await schedule_crud.get_campus_rooms(campus_id)
-    ]
