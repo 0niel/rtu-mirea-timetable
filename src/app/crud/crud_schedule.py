@@ -1,5 +1,6 @@
 import datetime
-from typing import Optional
+from operator import or_
+from typing import Optional, Any, List, Dict
 
 from sqlalchemy import and_, delete, func
 from sqlalchemy.dialects.postgresql import array
@@ -308,7 +309,7 @@ async def get_lessons_by_room(room_id: int):
         return res.scalars().all()
 
 
-async def search_rooms(name: str) -> list[Room]:
+async def search_room(name: str) -> list[Room]:
     async with get_session() as session:
         res = await session.execute(
             select(Room).where(func.lower(Room.name).contains(name.lower()))
@@ -427,3 +428,57 @@ async def get_campus_rooms(campus_id: int) -> list[Room]:
         )
         return res.scalars().all()
 
+
+async def get_call_by_time(time: datetime.time) -> LessonCall:
+    async with get_session() as session:
+        res = await session.execute(
+            select(LessonCall)
+            .where(
+                and_(
+                    LessonCall.time_start <= time,
+                    LessonCall.time_end > time,
+                )
+            )
+            .limit(1)
+        )
+        return res.scalar()
+
+
+async def search_rooms(rooms: list[str]) -> list[Room]:
+    """Return room for each room name in rooms list"""
+    async with get_session() as session:
+        res = await session.execute(
+            select(Room)
+            .where(Room.name.in_(rooms))
+            .order_by(func.lower(Room.name).asc())
+        )
+        return res.scalars().all()
+
+
+async def get_rooms_statuses(rooms: list[str], time: datetime.datetime) -> list[dict[str, str]]:
+    rooms = await search_rooms(rooms)
+
+    async with get_session() as session:
+        res = await session.execute(
+            select(Lesson)
+            .where(
+                and_(
+                    Lesson.room_id.in_([room.id for room in rooms]),
+                    Lesson.weekday == time.weekday(),
+                    Lesson.weeks.contains([utils.get_week(date=time)]),
+                    Lesson.call_id
+                    == select(LessonCall.id)
+                    .where(
+                        and_(
+                            LessonCall.time_start <= time.time(),
+                            LessonCall.time_end > time.time(),
+                        )
+                    ).limit(1),
+                )
+            )
+        )
+
+        lessons = res.scalars().all()
+        return [
+            {"name": room.name, "status": "free" if room.id not in [lesson.room_id for lesson in lessons] else "busy", }
+            for room in rooms]

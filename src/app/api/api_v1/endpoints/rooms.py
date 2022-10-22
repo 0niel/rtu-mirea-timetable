@@ -76,7 +76,7 @@ async def search_rooms(
     """
     return [
         schemas.RoomModel.from_orm(room)
-        for room in await schedule_crud.search_rooms(name)
+        for room in await schedule_crud.search_room(name)
     ]
 
 
@@ -89,3 +89,18 @@ async def get_workload(
     """
     workload = await schedule_crud.get_room_workload(room_id)
     return schemas.Msg(msg=workload)
+
+
+@router.get("/statuses/{date}", status_code=200)
+# Получить статус аудитории для даты и каждой аудитории в списке (список передается в теле запроса)
+async def get_statuses(
+        date_time: datetime = Query(datetime.now(), description="Datetime in ISO format. Example: "
+                                                                "2021-09-01T00:00:00+03:00"),
+        *,
+        rooms: list[str] = Query(..., description="List of rooms names. Example: ['А-101', 'А-102']"),
+) -> Any:
+    """
+    Get statuses.
+    """
+    date_time = date_time.replace(tzinfo=None)
+    return await schedule_crud.get_rooms_statuses(rooms, date_time)
