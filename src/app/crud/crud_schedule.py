@@ -1,9 +1,11 @@
+import datetime
 from typing import Optional
 
 from sqlalchemy import and_, delete, func
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.future import select
 
+from app import utils
 from app.db.connection import get_session
 from app.models import (
     Group,
@@ -342,6 +344,38 @@ async def get_lessons_by_room(room_id: int) -> list[Lesson]:
         return res.scalars().all()
 
 
+async def get_lessons_by_room_and_date(room_id: int, date: datetime.date) -> list[Lesson]:
+    week = utils.get_week(date=date)
+
+    async with get_session() as session:
+        res = await session.execute(
+            select(Lesson)
+            .where(
+                and_(
+                    Lesson.room_id == room_id,
+                    Lesson.weeks.contains([week]),
+                    Lesson.weekday == date.weekday(),
+                )
+            )
+            .order_by(Lesson.call_id)
+        )
+        return res.scalars().all()
+
+
+async def get_lessons_by_room_and_week(room_id: int, week: int) -> list[Lesson]:
+    async with get_session() as session:
+        res = await session.execute(
+            select(Lesson)
+            .where(
+                and_(
+                    Lesson.room_id == room_id,
+                    Lesson.weeks.contains([week]),
+                )
+            )
+            .order_by(Lesson.weekday, Lesson.call_id)
+        )
+        return res.scalars().all()
+
 async def get_room_workload(room_id: int):
     async with get_session() as session:
         # get all lessons for room
@@ -363,13 +397,13 @@ async def get_room_workload(room_id: int):
                 for call in calls:
                     # Внимание! У одной аудитории может быть несколько групп в одно и то же время (например, лекции и лабораторные)
                     if (
-                        call.id == lesson.call_id
-                        and (
+                            call.id == lesson.call_id
+                            and (
                             lesson.weekday,
                             lesson.call_id,
                             week,
-                        )
-                        not in checked
+                    )
+                            not in checked
                     ):
                         workload += 1
                         checked.append((lesson.weekday, lesson.call_id, week))
