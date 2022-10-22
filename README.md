@@ -1,42 +1,3 @@
-# rtu-app-backend
-
-[![codecov](https://codecov.io/gh/mirea-ninja/mobile-app-web/branch/main/graph/badge.svg?token=DX0EU3VKRX)](https://codecov.io/gh/mirea-ninja/mobile-app-web)
-
-## Navigation
-
-- [Description](#desc)
-- [Stack](#stack)
-- [Backend Development](#launch)
-- [Documentation](#docs)
-- [License](#license)
-
-<a name="desc"></a>
-
-## Description
-
-This is the content management system of the [RTU MIREA mobile application](https://github.com/mirea-ninja/rtu-mirea-mobile).
-
-<a name="stack"></a>
-
-## Stack
-
-- Frontend:
-  [![React.js](https://img.shields.io/badge/React.js-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
-  [![Redux.js](https://img.shields.io/badge/Redux.js-764ABC?logo=redux&logoColor=white)](https://redux.js.org/)
-  [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-- Backend:
-  [![Fast API](https://img.shields.io/badge/FastAPI-009485?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-  [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?logo=RabbitMQ&logoColor=white)](https://www.rabbitmq.com/)
-  [![Celery](https://img.shields.io/badge/Celery-37814A?logo=celery)](https://github.com/celery/celery)
-  [![Flower](https://img.shields.io/badge/Flower-brightgreen)](https://github.com/mher/flower)
-- Proxy:
-  [![Traefik](https://img.shields.io/badge/Traefik-24A1C1.svg?logo=traefik&logoColor=white)](https://traefik.io/)
-- Work:
-  [![Figma](https://img.shields.io/badge/Figma-F24E1E?logo=figma&logoColor=white)](https://www.figma.com/)
-  [![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?logo=docker&logoColor=white)](https://www.docker.com/)
-
-<a name="launch"></a>
 
 # Build and Launch
 
@@ -54,7 +15,7 @@ This is the content management system of the [RTU MIREA mobile application](http
 1. Clone this repo:
 
 ```bash
-git clone https://github.com/mirea-ninja/mobile-app-web.git
+git clone https://github.com/mirea-ninja/rtu-map-backend.git
 cd mobile-app-web
 ```
 
