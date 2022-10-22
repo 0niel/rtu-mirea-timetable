@@ -89,3 +89,25 @@ async def get_workload(
     """
     workload = await schedule_crud.get_room_workload(room_id)
     return schemas.Msg(msg=workload)
+
+
+@router.get("/campuses", response_model=list[schemas.CampusModel], status_code=200)
+async def get_campuses() -> Any:
+    """
+    Get all campuses.
+    """
+    return [
+        schemas.CampusModel.from_orm(campus)
+        for campus in await schedule_crud.get_campuses()
+    ]
+
+
+@router.get("/campuses/{campus_id}/rooms", response_model=list[schemas.RoomModel], status_code=200)
+async def get_campus_rooms(campus_id: int) -> Any:
+    """
+    Get all rooms for campus.
+    """
+    return [
+        schemas.RoomModel.from_orm(room)
+        for room in await schedule_crud.get_campus_rooms(campus_id)
+    ]

@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post("/parse-schedule/", response_model=schemas.Msg, status_code=201)
-def test_celery(
+def parse_schedule(
     msg: schemas.Msg,
 ) -> Any:
     """

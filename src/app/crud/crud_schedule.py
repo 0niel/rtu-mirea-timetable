@@ -376,6 +376,7 @@ async def get_lessons_by_room_and_week(room_id: int, week: int) -> list[Lesson]:
         )
         return res.scalars().all()
 
+
 async def get_room_workload(room_id: int):
     async with get_session() as session:
         # get all lessons for room
@@ -415,3 +416,14 @@ async def get_campuses() -> list[ScheduleCampus]:
     async with get_session() as session:
         res = await session.execute(select(ScheduleCampus))
         return res.scalars().all()
+
+
+async def get_campus_rooms(campus_id: int) -> list[Room]:
+    async with get_session() as session:
+        res = await session.execute(
+            select(Room)
+            .where(Room.campus_id == campus_id)
+            .order_by(func.lower(Room.name).asc())
+        )
+        return res.scalars().all()
+
