@@ -482,3 +482,8 @@ async def get_rooms_statuses(rooms: list[str], time: datetime.datetime) -> list[
         return [
             {"name": room.name, "status": "free" if room.id not in [lesson.room_id for lesson in lessons] else "busy", }
             for room in rooms]
+
+async def get_all_rooms() -> list[Room]:
+    async with get_session() as session:
+        res = await session.execute(select(Room))
+        return res.scalars().all()

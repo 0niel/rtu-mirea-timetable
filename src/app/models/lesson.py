@@ -64,4 +64,5 @@ class Lesson(Base):
         "Group",
         cascade="delete",
         back_populates="lessons",
+        lazy="subquery",
     )

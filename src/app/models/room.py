@@ -16,6 +16,7 @@ class Room(Base):
         "Lesson",
         cascade="delete",
         back_populates="room",
+        lazy="subquery",
     )
     campus = relationship(
         "ScheduleCampus",
