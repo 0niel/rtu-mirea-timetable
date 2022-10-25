@@ -96,7 +96,7 @@ async def get_workload(
     return schemas.Msg(msg=workload)
 
 
-@router.get("/statuses/{date}", status_code=200)
+@router.get("/statuses/", status_code=200)
 async def get_statuses(
         date_time: datetime = Query(datetime.now(), description="Datetime in ISO format. Example: "
                                                                 "2021-09-01T00:00:00+03:00"),
