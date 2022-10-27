@@ -19,7 +19,9 @@ async def get_campuses() -> Any:
     ]
 
 
-@router.get("/{campus_id}/rooms", response_model=list[schemas.RoomModel], status_code=200)
+@router.get(
+    "/{campus_id}/rooms", response_model=list[schemas.RoomModel], status_code=200
+)
 async def get_campus_rooms(campus_id: int) -> Any:
     """
     Get all rooms for campus.

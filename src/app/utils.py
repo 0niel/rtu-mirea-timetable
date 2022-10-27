@@ -34,7 +34,7 @@ def get_semester_start(date: datetime.datetime = None) -> datetime.datetime:
 
 
 def now_date() -> datetime.datetime:
-    return datetime.datetime.now(pytz.timezone('Europe/Moscow'))
+    return datetime.datetime.now(pytz.timezone("Europe/Moscow"))
 
 
 def get_first_semester() -> datetime.datetime:

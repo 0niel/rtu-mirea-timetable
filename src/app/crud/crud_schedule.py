@@ -1,6 +1,6 @@
 import datetime
-from operator import or_
-from typing import Optional, Any, List, Dict
+from collections import Counter
+from typing import Optional
 
 from sqlalchemy import and_, delete, func
 from sqlalchemy.dialects.postgresql import array
@@ -34,6 +34,7 @@ from app.schemas import (
     LessonTypeCreate,
     PeriodCreate,
     RoomCreate,
+    RoomInfo,
     TeacherCreate,
 )
 
@@ -345,8 +346,12 @@ async def get_lessons_by_room(room_id: int) -> list[Lesson]:
         return res.scalars().all()
 
 
-async def get_lessons_by_room_and_date(room_id: int, date: datetime.date) -> list[Lesson]:
+async def get_lessons_by_room_and_date(
+    room_id: int, date: datetime.date
+) -> list[Lesson]:
     week = utils.get_week(date=date)
+
+    print("Weekday: ", date.weekday())
 
     async with get_session() as session:
         res = await session.execute(
@@ -355,7 +360,7 @@ async def get_lessons_by_room_and_date(room_id: int, date: datetime.date) -> lis
                 and_(
                     Lesson.room_id == room_id,
                     Lesson.weeks.contains([week]),
-                    Lesson.weekday == date.weekday(),
+                    Lesson.weekday == date.weekday() + 1,
                 )
             )
             .order_by(Lesson.call_id)
@@ -399,18 +404,19 @@ async def get_room_workload(room_id: int):
                 for call in calls:
                     # Внимание! У одной аудитории может быть несколько групп в одно и то же время (например, лекции и лабораторные)
                     if (
-                            call.id == lesson.call_id
-                            and (
+                        call.id == lesson.call_id
+                        and (
                             lesson.weekday,
                             lesson.call_id,
                             week,
-                    )
-                            not in checked
+                        )
+                        not in checked
                     ):
                         workload += 1
                         checked.append((lesson.weekday, lesson.call_id, week))
 
-        return workload / (6 * 6 * 16) * 100
+        workload = workload / (6 * 6 * 16) * 100
+        return round(workload, 2)
 
 
 async def get_campuses() -> list[ScheduleCampus]:
@@ -444,24 +450,21 @@ async def get_call_by_time(time: datetime.time) -> LessonCall:
         return res.scalar()
 
 
-async def search_rooms(rooms: list[str]) -> list[Room]:
-    """Return room for each room name in rooms list"""
-    async with get_session() as session:
-        res = await session.execute(
-            select(Room)
-            .where(Room.name.in_(rooms))
-            .order_by(func.lower(Room.name).asc())
-        )
-        return res.scalars().all()
+async def get_rooms_statuses(
+    rooms: list[str], time: datetime.datetime
+) -> list[dict[str, str]]:
+    rooms_res = []
 
+    for room in rooms:
+        found = await search_room(room)
 
-async def get_rooms_statuses(rooms: list[str], time: datetime.datetime) -> list[dict[str, str]]:
-    rooms = await search_rooms(rooms)
+        # extend by found rooms
+        rooms_res.extend(found)
+    rooms = rooms_res
 
     async with get_session() as session:
         res = await session.execute(
-            select(Lesson)
-            .where(
+            select(Lesson).where(
                 and_(
                     Lesson.room_id.in_([room.id for room in rooms]),
                     Lesson.weekday == time.weekday(),
@@ -473,17 +476,57 @@ async def get_rooms_statuses(rooms: list[str], time: datetime.datetime) -> list[
                             LessonCall.time_start <= time.time(),
                             LessonCall.time_end > time.time(),
                         )
-                    ).limit(1),
+                    )
+                    .limit(1),
                 )
             )
         )
 
         lessons = res.scalars().all()
         return [
-            {"name": room.name, "status": "free" if room.id not in [lesson.room_id for lesson in lessons] else "busy", }
-            for room in rooms]
+            {
+                "name": room.name,
+                "status": "free"
+                if room.id not in [lesson.room_id for lesson in lessons]
+                else "busy",
+            }
+            for room in rooms
+        ]
+
 
 async def get_all_rooms() -> list[Room]:
     async with get_session() as session:
         res = await session.execute(select(Room))
         return res.scalars().all()
+
+
+async def get_room_info(room_id: int) -> RoomInfo:
+    async with get_session() as session:
+        res = await session.execute(select(Room).where(Room.id == room_id))
+        room = res.scalar()
+
+        res2 = await session.execute(
+            select(Lesson)
+            .where(Lesson.room_id == room_id)
+            .order_by(Lesson.weekday, Lesson.call_id)
+        )
+        lessons = res2.scalars().all()
+
+        workload = await get_room_workload(room_id)
+
+        purpose = Counter([lesson.lesson_type.name for lesson in lessons]).most_common(
+            1
+        )[0][0]
+
+        purpose = {
+            "лек": "Лекция",
+            "пр": "Практика",
+            "лаб": "Лабораторная",
+        }.get(purpose, "Неизвестно")
+
+        return RoomInfo(
+            room=room,
+            lessons=lessons,
+            workload=workload,
+            purpose=purpose,
+        )

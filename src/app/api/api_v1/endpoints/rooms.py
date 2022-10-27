@@ -1,12 +1,10 @@
 import io
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import numpy as np
-from fastapi.responses import StreamingResponse
 import pandas as pd
 from fastapi import APIRouter, Query
-from starlette.responses import FileResponse
+from fastapi.responses import StreamingResponse, FileResponse
 
 import app.crud.crud_schedule as schedule_crud
 from app import schemas
@@ -28,11 +26,15 @@ async def get_room_lessons(
         for room in await schedule_crud.get_lessons_by_room(room_id)
     ]
 
+
 # Moscow timezone
 tz = timezone(timedelta(hours=3))
 
+
 @router.get(
-    "/lessons-by-date/{room_id}/{date}", response_model=list[schemas.LessonModel], status_code=200,
+    "/lessons-by-date/{room_id}/{date}",
+    response_model=list[schemas.LessonModel],
+    status_code=200,
 )
 async def get_rooms_lesson_by_room_and_date(
         room_id: int,
@@ -44,7 +46,7 @@ async def get_rooms_lesson_by_room_and_date(
 
     # Convert date to datetime
     try:
-        date = datetime.strptime(date, '%Y-%m-%d')
+        date = datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
         return {"msg": "Incorrect data format, should be YYYY-MM-DD"}
 
@@ -55,7 +57,9 @@ async def get_rooms_lesson_by_room_and_date(
 
 
 @router.get(
-    "/lessons-by-week/{room_id}/{week}", response_model=list[schemas.LessonModel], status_code=200
+    "/lessons-by-week/{room_id}/{week}",
+    response_model=list[schemas.LessonModel],
+    status_code=200,
 )
 async def get_rooms_lesson_by_room_and_week(
         room_id: int,
@@ -70,9 +74,7 @@ async def get_rooms_lesson_by_room_and_week(
     ]
 
 
-@router.get(
-    "/search/{name}", response_model=list[schemas.RoomModel], status_code=200
-)
+@router.get("/search/{name}", response_model=list[schemas.RoomModel], status_code=200)
 async def search_rooms(
         name: str,
 ) -> Any:
@@ -98,10 +100,14 @@ async def get_workload(
 
 @router.get("/statuses/", status_code=200)
 async def get_statuses(
-        date_time: datetime = Query(datetime.now(), description="Datetime in ISO format. Example: "
-                                                                "2021-09-01T00:00:00+03:00"),
+        date_time: datetime = Query(
+            datetime.now(),
+            description="Datetime in ISO format. Example: " "2021-09-01T00:00:00+03:00",
+        ),
         *,
-        rooms: list[str] = Query(..., description="List of rooms names. Example: ['А-101', 'А-102']"),
+        rooms: list[str] = Query(
+            ..., description="List of rooms names. Example: ['А-101', 'А-102']"
+        ),
 ) -> Any:
     """
     Get statuses.
@@ -110,20 +116,75 @@ async def get_statuses(
     return await schedule_crud.get_rooms_statuses(rooms, date_time)
 
 
-@router.get("/download")
-async def download_rooms_data():
+# Сформировать выгрузку
+@router.get("/export-create/", status_code=200)
+async def export_create():
     rooms = await schedule_crud.get_all_rooms()
 
-    df = pd.DataFrame(columns=['номер комнаты', 'корпус', 'день недели', 'номер пары', 'неделя', 'дисциплина', 'группа'])
+    df = pd.DataFrame(
+        columns=[
+            "номер комнаты",
+            "корпус",
+            "день недели",
+            "номер пары",
+            "неделя",
+            "дисциплина",
+            "группа",
+        ]
+    )
 
     all_rooms_data = []
     for room in rooms:
         campus = room.campus.name if room.campus else None
 
         for lesson in room.lessons:
-            all_rooms_data.extend({'номер комнаты': room.name, 'корпус': campus, 'день недели': lesson.weekday, 'номер пары': lesson.calls.num, 'неделя': week, 'дисциплина': lesson.discipline.name, 'группа': lesson.group.name} for week in lesson.weeks)
+            all_rooms_data.extend(
+                {
+                    "номер комнаты": room.name,
+                    "корпус": campus,
+                    "день недели": lesson.weekday,
+                    "номер пары": lesson.calls.num,
+                    "неделя": week,
+                    "дисциплина": lesson.discipline.name,
+                    "группа": lesson.group.name,
+                }
+                for week in lesson.weeks
+            )
 
     df = df.append(all_rooms_data, ignore_index=True)
-    df.to_excel('rooms.xlsx', index=False)
+    df.to_excel("rooms.xlsx", index=False)
 
-    return FileResponse(path='rooms.xlsx', filename='rooms.xlsx')
+    return
+
+
+@router.get("/download")
+def download_rooms_data():
+    return FileResponse("rooms.xlsx", media_type="application/vnd.ms-excel")
+
+
+@router.get("/info/{room_id}", response_model=schemas.RoomInfo, status_code=200)
+async def get_info(room_id: int) -> Any:
+    """
+    Get info.
+    """
+    return await schedule_crud.get_room_info(room_id)
+
+
+@router.get("/workload-all/{campus_substr}", status_code=200)
+async def get_all_workload(
+        campus_substr: str,
+) -> Any:
+    """
+    Get workload.
+    """
+    rooms = await schedule_crud.search_room(campus_substr)
+    workload = []
+    for room in rooms:
+        workload.append(
+            {
+                "room": room.name,
+                "workload": await schedule_crud.get_room_workload(room.id),
+            }
+        )
+
+    return workload

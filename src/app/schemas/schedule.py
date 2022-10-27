@@ -176,3 +176,10 @@ class LessonDelete(BaseModel):
 class LessonRoomSearch(BaseModel):
     name: str
     campus_short_name: Optional[str] = None
+
+
+class RoomInfo(BaseModel):
+    room: RoomModel
+    purpose: str
+    workload: float
+    lessons: list[LessonModel]
