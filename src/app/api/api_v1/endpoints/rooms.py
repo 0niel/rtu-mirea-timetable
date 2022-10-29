@@ -170,7 +170,7 @@ async def get_info(room_id: int) -> Any:
     return await schedule_crud.get_room_info(room_id)
 
 
-@router.get("/workload-all/{campus_substr}", status_code=200)
+@router.get("/workload/all/{campus_substr}", status_code=200)
 async def get_all_workload(
         campus_substr: str,
 ) -> Any:
@@ -188,3 +188,20 @@ async def get_all_workload(
         )
 
     return workload
+
+
+@router.get("/statuses/all/{campus_substr}", status_code=200)
+async def get_all_statuses(
+        campus_substr: str,
+        date_time: datetime = Query(
+            datetime.now(),
+            description="Datetime in ISO format. Example: " "2021-09-01T00:00:00+03:00",
+        ),
+) -> Any:
+    """
+    Get statuses.
+    """
+    rooms = await schedule_crud.search_room(campus_substr)
+    rooms = [room.name for room in rooms]
+    date_time = date_time.replace(tzinfo=None)
+    return await schedule_crud.get_rooms_statuses(rooms, date_time)
