@@ -138,8 +138,17 @@ class RoomModel(RoomCreate):
         orm_mode = True
 
 
+class GroupInLessonModel(BaseModel):
+    id: PositiveInt
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class LessonModel(BaseModel):
     id: PositiveInt
+    group: GroupInLessonModel
     lesson_type: Optional[LessonTypeModel] = None
     discipline: DisciplineModel
     teachers: list[TeacherModel]

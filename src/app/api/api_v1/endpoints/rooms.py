@@ -1,10 +1,11 @@
 import io
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import pandas as pd
 from fastapi import APIRouter, Query
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse, FileResponse, Response
 
 import app.crud.crud_schedule as schedule_crud
 from app import schemas
@@ -116,9 +117,11 @@ async def get_statuses(
     return await schedule_crud.get_rooms_statuses(rooms, date_time)
 
 
-# Сформировать выгрузку
 @router.get("/export-create/", status_code=200)
 async def export_create():
+    if os.path.exists("rooms.xslx"):
+        os.remove("rooms.xslx")
+
     rooms = await schedule_crud.get_all_rooms()
 
     df = pd.DataFrame(
@@ -159,7 +162,17 @@ async def export_create():
 
 @router.get("/download")
 def download_rooms_data():
-    return FileResponse("rooms.xlsx", media_type="application/vnd.ms-excel")
+    try:
+        return FileResponse("rooms.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    except Exception:
+        return Response(status_code=404)
+
+
+@router.get("/report-status")
+async def report_status():
+    if os.path.exists("rooms.xlsx") and os.stat("rooms.xlsx").st_size > 1000000:
+        return {"status": "ready"}
+    return {"status": "not ready"}
 
 
 @router.get("/info/{room_id}", response_model=schemas.RoomInfo, status_code=200)

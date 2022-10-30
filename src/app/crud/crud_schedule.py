@@ -467,7 +467,7 @@ async def get_rooms_statuses(
             select(Lesson).where(
                 and_(
                     Lesson.room_id.in_([room.id for room in rooms]),
-                    Lesson.weekday == time.weekday(),
+                    Lesson.weekday == time.weekday() + 1,
                     Lesson.weeks.contains([utils.get_week(date=time)]),
                     Lesson.call_id
                     == select(LessonCall.id)
