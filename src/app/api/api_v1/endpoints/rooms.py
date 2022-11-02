@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse, FileResponse, Response
 
 import app.crud.crud_schedule as schedule_crud
 from app import schemas
+import asyncio
 
 router = APIRouter()
 
@@ -118,11 +119,15 @@ async def get_statuses(
 
 
 @router.get("/export-create/", status_code=200)
-async def export_create():
+def export_create():
     if os.path.exists("rooms.xslx"):
         os.remove("rooms.xslx")
 
-    rooms = await schedule_crud.get_all_rooms()
+    # rooms = await schedule_crud.get_all_rooms()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    rooms = loop.run_until_complete(schedule_crud.get_all_rooms())
 
     df = pd.DataFrame(
         columns=[
@@ -169,7 +174,7 @@ def download_rooms_data():
 
 
 @router.get("/report-status")
-async def report_status():
+def report_status():
     if os.path.exists("rooms.xlsx") and os.stat("rooms.xlsx").st_size > 1000000:
         return {"status": "ready"}
     return {"status": "not ready"}
