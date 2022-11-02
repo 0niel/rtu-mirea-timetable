@@ -347,11 +347,9 @@ async def get_lessons_by_room(room_id: int) -> list[Lesson]:
 
 
 async def get_lessons_by_room_and_date(
-    room_id: int, date: datetime.date
+        room_id: int, date: datetime.date
 ) -> list[Lesson]:
     week = utils.get_week(date=date)
-
-    print("Weekday: ", date.weekday())
 
     async with get_session() as session:
         res = await session.execute(
@@ -404,13 +402,13 @@ async def get_room_workload(room_id: int):
                 for call in calls:
                     # Внимание! У одной аудитории может быть несколько групп в одно и то же время (например, лекции и лабораторные)
                     if (
-                        call.id == lesson.call_id
-                        and (
+                            call.id == lesson.call_id
+                            and (
                             lesson.weekday,
                             lesson.call_id,
                             week,
-                        )
-                        not in checked
+                    )
+                            not in checked
                     ):
                         workload += 1
                         checked.append((lesson.weekday, lesson.call_id, week))
@@ -451,7 +449,7 @@ async def get_call_by_time(time: datetime.time) -> LessonCall:
 
 
 async def get_rooms_statuses(
-    rooms: list[str], time: datetime.datetime
+        rooms: list[str], time: datetime.datetime
 ) -> list[dict[str, str]]:
     rooms_res = []
 
@@ -498,6 +496,10 @@ async def get_all_rooms() -> list[Room]:
     async with get_session() as session:
         res = await session.execute(select(Room))
         return res.scalars().all()
+
+
+def get_all_rooms_sync(session) -> list[Room]:
+    return session.query(Room).all()
 
 
 async def get_room_info(room_id: int) -> RoomInfo:

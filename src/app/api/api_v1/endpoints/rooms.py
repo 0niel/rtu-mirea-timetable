@@ -4,12 +4,16 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import pandas as pd
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from fastapi.responses import StreamingResponse, FileResponse, Response
 
 import app.crud.crud_schedule as schedule_crud
 from app import schemas
 import asyncio
+
+from sqlalchemy.orm import Session
+
+from app.db.connection import get_db
 
 router = APIRouter()
 
@@ -119,15 +123,13 @@ async def get_statuses(
 
 
 @router.get("/export-create/", status_code=200)
-def export_create():
+def export_create(db: Session = Depends(get_db)):
     if os.path.exists("rooms.xslx"):
         os.remove("rooms.xslx")
 
     # rooms = await schedule_crud.get_all_rooms()
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    rooms = loop.run_until_complete(schedule_crud.get_all_rooms())
+    rooms = schedule_crud.get_all_rooms_sync(db)
 
     df = pd.DataFrame(
         columns=[
