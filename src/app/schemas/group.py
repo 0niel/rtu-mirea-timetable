@@ -2,6 +2,9 @@ import re
 
 from pydantic import BaseModel, PositiveInt, validator
 
+from app.models import Institute
+from app.schemas import Period, Degree
+
 
 class GroupCreate(BaseModel):
     name: str
@@ -20,10 +23,10 @@ class GroupCreate(BaseModel):
 class Group(BaseModel):
     id: PositiveInt
     name: str
-    period: PeriodModel
-    institute: InstituteModel
-    degree: DegreeModel
-    lessons: list[LessonModel]
+    period: Period
+    institute: Institute
+    degree: Degree
+    lessons: list[Lesson]
 
     class Config:
         orm_mode = True
