@@ -4,6 +4,7 @@ from typing import Generator
 
 from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
 from rtu_schedule_parser.downloader import ScheduleDownloader
+from rtu_schedule_parser.constants import ScheduleType
 
 import app.crud.crud_schedule as schedule_crud
 from app.schemas import (
@@ -44,7 +45,7 @@ def parse() -> Generator[list[Schedule], None, None]:
         os.mkdir(docs_dir)
 
     # Get documents for specified institute and degree
-    all_docs = downloader.get_documents()
+    all_docs = downloader.get_documents(specific_schedule_types={ScheduleType.SEMESTER})
 
     # Download only if they are not downloaded yet.
     downloaded = downloader.download_all(all_docs)

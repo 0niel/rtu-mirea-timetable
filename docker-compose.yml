@@ -42,8 +42,7 @@ services:
         - traefik.http.routers.traefik-proxy-https.tls.certresolver=le
         # Define the port inside of the Docker service to use
         - traefik.http.services.traefik-proxy.loadbalancer.server.port=80
-        # Handle domain with and without "www" to redirect to only one
-        # To disable www redirection remove the next line
+        # Middleware to redirect www, to disable it remove the next line
         - traefik.http.middlewares.traefik-www-redirect.redirectregex.regex=^https?://(www.)?(${DOMAIN?Variable not set})/(.*)
         # Redirect a domain with www to non-www
         # To disable it remove the next line
@@ -54,7 +53,6 @@ services:
         # to disable www redirection remove the section: traefik-www-redirect,
         - traefik.http.routers.traefik-proxy-http.middlewares=traefik-www-redirect,traefik-https-redirect
         
-
   database:
     container_name: database
     image: postgres:14
@@ -84,10 +82,10 @@ services:
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.http.routers.traefik-pgadmin-http.rule=Host(`pgadmin.${DOMAIN?Variable not set}`)
+        - traefik.http.routers.traefik-pgadmin-http.rule=PathPrefix(`/pgadmin`)
         - traefik.http.routers.traefik-pgadmin-http.entrypoints=http
         - traefik.http.routers.traefik-pgadmin-http.middlewares=traefik-https-redirect
-        - traefik.http.routers.traefik-pgadmin-https.rule=Host(`pgadmin.${DOMAIN?Variable not set}`)
+        - traefik.http.routers.traefik-pgadmin-https.rule=PathPrefix(`/pgadmin`)
         - traefik.http.routers.traefik-pgadmin-https.entrypoints=https
         - traefik.http.routers.traefik-pgadmin-https.tls=true
         - traefik.http.routers.traefik-pgadmin-https.tls.certresolver=le
