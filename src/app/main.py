@@ -5,7 +5,11 @@ from app.api.api_v1.api import api_router
 from app.core.config import settings
 
 app = FastAPI(
-    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    title=settings.PROJECT_NAME,
+    description="Добро пожаловать в документацию по API распирания. Здесь вы можете ознакомиться со всеми способами "
+    "взаимодействия с API и попробовать их в действии.",
+    root_path=settings.API_V1_STR,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 
 # Set all CORS enabled origins

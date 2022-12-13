@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Generator
 
-from app.db.session import async_session, SessionLocal
+from app.db.session import SessionLocal, async_session
 
 
 @asynccontextmanager

@@ -3,8 +3,8 @@ import os
 from typing import Generator
 
 from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
-from rtu_schedule_parser.downloader import ScheduleDownloader
 from rtu_schedule_parser.constants import ScheduleType
+from rtu_schedule_parser.downloader import ScheduleDownloader
 
 import app.crud.crud_schedule as schedule_crud
 from app.schemas import (
@@ -55,9 +55,7 @@ def parse() -> Generator[list[Schedule], None, None]:
     for doc in downloaded:
         logger.info(f"Processing document: {doc}")
 
-        parser = ExcelScheduleParser(
-            doc[1], doc[0].period, doc[0].institute, doc[0].degree
-        )
+        parser = ExcelScheduleParser(doc[1], doc[0].period, doc[0].institute, doc[0].degree)
 
         yield parser.parse(force=True).get_schedule()
 

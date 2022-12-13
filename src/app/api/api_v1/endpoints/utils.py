@@ -19,10 +19,8 @@ def parse_schedule(
     return {"msg": "Parsing schedule"}
 
 
-
 @router.get("/parse-schedule/", response_model=schemas.Msg, status_code=201)
-def parse_schedule_status(
-) -> Any:
+def parse_schedule_status() -> Any:
     """
     Parse schedule status.
     """

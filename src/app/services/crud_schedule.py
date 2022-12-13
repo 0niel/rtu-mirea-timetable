@@ -2,11 +2,10 @@ import datetime
 from collections import Counter
 from typing import Optional
 
-from sqlalchemy import and_, delete, func
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.dialects.postgresql import array
-from sqlalchemy.future import select
 
-from app import utils
+from app import schemas, utils
 from app.db.connection import get_session
 from app.models import (
     Group,
@@ -22,24 +21,9 @@ from app.models import (
     Teacher,
     lessons_to_teachers,
 )
-from app.schemas import (
-    CampusCreate,
-    DegreeCreate,
-    DisciplineCreate,
-    GroupCreate,
-    InstituteCreate,
-    LessonCallCreate,
-    LessonCreate,
-    LessonDelete,
-    LessonTypeCreate,
-    PeriodCreate,
-    RoomCreate,
-    RoomInfo,
-    TeacherCreate,
-)
 
 
-async def get_or_create_period(cmd: PeriodCreate):
+async def get_or_create_period(cmd: schemas.PeriodCreate):
     async with get_session() as session:
         res = await session.execute(
             select(SchedulePeriod)
@@ -61,11 +45,9 @@ async def get_or_create_period(cmd: PeriodCreate):
         return period
 
 
-async def get_or_create_degree(cmd: DegreeCreate):
+async def get_or_create_degree(cmd: schemas.DegreeCreate):
     async with get_session() as session:
-        res = await session.execute(
-            select(ScheduleDegree).where(ScheduleDegree.name == cmd.name).limit(1)
-        )
+        res = await session.execute(select(ScheduleDegree).where(ScheduleDegree.name == cmd.name).limit(1))
         degree = res.scalar()
         if not degree:
             degree = ScheduleDegree(**cmd.dict())
@@ -75,11 +57,9 @@ async def get_or_create_degree(cmd: DegreeCreate):
         return degree
 
 
-async def get_or_create_institute(cmd: InstituteCreate):
+async def get_or_create_institute(cmd: schemas.InstituteCreate):
     async with get_session() as session:
-        res = await session.execute(
-            select(Institute).where(Institute.name == cmd.name).limit(1)
-        )
+        res = await session.execute(select(Institute).where(Institute.name == cmd.name).limit(1))
         institute = res.scalar()
         if not institute:
             institute = Institute(**cmd.dict())
@@ -89,7 +69,7 @@ async def get_or_create_institute(cmd: InstituteCreate):
         return institute
 
 
-async def get_or_create_group(cmd: GroupCreate):
+async def get_or_create_group(cmd: schemas.GroupCreate):
     async with get_session() as session:
         res = await session.execute(
             select(Group)
@@ -111,11 +91,9 @@ async def get_or_create_group(cmd: GroupCreate):
         return group
 
 
-async def get_or_create_lesson_type(cmd: LessonTypeCreate):
+async def get_or_create_lesson_type(cmd: schemas.LessonTypeCreate):
     async with get_session() as session:
-        res = await session.execute(
-            select(LessonType).where(LessonType.name == cmd.name).limit(1)
-        )
+        res = await session.execute(select(LessonType).where(LessonType.name == cmd.name).limit(1))
         lesson_type = res.scalar()
         if not lesson_type:
             lesson_type = LessonType(**cmd.dict())
@@ -125,11 +103,9 @@ async def get_or_create_lesson_type(cmd: LessonTypeCreate):
         return lesson_type
 
 
-async def get_or_create_campus(cmd: CampusCreate):
+async def get_or_create_campus(cmd: schemas.CampusCreate):
     async with get_session() as session:
-        res = await session.execute(
-            select(ScheduleCampus).where(ScheduleCampus.name == cmd.name).limit(1)
-        )
+        res = await session.execute(select(ScheduleCampus).where(ScheduleCampus.name == cmd.name).limit(1))
         campus = res.scalar()
         if not campus:
             campus = ScheduleCampus(**cmd.dict())
@@ -139,7 +115,7 @@ async def get_or_create_campus(cmd: CampusCreate):
         return campus
 
 
-async def get_or_create_room(cmd: RoomCreate):
+async def get_or_create_room(cmd: schemas.RoomCreate):
     async with get_session() as session:
         res = await session.execute(select(Room).where(Room.name == cmd.name).limit(1))
         room = res.scalar()
@@ -151,13 +127,9 @@ async def get_or_create_room(cmd: RoomCreate):
         return room
 
 
-async def get_or_create_discipline(cmd: DisciplineCreate):
+async def get_or_create_discipline(cmd: schemas.DisciplineCreate):
     async with get_session() as session:
-        res = await session.execute(
-            select(ScheduleDiscipline)
-            .where(ScheduleDiscipline.name == cmd.name)
-            .limit(1)
-        )
+        res = await session.execute(select(ScheduleDiscipline).where(ScheduleDiscipline.name == cmd.name).limit(1))
         discipline = res.scalar()
         if not discipline:
             discipline = ScheduleDiscipline(**cmd.dict())
@@ -167,11 +139,9 @@ async def get_or_create_discipline(cmd: DisciplineCreate):
         return discipline
 
 
-async def get_or_create_teacher(cmd: TeacherCreate):
+async def get_or_create_teacher(cmd: schemas.TeacherCreate):
     async with get_session() as session:
-        res = await session.execute(
-            select(Teacher).where(Teacher.name == cmd.name).limit(1)
-        )
+        res = await session.execute(select(Teacher).where(Teacher.name == cmd.name).limit(1))
         teacher = res.scalar()
         if not teacher:
             teacher = Teacher(**cmd.dict())
@@ -181,7 +151,7 @@ async def get_or_create_teacher(cmd: TeacherCreate):
         return teacher
 
 
-async def get_or_create_lesson_call(cmd: LessonCallCreate):
+async def get_or_create_lesson_call(cmd: schemas.LessonCallCreate):
     async with get_session() as session:
         res = await session.execute(
             select(LessonCall)
@@ -203,7 +173,7 @@ async def get_or_create_lesson_call(cmd: LessonCallCreate):
         return lesson_call
 
 
-async def get_or_create_lesson(cmd: LessonCreate):
+async def get_or_create_lesson(cmd: schemas.LessonCreate):
     async with get_session() as session:
         res = await session.execute(
             select(Lesson)
@@ -232,11 +202,7 @@ async def get_or_create_lesson(cmd: LessonCreate):
             session.add(lesson)
             await session.flush()
             for teacher_id in cmd.teachers_id:
-                await session.execute(
-                    lessons_to_teachers.insert().values(
-                        lesson_id=lesson.id, teacher_id=teacher_id
-                    )
-                )
+                await session.execute(lessons_to_teachers.insert().values(lesson_id=lesson.id, teacher_id=teacher_id))
             await session.commit()
             await session.refresh(lesson)
 
@@ -257,15 +223,11 @@ async def get_group(name: str) -> Group:
 
 async def clear_group_schedule(name: str):
     async with get_session() as session:
-        await session.execute(
-            delete(Lesson).where(
-                Lesson.group_id == select(Group.id).where(Group.name == name)
-            )
-        )
+        await session.execute(delete(Lesson).where(Lesson.group_id == select(Group.id).where(Group.name == name)))
         await session.commit()
 
 
-async def delete_lesson(cmd: LessonDelete):
+async def delete_lesson(cmd: schemas.LessonDelete):
     async with get_session() as session:
         await session.execute(
             select(Lesson)
@@ -289,18 +251,14 @@ async def delete_lesson(cmd: LessonDelete):
 async def get_lessons_by_teacher(teacher_id: int):
     async with get_session() as session:
         res = await session.execute(
-            select(Lesson)
-            .join(lessons_to_teachers)
-            .where(lessons_to_teachers.c.teacher_id == teacher_id)
+            select(Lesson).join(lessons_to_teachers).where(lessons_to_teachers.c.teacher_id == teacher_id)
         )
         return res.scalars().all()
 
 
 async def search_tachers(name: str):
     async with get_session() as session:
-        res = await session.execute(
-            select(Teacher).where(func.lower(Teacher.name).contains(name.lower()))
-        )
+        res = await session.execute(select(Teacher).where(func.lower(Teacher.name).contains(name.lower())))
         return res.scalars().all()
 
 
@@ -312,9 +270,7 @@ async def get_lessons_by_room(room_id: int):
 
 async def search_room(name: str) -> list[Room]:
     async with get_session() as session:
-        res = await session.execute(
-            select(Room).where(func.lower(Room.name).contains(name.lower()))
-        )
+        res = await session.execute(select(Room).where(func.lower(Room.name).contains(name.lower())))
         return res.scalars().all()
 
 
@@ -325,10 +281,7 @@ async def get_room(name: str, campus_short_name: Optional[str] = None):
             .where(
                 and_(
                     Room.name == name,
-                    Room.campus_id
-                    == select(ScheduleCampus.id).where(
-                        ScheduleCampus.short_name == campus_short_name
-                    ),
+                    Room.campus_id == select(ScheduleCampus.id).where(ScheduleCampus.short_name == campus_short_name),
                 )
             )
             .limit(1)
@@ -339,16 +292,12 @@ async def get_room(name: str, campus_short_name: Optional[str] = None):
 async def get_lessons_by_room(room_id: int) -> list[Lesson]:
     async with get_session() as session:
         res = await session.execute(
-            select(Lesson)
-            .where(Lesson.room_id == room_id)
-            .order_by(Lesson.weekday, Lesson.call_id)
+            select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id)
         )
         return res.scalars().all()
 
 
-async def get_lessons_by_room_and_date(
-        room_id: int, date: datetime.date
-) -> list[Lesson]:
+async def get_lessons_by_room_and_date(room_id: int, date: datetime.date) -> list[Lesson]:
     week = utils.get_week(date=date)
 
     async with get_session() as session:
@@ -383,11 +332,9 @@ async def get_lessons_by_room_and_week(room_id: int, week: int) -> list[Lesson]:
 
 async def get_room_workload(room_id: int):
     async with get_session() as session:
-        # get all lessons for room
+        # get all lesson for room
         res = await session.execute(
-            select(Lesson)
-            .where(Lesson.room_id == room_id)
-            .order_by(Lesson.weekday, Lesson.call_id)
+            select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id)
         )
         lessons = res.scalars().all()
 
@@ -400,15 +347,16 @@ async def get_room_workload(room_id: int):
         for lesson in lessons:
             for week in lesson.weeks:
                 for call in calls:
-                    # Внимание! У одной аудитории может быть несколько групп в одно и то же время (например, лекции и лабораторные)
+                    # у одной аудитории может быть несколько групп в одно и то же время
+                    # (например, лекции и лабораторные)
                     if (
-                            call.id == lesson.call_id
-                            and (
+                        call.id == lesson.call_id
+                        and (
                             lesson.weekday,
                             lesson.call_id,
                             week,
-                    )
-                            not in checked
+                        )
+                        not in checked
                     ):
                         workload += 1
                         checked.append((lesson.weekday, lesson.call_id, week))
@@ -426,9 +374,7 @@ async def get_campuses() -> list[ScheduleCampus]:
 async def get_campus_rooms(campus_id: int) -> list[Room]:
     async with get_session() as session:
         res = await session.execute(
-            select(Room)
-            .where(Room.campus_id == campus_id)
-            .order_by(func.lower(Room.name).asc())
+            select(Room).where(Room.campus_id == campus_id).order_by(func.lower(Room.name).asc())
         )
         return res.scalars().all()
 
@@ -448,9 +394,7 @@ async def get_call_by_time(time: datetime.time) -> LessonCall:
         return res.scalar()
 
 
-async def get_rooms_statuses(
-        rooms: list[str], time: datetime.datetime
-) -> list[dict[str, str]]:
+async def get_rooms_statuses(rooms: list[str], time: datetime.datetime) -> list[dict[str, str]]:
     rooms_res = []
 
     for room in rooms:
@@ -484,9 +428,7 @@ async def get_rooms_statuses(
         return [
             {
                 "name": room.name,
-                "status": "free"
-                if room.id not in [lesson.room_id for lesson in lessons]
-                else "busy",
+                "status": "free" if room.id not in [lesson.room_id for lesson in lessons] else "busy",
             }
             for room in rooms
         ]
@@ -502,23 +444,19 @@ def get_all_rooms_sync(session) -> list[Room]:
     return session.query(Room).all()
 
 
-async def get_room_info(room_id: int) -> RoomInfo:
+async def get_room_info(room_id: int) -> schemas.RoomInfo:
     async with get_session() as session:
         res = await session.execute(select(Room).where(Room.id == room_id))
         room = res.scalar()
 
         res2 = await session.execute(
-            select(Lesson)
-            .where(Lesson.room_id == room_id)
-            .order_by(Lesson.weekday, Lesson.call_id)
+            select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id)
         )
         lessons = res2.scalars().all()
 
         workload = await get_room_workload(room_id)
 
-        purpose = Counter([lesson.lesson_type.name for lesson in lessons]).most_common(
-            1
-        )[0][0]
+        purpose = Counter([lesson.lesson_type.name for lesson in lessons]).most_common(1)[0][0]
 
         purpose = {
             "лек": "Лекция",
@@ -526,7 +464,7 @@ async def get_room_info(room_id: int) -> RoomInfo:
             "лаб": "Лабораторная",
         }.get(purpose, "Неизвестно")
 
-        return RoomInfo(
+        return schemas.RoomInfo(
             room=room,
             lessons=lessons,
             workload=workload,

@@ -17,21 +17,15 @@ class Lesson(Base):
 
     id = db.Column(db.BigInteger, primary_key=True)
     group_id = db.Column(db.BigInteger, db.ForeignKey("schedule_group.id"))
-    call_id = db.Column(
-        db.BigInteger, db.ForeignKey("schedule_lesson_call.id"), nullable=False
-    )
-    discipline_id = db.Column(
-        db.BigInteger, db.ForeignKey("schedule_discipline.id"), nullable=False
-    )
+    call_id = db.Column(db.BigInteger, db.ForeignKey("schedule_lesson_call.id"), nullable=False)
+    discipline_id = db.Column(db.BigInteger, db.ForeignKey("schedule_discipline.id"), nullable=False)
     weekday = db.Column(db.Integer, nullable=False)
     room_id = db.Column(db.BigInteger, db.ForeignKey("schedule_room.id"), nullable=True)
-    lesson_type_id = db.Column(
-        db.BigInteger, db.ForeignKey("schedule_lesson_type.id"), nullable=True
-    )
+    lesson_type_id = db.Column(db.BigInteger, db.ForeignKey("schedule_lesson_type.id"), nullable=True)
     teachers = relationship(
         "Teacher",
         secondary=lessons_to_teachers,
-        back_populates="lessons",
+        back_populates="lesson",
         lazy="subquery",
     )
     subgroup = db.Column(db.Integer, nullable=True)
@@ -45,24 +39,24 @@ class Lesson(Base):
     discipline = relationship(
         "ScheduleDiscipline",
         cascade="delete",
-        back_populates="lessons",
+        back_populates="lesson",
         lazy="subquery",
     )
     room = relationship(
         "Room",
         cascade="delete",
-        back_populates="lessons",
+        back_populates="lesson",
         lazy="subquery",
     )
     lesson_type = relationship(
         "LessonType",
         cascade="delete",
-        back_populates="lessons",
+        back_populates="lesson",
         lazy="subquery",
     )
     group = relationship(
         "Group",
         cascade="delete",
-        back_populates="lessons",
+        back_populates="lesson",
         lazy="subquery",
     )
