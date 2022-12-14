@@ -6,7 +6,7 @@ from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
 from rtu_schedule_parser.constants import ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
 
-import app.crud.crud_schedule as schedule_crud
+import app.services.crud_schedule as schedule_crud
 from app.schemas import (
     CampusCreate,
     DegreeCreate,

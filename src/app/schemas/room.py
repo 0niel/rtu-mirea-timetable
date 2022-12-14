@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel, PositiveInt
 
+from app.schemas import Campus
+
 
 class RoomCreate(BaseModel):
     name: str
@@ -10,14 +12,13 @@ class RoomCreate(BaseModel):
 
 class Room(RoomCreate):
     id: PositiveInt
-    campus: Optional[CampusModel] = None
+    campus: Optional[Campus] = None
 
     class Config:
         orm_mode = True
 
 
 class RoomInfo(BaseModel):
-    room: RoomModel
+    room: Room
     purpose: str
     workload: float
-    lessons: list[LessonModel]

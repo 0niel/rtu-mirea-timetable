@@ -2,8 +2,7 @@ import re
 
 from pydantic import BaseModel, PositiveInt, validator
 
-from app.models import Institute
-from app.schemas import Period, Degree
+from . import Degree, Institute, Lesson, Period
 
 
 class GroupCreate(BaseModel):
