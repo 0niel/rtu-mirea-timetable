@@ -8,7 +8,6 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Добро пожаловать в документацию по API распирания. Здесь вы можете ознакомиться со всеми способами "
     "взаимодействия с API и попробовать их в действии.",
-    root_path=settings.API_V1_STR,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 

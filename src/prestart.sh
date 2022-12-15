@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env sh
 
 # Let the DB start
 sleep 10;

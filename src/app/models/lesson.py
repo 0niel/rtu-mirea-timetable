@@ -24,8 +24,8 @@ class Lesson(Base):
     lesson_type_id = db.Column(db.BigInteger, db.ForeignKey("schedule_lesson_type.id"), nullable=True)
     teachers = relationship(
         "Teacher",
-        secondary=lessons_to_teachers,
-        back_populates="lesson",
+        secondary='schedule_lessons_to_teachers',
+        back_populates="lessons",
         lazy="subquery",
     )
     subgroup = db.Column(db.Integer, nullable=True)
@@ -39,24 +39,24 @@ class Lesson(Base):
     discipline = relationship(
         "ScheduleDiscipline",
         cascade="delete",
-        back_populates="lesson",
+        back_populates="lessons",
         lazy="subquery",
     )
     room = relationship(
         "Room",
         cascade="delete",
-        back_populates="lesson",
+        back_populates="lessons",
         lazy="subquery",
     )
     lesson_type = relationship(
         "LessonType",
         cascade="delete",
-        back_populates="lesson",
+        back_populates="lessons",
         lazy="subquery",
     )
     group = relationship(
         "Group",
         cascade="delete",
-        back_populates="lesson",
+        back_populates="lessons",
         lazy="subquery",
     )

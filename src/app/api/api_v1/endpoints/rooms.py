@@ -14,14 +14,14 @@ from app.db.connection import get_db
 router = APIRouter()
 
 
-@router.get("/lessons/{room_id}", response_model=list[schemas.LessonModel], status_code=200)
+@router.get("/lessons/{room_id}", response_model=list[schemas.Lesson], status_code=200)
 async def get_room_lessons(
     room_id: int,
 ) -> Any:
     """
     Get all lessons for room.
     """
-    return [schemas.LessonModel.from_orm(room) for room in await schedule_crud.get_lessons_by_room(room_id)]
+    return [schemas.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room(room_id)]
 
 
 # Moscow timezone
@@ -30,7 +30,7 @@ tz = timezone(timedelta(hours=3))
 
 @router.get(
     "/lessons-by-date/{room_id}/{date}",
-    response_model=list[schemas.LessonModel],
+    response_model=list[schemas.Lesson],
     status_code=200,
 )
 async def get_rooms_lesson_by_room_and_date(
@@ -48,13 +48,13 @@ async def get_rooms_lesson_by_room_and_date(
         return {"msg": "Incorrect data format, should be YYYY-MM-DD"}
 
     return [
-        schemas.LessonModel.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_date(room_id, date)
+        schemas.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_date(room_id, date)
     ]
 
 
 @router.get(
     "/lessons-by-week/{room_id}/{week}",
-    response_model=list[schemas.LessonModel],
+    response_model=list[schemas.Lesson],
     status_code=200,
 )
 async def get_rooms_lesson_by_room_and_week(
@@ -65,18 +65,18 @@ async def get_rooms_lesson_by_room_and_week(
     Get all lessons for room by date. Date must be in format YYYY-MM-DD.
     """
     return [
-        schemas.LessonModel.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_week(room_id, week)
+        schemas.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_week(room_id, week)
     ]
 
 
-@router.get("/search/{name}", response_model=list[schemas.RoomModel], status_code=200)
+@router.get("/search/{name}", response_model=list[schemas.Room], status_code=200)
 async def search_rooms(
     name: str,
 ) -> Any:
     """
     Search rooms.
     """
-    return [schemas.RoomModel.from_orm(room) for room in await schedule_crud.search_room(name)]
+    return [schemas.Room.from_orm(room) for room in await schedule_crud.search_room(name)]
 
 
 @router.get("/workload/{room_id}", response_model=schemas.Msg, status_code=200)

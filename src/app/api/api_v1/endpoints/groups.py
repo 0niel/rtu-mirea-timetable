@@ -24,5 +24,4 @@ async def get_groups():
 async def get_group_schedule(
     name: str,
 ):
-    schedule = await schedule_crud.get_group(name)
-    return schedule
+    return await schedule_crud.get_group(name)

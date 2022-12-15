@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, PositiveInt
 
-from app.schemas import Campus
+from .campus import Campus
 
 
 class RoomCreate(BaseModel):
