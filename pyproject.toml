@@ -1,0 +1,66 @@
+[tool.poetry]
+name = "rtu-map"
+version = "0.1.0"
+description = "A tool for generating data for the RTU map"
+authors = ["Mirea Ninja <contact@mirea.ninja>"]
+
+[tool.poetry.dependencies]
+python = "^3.9.0"
+alembic = "^1.8.1"
+fastapi = "^0.79.0"
+SQLAlchemy = "^1.4.40"
+uvicorn = "^0.18.2"
+python-dotenv = "^0.20.0"
+asyncpg = "^0.26.0"
+celery = "^5.2.7"
+pydantic = {extras = ["email"], version = "^1.9.2"}
+aiohttp = "^3.8.1"
+rtu-schedule-parser = {git = "https://github.com/mirea-ninja/rtu-schedule-parser.git", rev = "main"}
+loguru = "^0.6.0"
+requests = "^2.28.1"
+httpx = "^0.23.0"
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.942"
+black = {extras = ["d"], version = "^22.8.0"}
+isort = "^5.10.1"
+autoflake = "^1.4"
+flake8 = "^4.0.1"
+pytest = "^7.1.1"
+sqlalchemy-stubs = "^0.4"
+pytest-cov = "^3.0.0"
+pytest-asyncio = "^0.19.0"
+
+
+[tool.black]
+line-length = 120
+target-version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+)
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+line_length = 120
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
