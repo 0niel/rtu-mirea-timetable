@@ -59,6 +59,9 @@ class Config(_Settings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
+    # RabbitMQ
+    BROKER_URL: str
+
 
 @lru_cache()
 def get_config(env_file: str = ".env") -> Config:

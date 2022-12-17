@@ -1,17 +1,13 @@
 from pydantic import BaseModel, PositiveInt
 
 
-class PeriodBase(BaseModel):
+class PeriodCreate(BaseModel):
     year_start: PositiveInt
     year_end: PositiveInt
     semester: PositiveInt
 
 
-class PeriodCreate(PeriodBase):
-    pass
-
-
-class PeriodGet(PeriodBase):
+class Period(PeriodCreate):
     id: PositiveInt
 
     class Config:

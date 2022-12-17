@@ -9,61 +9,43 @@ services:
       - ./etc/traefik.yml:/traefik.yml:ro
       - ./etc/acme.json:/acme.json
     command:
-      # Enable Docker in Traefik, so that it reads labels from Docker services
       - --providers.docker
-      # Do not expose all Docker services, only the ones explicitly exposed
       - --providers.docker.exposedbydefault=false
-      # Enable Docker Swarm mode
       - --providers.docker.swarmmode
-      # Enable the access log, with HTTP requests
       - --accesslog
-      # Enable the Traefik log, for configurations and errors
       - --log
-      # Enable the Dashboard and API
       - --api
     deploy:
       labels:
-        # Enable Traefik for this service, to make it available in the public network
         - traefik.enable=true
-        # traefik-http set up only to use the middleware to redirect to https
         - traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https
         - traefik.http.middlewares.traefik-https-redirect.redirectscheme.permanent=true
-        # Handle host with and without "www" to redirect to only one of them
-        # Uses environment variable DOMAIN
-        # To disable www redirection remove the Host() you want to discard, here and
-        # below for HTTPS
         - traefik.http.routers.traefik-proxy-http.rule=Host(`${DOMAIN?Variable not set}`) || Host(`www.${DOMAIN?Variable not set}`)
         - traefik.http.routers.traefik-proxy-http.entrypoints=http
-        # traefik-https the actual router using HTTPS
         - traefik.http.routers.traefik-proxy-https.rule=Host(`${DOMAIN?Variable not set}`) || Host(`www.${DOMAIN?Variable not set}`)
         - traefik.http.routers.traefik-proxy-https.entrypoints=https
         - traefik.http.routers.traefik-proxy-https.tls=true
-        # Use the "le" (Let's Encrypt) resolver created below
         - traefik.http.routers.traefik-proxy-https.tls.certresolver=le
-        # Define the port inside of the Docker service to use
         - traefik.http.services.traefik-proxy.loadbalancer.server.port=80
-        # Middleware to redirect www, to disable it remove the next line
         - traefik.http.middlewares.traefik-www-redirect.redirectregex.regex=^https?://(www.)?(${DOMAIN?Variable not set})/(.*)
-        # Redirect a domain with www to non-www
-        # To disable it remove the next line
         - traefik.http.middlewares.traefik-www-redirect.redirectregex.replacement=https://${DOMAIN?Variable not set}/$${3}
-        # Middleware to redirect www, to disable it remove the next line 
         - traefik.http.routers.traefik-proxy-https.middlewares=traefik-www-redirect
-        # Middleware to redirect www, and redirect HTTP to HTTPS
-        # to disable www redirection remove the section: traefik-www-redirect,
         - traefik.http.routers.traefik-proxy-http.middlewares=traefik-www-redirect,traefik-https-redirect
-        
-  database:
-    container_name: database
-    image: postgres:14
+
+  db:
+    image: postgres:latest
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - app-db-data:/var/lib/postgresql/data/pgdata
-    env_file:
-      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     deploy:
       placement:
         constraints:
@@ -71,14 +53,16 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    networks:
-      - default
     depends_on:
-      - database
-    env_file:
-      - .env
+      db:
+        condition: service_healthy
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    networks:
+      - default
     deploy:
       labels:
         - traefik.enable=true
@@ -92,18 +76,38 @@ services:
         - traefik.http.services.traefik-pgadmin.loadbalancer.server.port=5050
 
   backend:
-    depends_on:
-      - database
-    env_file:
-      - .env
-    environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=https://${DOMAIN?Variable not set}
-      - PRE_START_PATH=/prestart.sh
     build:
       context: .
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    environment:
+        DEBUG: ${DEBUG}
+
+        BACKEND_TTILE: ${BACKEND_TTILE}
+        BACKEND_DESCRIPTION: ${BACKEND_DESCRIPTION}
+        BACKEND_PREFIX: ${BACKEND_PREFIX}
+
+        BACKEND_HOST: ${BACKEND_HOST}
+        BACKEND_PORT: ${BACKEND_PORT}
+        BACKEND_RELOAD: ${BACKEND_RELOAD}
+
+        BACKEND_JWT_SECRET: ${BACKEND_JWT_SECRET}
+        BACKEND_JWT_ALGORITHM: ${BACKEND_JWT_ALGORITHM}
+        BACKEND_JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${BACKEND_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
+
+        BACKEND_DISABLE_AUTH: ${BACKEND_DISABLE_AUTH}
+
+        POSTGRES_SERVER: ${POSTGRES_SERVER}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+
+        ENV: development
     deploy:
       labels:
         - traefik.enable=true
@@ -117,27 +121,40 @@ services:
         - traefik.http.routers.traefik-backend-https.tls.certresolver=le
         - traefik.http.routers.traefik-backend-https.middlewares=traefik-https-redirect
 
-  queue:
-    image: rabbitmq:3
-
-  celeryworker:
-    depends_on:
-      - database
-      - queue
-    env_file:
-      - .env
+  broker:
+    image: rabbitmq:3-management
     environment:
-      - SERVER_NAME=${DOMAIN?Variable not set}
-      - SERVER_HOST=https://${DOMAIN?Variable not set}
-      # Allow explicit env var override for tests
-      # - SMTP_HOST=${SMTP_HOST?Variable not set}
+      RABBITMQ_DEFAULT_USER: ${BROKER_USER}
+      RABBITMQ_DEFAULT_PASS: ${BROKER_PASS}
+    volumes:
+      - broker:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - default
+    healthcheck:
+      test: rabbitmq-diagnostics check_running
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
     build:
       context: .
-      dockerfile: celeryworker.dockerfile
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
+      dockerfile: ./worker/Dockerfile
+    environment:
+      - BROKER_URL=${BROKER_URL}
+      - LOG_LEVEL=TRACE
+      - C_FORCE_ROOT=true
+    depends_on:
+      broker:
+        condition: service_healthy
+    networks:
+      - default
 
 
 volumes:
   app-db-data:
   pgadmin-data:
+  broker:

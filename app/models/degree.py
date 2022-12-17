@@ -1,15 +1,11 @@
 from pydantic import BaseModel, PositiveInt
 
 
-class DegreeBase(BaseModel):
+class DegreeCreate(BaseModel):
     name: str
 
 
-class DegreeCreate(DegreeBase):
-    pass
-
-
-class DegreeGet(DegreeBase):
+class Degree(DegreeCreate):
     id: PositiveInt
 
     class Config:

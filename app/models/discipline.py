@@ -1,15 +1,11 @@
 from pydantic import BaseModel, PositiveInt
 
 
-class DisciplineBase(BaseModel):
+class DisciplineCreate(BaseModel):
     name: str
 
 
-class DisciplineCreate(DisciplineBase):
-    pass
-
-
-class DisciplineGet(DisciplineBase):
+class Discipline(DisciplineCreate):
     id: PositiveInt
 
     class Config:

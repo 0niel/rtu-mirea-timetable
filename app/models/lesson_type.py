@@ -1,14 +1,11 @@
 from pydantic import BaseModel, PositiveInt
 
 
-class LessonTypeBase(BaseModel):
+class LessonTypeCreate(BaseModel):
     name: str
 
-class LessonTypeCreate(LessonTypeBase):
-    pass
 
-
-class LessonType(LessonTypeBase):
+class LessonType(LessonTypeCreate):
     id: PositiveInt
 
     class Config:

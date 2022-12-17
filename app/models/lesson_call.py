@@ -2,16 +2,14 @@ import datetime
 
 from pydantic import BaseModel, PositiveInt
 
-class LessonCallBase(BaseModel):
+
+class LessonCallCreate(BaseModel):
     num: PositiveInt
     time_start: datetime.time
     time_end: datetime.time
 
-class LessonCallCreate(LessonCallBase):
-    pass
 
-
-class LessonCall(LessonCallBase):
+class LessonCall(LessonCallCreate):
     id: PositiveInt
 
     class Config:

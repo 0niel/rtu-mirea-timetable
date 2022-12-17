@@ -9,8 +9,9 @@ from sqlalchemy.orm import Session
 
 import app.services.crud_schedule as schedule_crud
 from app import models
+from app.config import config
 
-router = APIRouter()
+router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
 @router.get("/lessons/{room_id}", response_model=list[models.Lesson], status_code=200)

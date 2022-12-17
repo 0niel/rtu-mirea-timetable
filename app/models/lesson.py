@@ -3,11 +3,11 @@ from typing import Optional
 
 from pydantic import BaseModel, PositiveInt
 
-from app.models.discipline import DisciplineGet
-from app.models.lesson_call import LessonCall
-from app.models.lesson_type import LessonType
-from app.models.room import RoomGet
-from app.models.teacher import TeacherGet
+from .room import Room
+from .teacher import Teacher
+from .discipline import Discipline
+from .lesson_call import LessonCall
+from .lesson_type import LessonType
 
 
 class LessonCreate(BaseModel):
@@ -25,9 +25,9 @@ class LessonCreate(BaseModel):
 class Lesson(BaseModel):
     id: PositiveInt
     lesson_type: Optional[LessonType] = None
-    discipline: DisciplineGet
-    teachers: list[TeacherGet]
-    room: Optional[RoomGet] = None
+    discipline: Discipline
+    teachers: list[Teacher]
+    room: Optional[Room] = None
     calls: LessonCall
     weekday: PositiveInt
     subgroup: Optional[PositiveInt] = None

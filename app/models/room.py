@@ -2,27 +2,23 @@ from typing import Optional
 
 from pydantic import BaseModel, PositiveInt
 
-from app.models.campus import CampusGet
+from .campus import Campus
 
 
-class RoomBase(BaseModel):
+class RoomCreate(BaseModel):
     name: str
     campus_id: Optional[PositiveInt] = None
 
 
-class RoomCreate(RoomBase):
-    pass
-
-
-class RoomGet(RoomBase):
+class Room(RoomCreate):
     id: PositiveInt
-    campus: Optional[CampusGet] = None
+    campus: Optional[Campus] = None
 
     class Config:
         orm_mode = True
 
 
 class RoomInfo(BaseModel):
-    room: RoomGet
+    room: Room
     purpose: str
     workload: float

@@ -1,16 +1,11 @@
 from pydantic import BaseModel, PositiveInt
 
 
-class TeacherBase(BaseModel):
+class TeacherCreate(BaseModel):
     name: str
 
 
-class TeacherCreate(TeacherBase):
-    pass
-
-
-class TeacherGet(TeacherBase):
+class Teacher(TeacherCreate):
     id: PositiveInt
-
     class Config:
         orm_mode = True

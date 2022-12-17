@@ -5,9 +5,8 @@ from app.config import config
 from app.routers.campuses import router as campuses_router
 from app.routers.groups import router as groups_router
 from app.routers.rooms import router as rooms_router
-
-# from app.routers.lessons import router as lessons_router
-# from app.routers.utils import router as utils_router
+from app.routers.lessons import router as lessons_router
+from app.routers.utils import router as utils_router
 
 
 tags_metadata = [
@@ -44,6 +43,6 @@ app.add_middleware(
 
 app.include_router(campuses_router, tags=["campuses"])
 app.include_router(groups_router, tags=["groups"])
-# app.include_router(lessons_router, tags=["lessons"])
+app.include_router(lessons_router, tags=["lessons"])
 app.include_router(rooms_router, tags=["rooms"])
-# app.include_router(utils_router, tags=["utils"])
+app.include_router(utils_router, tags=["utils"])

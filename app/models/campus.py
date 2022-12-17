@@ -1,16 +1,12 @@
 from pydantic import BaseModel, PositiveInt
 
 
-class CampusBase(BaseModel):
+class CampusCreate(BaseModel):
     name: str
     short_name: str
 
 
-class CampusCreate(CampusBase):
-    pass
-
-
-class CampusGet(CampusBase):
+class Campus(CampusCreate):
     id: PositiveInt
 
     class Config:
