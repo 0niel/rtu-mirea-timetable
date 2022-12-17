@@ -18,8 +18,8 @@ jobs:
         with:
           python-version: '3.9'
           cache: 'poetry'
-      - run: poetry install
-      - run: poetry run pytest
+      - name: Install dependencies
+        run: poetry install
       - name: Run linters
         run: |
           source .venv/bin/activate
