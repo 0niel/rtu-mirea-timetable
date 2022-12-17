@@ -16,7 +16,7 @@ def parse_schedule(
     """
     Parse parser.
     """
-    app.send_task("app.worker.parse_schedule")
+    app.send_task("worker.tasks.parse_schedule")
     return {"msg": "Parsing parser"}
 
 
@@ -25,5 +25,5 @@ def parse_schedule_status() -> Any:
     """
     Parse parser status.
     """
-    task = app.AsyncResult("app.worker.parse_schedule")
+    task = app.AsyncResult("worker.tasks.parse_schedule")
     return {"msg": task.status}
