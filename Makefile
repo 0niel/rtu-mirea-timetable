@@ -43,9 +43,9 @@ black:
 	black app tests
 
 black_check:
-	black --config pyproject.toml --diff --check app tests
+	black --diff --check app tests
 
 
 # Check pep8
 flake:
-	flake8 --config .flake8 app tests
+	flake8 app tests
