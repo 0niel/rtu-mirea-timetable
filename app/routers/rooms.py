@@ -102,49 +102,49 @@ async def get_statuses(
     return await schedule_crud.get_rooms_statuses(rooms, date_time)
 
 
-@router.get("/export-create/", status_code=200)
-def export_create(db: Session = Depends(get_db)):
-    if os.path.exists("rooms.xslx"):
-        os.remove("rooms.xslx")
-
-    # rooms = await schedule_crud.get_all_rooms()
-
-    rooms = schedule_crud.get_all_rooms_sync(db)
-
-    df = pd.DataFrame(
-        columns=[
-            "номер комнаты",
-            "корпус",
-            "день недели",
-            "номер пары",
-            "неделя",
-            "дисциплина",
-            "группа",
-        ]
-    )
-
-    all_rooms_data = []
-    for room in rooms:
-        campus = room.campus.name if room.campus else None
-
-        for lesson in room.lessons:
-            all_rooms_data.extend(
-                {
-                    "номер комнаты": room.name,
-                    "корпус": campus,
-                    "день недели": lesson.weekday,
-                    "номер пары": lesson.calls.num,
-                    "неделя": week,
-                    "дисциплина": lesson.discipline.name,
-                    "группа": lesson.group.name,
-                }
-                for week in lesson.weeks
-            )
-
-    df = df.append(all_rooms_data, ignore_index=True)
-    df.to_excel("rooms.xlsx", index=False)
-
-    return
+# @router.get("/export-create/", status_code=200)
+# def export_create(db: Session = Depends(get_db)):
+#     if os.path.exists("rooms.xslx"):
+#         os.remove("rooms.xslx")
+#
+#     # rooms = await schedule_crud.get_all_rooms()
+#
+#     rooms = schedule_crud.get_all_rooms_sync(db)
+#
+#     df = pd.DataFrame(
+#         columns=[
+#             "номер комнаты",
+#             "корпус",
+#             "день недели",
+#             "номер пары",
+#             "неделя",
+#             "дисциплина",
+#             "группа",
+#         ]
+#     )
+#
+#     all_rooms_data = []
+#     for room in rooms:
+#         campus = room.campus.name if room.campus else None
+#
+#         for lesson in room.lessons:
+#             all_rooms_data.extend(
+#                 {
+#                     "номер комнаты": room.name,
+#                     "корпус": campus,
+#                     "день недели": lesson.weekday,
+#                     "номер пары": lesson.calls.num,
+#                     "неделя": week,
+#                     "дисциплина": lesson.discipline.name,
+#                     "группа": lesson.group.name,
+#                 }
+#                 for week in lesson.weeks
+#             )
+#
+#     df = df.append(all_rooms_data, ignore_index=True)
+#     df.to_excel("rooms.xlsx", index=False)
+#
+#     return
 
 
 @router.get("/download")

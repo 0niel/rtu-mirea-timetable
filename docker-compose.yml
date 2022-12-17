@@ -79,7 +79,7 @@ services:
     build:
       context: .
       args:
-        INSTALL_DEV: ${INSTALL_DEV-true}
+        INSTALL_DEV: ${INSTALL_DEV-false}
     depends_on:
       db:
         condition: service_healthy
@@ -143,6 +143,8 @@ services:
     build:
       context: .
       dockerfile: ./worker/Dockerfile
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-false}
     environment:
       - BROKER_URL=${BROKER_URL}
       - LOG_LEVEL=TRACE
