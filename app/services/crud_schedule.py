@@ -210,18 +210,6 @@ async def get_or_create_lesson(cmd: models.LessonCreate):
         return lesson
 
 
-async def get_groups():
-    async with get_session() as session:
-        res = await session.execute(select(Group))
-        return res.scalars().all()
-
-
-async def get_group(name: str) -> Group:
-    async with get_session() as session:
-        res = await session.execute(select(Group).where(Group.name == name).limit(1))
-        return res.scalar()
-
-
 async def clear_group_schedule(name: str):
     async with get_session() as session:
         await session.execute(delete(Lesson).where(Lesson.group_id == select(Group.id).where(Group.name == name)))
@@ -364,20 +352,6 @@ async def get_room_workload(room_id: int):
 
         workload = workload / (6 * 6 * 16) * 100
         return round(workload, 2)
-
-
-async def get_campuses() -> list[ScheduleCampus]:
-    async with get_session() as session:
-        res = await session.execute(select(ScheduleCampus))
-        return res.scalars().all()
-
-
-async def get_campus_rooms(campus_id: int) -> list[Room]:
-    async with get_session() as session:
-        res = await session.execute(
-            select(Room).where(Room.campus_id == campus_id).order_by(func.lower(Room.name).asc())
-        )
-        return res.scalars().all()
 
 
 async def get_call_by_time(time: datetime.time) -> LessonCall:

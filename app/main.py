@@ -4,10 +4,9 @@ from starlette.middleware.cors import CORSMiddleware
 from app.config import config
 from app.routers.campuses import router as campuses_router
 from app.routers.groups import router as groups_router
-from app.routers.rooms import router as rooms_router
 from app.routers.lessons import router as lessons_router
+from app.routers.rooms import router as rooms_router
 from app.routers.utils import router as utils_router
-
 
 tags_metadata = [
     {"name": "campuses", "description": "Работа с кампусами"},

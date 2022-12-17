@@ -2,7 +2,6 @@ import re
 
 from pydantic import BaseModel, PositiveInt, validator
 
-
 from .degree import Degree
 from .institute import Institute
 from .lesson import Lesson

@@ -3,11 +3,11 @@ from typing import Optional
 
 from pydantic import BaseModel, PositiveInt
 
-from .room import Room
-from .teacher import Teacher
 from .discipline import Discipline
 from .lesson_call import LessonCall
 from .lesson_type import LessonType
+from .room import Room
+from .teacher import Teacher
 
 
 class LessonCreate(BaseModel):

@@ -7,5 +7,6 @@ class TeacherCreate(BaseModel):
 
 class Teacher(TeacherCreate):
     id: PositiveInt
+
     class Config:
         orm_mode = True

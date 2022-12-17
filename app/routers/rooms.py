@@ -2,10 +2,8 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import pandas as pd
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse, Response
-from sqlalchemy.orm import Session
 
 import app.services.crud_schedule as schedule_crud
 from app import models

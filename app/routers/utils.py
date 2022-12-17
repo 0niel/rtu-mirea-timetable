@@ -3,9 +3,8 @@ from typing import Any
 from fastapi import APIRouter
 
 from app import models
-from app.core.celery_app import celery_app
-
 from app.config import config
+from app.core.celery_app import celery_app
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
