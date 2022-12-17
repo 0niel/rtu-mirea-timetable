@@ -20,8 +20,8 @@ jobs:
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
-      - name: Show files
-        run: ls -a
+      - name: Activate virtual environment
+        run: poetry shell
       - name: Check codestyle
         run: make check
 #  test-backend:
