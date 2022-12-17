@@ -1,4 +1,3 @@
-include .env
 export
 ## Connect to container
 connect:
