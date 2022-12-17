@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from app import models
 from app.config import config
-from app.core.celery_app import celery_app
+from worker import app
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
@@ -16,7 +16,7 @@ def parse_schedule(
     """
     Parse parser.
     """
-    celery_app.send_task("app.worker.parse_schedule")
+    app.send_task("app.worker.parse_schedule")
     return {"msg": "Parsing parser"}
 
 
@@ -25,5 +25,5 @@ def parse_schedule_status() -> Any:
     """
     Parse parser status.
     """
-    task = celery_app.AsyncResult("app.worker.parse_schedule")
+    task = app.AsyncResult("app.worker.parse_schedule")
     return {"msg": task.status}
