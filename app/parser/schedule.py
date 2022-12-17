@@ -2,12 +2,15 @@ import logging
 import os
 from typing import Generator
 
+from fastapi import Depends
 from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
 from rtu_schedule_parser.constants import ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.crud_schedule as schedule_crud
+from app.database import get_session
+from app.database.connection import async_session
 from app.models import (
     CampusCreate,
     DegreeCreate,
@@ -61,109 +64,122 @@ def parse() -> Generator[list[Schedule], None, None]:
         yield parser.parse(force=True).get_schedule()
 
 
-async def parse_schedule(db: AsyncSession) -> None:
+async def parse_schedule() -> None:
     """Parse parser and save it to database"""
-    for schedules in parse():
-        for schedule in schedules:
-            # await self.repository.clear_group_schedule(parser.group)
-            period = await schedule_crud.get_or_create_period(
-                PeriodCreate(
-                    year_start=schedule.period.year_start,
-                    year_end=schedule.period.year_end,
-                    semester=schedule.period.semester,
-                )
-            )
-            degree = await schedule_crud.get_or_create_degree(
-                DegreeCreate(
-                    name=schedule.degree.name,
-                )
-            )
-            institute = await schedule_crud.get_or_create_institute(
-                InstituteCreate(
-                    name=schedule.institute.name,
-                    short_name=schedule.institute.short_name,
-                )
-            )
-            group = await schedule_crud.get_or_create_group(
-                GroupCreate(
-                    name=schedule.group,
-                    period_id=period.id,
-                    degree_id=degree.id,
-                    institute_id=institute.id,
-                )
-            )
-
-            for lesson in schedule.lessons:
-                lesson_call = await schedule_crud.get_or_create_lesson_call(
-                    LessonCallCreate(
-                        num=lesson.num,
-                        time_start=lesson.time_start,
-                        time_end=lesson.time_end,
+    async with async_session() as db:
+        for schedules in parse():
+            for schedule in schedules:
+                # await self.repository.clear_group_schedule(parser.group)
+                period = await schedule_crud.get_or_create_period(
+                    db,
+                    PeriodCreate(
+                        year_start=schedule.period.year_start,
+                        year_end=schedule.period.year_end,
+                        semester=schedule.period.semester,
                     )
                 )
-                if type(lesson) is LessonEmpty:
-                    await schedule_crud.delete_lesson(
-                        LessonDelete(
-                            group=schedule.group,
+                degree = await schedule_crud.get_or_create_degree(
+                    db,
+                    DegreeCreate(
+                        name=schedule.degree.name,
+                    )
+                )
+                institute = await schedule_crud.get_or_create_institute(
+                    db,
+                    InstituteCreate(
+                        name=schedule.institute.name,
+                        short_name=schedule.institute.short_name,
+                    )
+                )
+                group = await schedule_crud.get_or_create_group(
+                    db,
+                    GroupCreate(
+                        name=schedule.group,
+                        period_id=period.id,
+                        degree_id=degree.id,
+                        institute_id=institute.id,
+                    )
+                )
+
+                for lesson in schedule.lessons:
+                    lesson_call = await schedule_crud.get_or_create_lesson_call(
+                        db,
+                        LessonCallCreate(
+                            num=lesson.num,
                             time_start=lesson.time_start,
                             time_end=lesson.time_end,
-                            num=lesson.num,
-                            weekday=lesson.weekday.value[0],
                         )
                     )
-                else:
-                    lesson_type = None
-                    room = None
-                    discipline = await schedule_crud.get_or_create_discipline(
-                        DisciplineCreate(
-                            name=lesson.name,
+                    if type(lesson) is LessonEmpty:
+                        await schedule_crud.delete_lesson(
+                            db,
+                            LessonDelete(
+                                group=schedule.group,
+                                time_start=lesson.time_start,
+                                time_end=lesson.time_end,
+                                num=lesson.num,
+                                weekday=lesson.weekday.value[0],
+                            )
                         )
-                    )
-                    if lesson.room is not None:
-                        campus_id = None
-                        if lesson.room.campus:
-                            campus = await schedule_crud.get_or_create_campus(
-                                CampusCreate(
-                                    name=lesson.room.campus.name,
-                                    short_name=lesson.room.campus.short_name,
+                    else:
+                        lesson_type = None
+                        room = None
+                        discipline = await schedule_crud.get_or_create_discipline(
+                            db,
+                            DisciplineCreate(
+                                name=lesson.name,
+                            )
+                        )
+                        if lesson.room is not None:
+                            campus_id = None
+                            if lesson.room.campus:
+                                campus = await schedule_crud.get_or_create_campus(
+                                    db,
+                                    CampusCreate(
+                                        name=lesson.room.campus.name,
+                                        short_name=lesson.room.campus.short_name,
+                                    )
+                                )
+                                campus_id = campus.id
+
+                            room = await schedule_crud.get_or_create_room(
+                                db,
+                                RoomCreate(
+                                    name=lesson.room.name,
+                                    campus_id=campus_id,
                                 )
                             )
-                            campus_id = campus.id
-
-                        room = await schedule_crud.get_or_create_room(
-                            RoomCreate(
-                                name=lesson.room.name,
-                                campus_id=campus_id,
-                            )
-                        )
-                    if lesson.type:
-                        lesson_type = await schedule_crud.get_or_create_lesson_type(
-                            LessonTypeCreate(
-                                name=lesson.type.value,
-                            )
-                        )
-
-                    teachers_id = [
-                        (
-                            await schedule_crud.get_or_create_teacher(
-                                TeacherCreate(
-                                    name=teacher,
+                        if lesson.type:
+                            lesson_type = await schedule_crud.get_or_create_lesson_type(
+                                db,
+                                LessonTypeCreate(
+                                    name=lesson.type.value,
                                 )
                             )
-                        ).id
-                        for teacher in lesson.teachers
-                    ]
 
-                    await schedule_crud.get_or_create_lesson(
-                        LessonCreate(
-                            lesson_type_id=lesson_type.id if lesson.type else None,
-                            discipline_id=discipline.id,
-                            teachers_id=teachers_id,
-                            room_id=room.id if lesson.room else None,
-                            group_id=group.id,
-                            call_id=lesson_call.id,
-                            weekday=lesson.weekday.value[0],
-                            subgroup=lesson.subgroup,
-                            weeks=lesson.weeks,
+                        teachers_id = [
+                            (
+                                await schedule_crud.get_or_create_teacher(
+                                    db,
+                                    TeacherCreate(
+                                        name=teacher,
+                                    )
+                                )
+                            ).id
+                            for teacher in lesson.teachers
+                        ]
+
+                        await schedule_crud.get_or_create_lesson(
+                            db,
+                            LessonCreate(
+                                lesson_type_id=lesson_type.id if lesson.type else None,
+                                discipline_id=discipline.id,
+                                teachers_id=teachers_id,
+                                room_id=room.id if lesson.room else None,
+                                group_id=group.id,
+                                call_id=lesson_call.id,
+                                weekday=lesson.weekday.value[0],
+                                subgroup=lesson.subgroup,
+                                weeks=lesson.weeks,
+                            )
                         )
-                    )
