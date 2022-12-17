@@ -20,10 +20,8 @@ jobs:
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
-      - name: Run linters
-        run: |
-          source .venv/bin/activate
-          make check
+      - name: Check codestyle
+        run: make check
 #  test-backend:
 #    runs-on: ubuntu-latest
 #    needs: [check-backend]
