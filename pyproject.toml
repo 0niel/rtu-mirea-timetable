@@ -19,6 +19,7 @@ rtu-schedule-parser = {git = "https://github.com/mirea-ninja/rtu-schedule-parser
 loguru = "^0.6.0"
 requests = "^2.28.1"
 httpx = "^0.23.0"
+asgi-lifespan = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.942"
@@ -31,6 +32,9 @@ sqlalchemy-stubs = "^0.4"
 pytest-cov = "^3.0.0"
 pytest-asyncio = "^0.19.0"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.10.0"
 
 [tool.black]
 line-length = 120
