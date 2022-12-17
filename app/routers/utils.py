@@ -1,22 +1,22 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.config import config
+from app.database import get_session
 from worker import app
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
 @router.post("/parse-schedule/", response_model=models.Msg, status_code=201)
-def parse_schedule(
-    msg: models.Msg,
-) -> Any:
+def parse_schedule(db: AsyncSession = Depends(get_session)) -> Any:
     """
     Parse parser.
     """
-    app.send_task("worker.tasks.parse_schedule")
+    app.send_task("worker.tasks.parse_schedule", (db,))
     return {"msg": "Parsing parser"}
 
 

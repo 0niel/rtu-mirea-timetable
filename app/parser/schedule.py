@@ -5,6 +5,7 @@ from typing import Generator
 from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
 from rtu_schedule_parser.constants import ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.crud_schedule as schedule_crud
 from app.models import (
@@ -60,7 +61,7 @@ def parse() -> Generator[list[Schedule], None, None]:
         yield parser.parse(force=True).get_schedule()
 
 
-async def parse_schedule() -> None:
+async def parse_schedule(db: AsyncSession) -> None:
     """Parse parser and save it to database"""
     for schedules in parse():
         for schedule in schedules:
