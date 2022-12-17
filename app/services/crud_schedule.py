@@ -273,9 +273,9 @@ async def get_room(db: AsyncSession, name: str, campus_short_name: Optional[str]
     return res.scalar()
 
 
-async def get_lessons_by_room(db: AsyncSession, room_id: int) -> list[Lesson]:
-    res = await db.execute(select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id))
-    return res.scalars().all()
+# async def get_lessons_by_room(db: AsyncSession, room_id: int) -> list[Lesson]:
+#     res = await db.execute(select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id))
+#     return res.scalars().all()
 
 
 async def get_lessons_by_room_and_date(db: AsyncSession, room_id: int, date: datetime.date) -> list[Lesson]:
