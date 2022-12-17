@@ -1,11 +1,9 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter
 
 from app import models
 from app.config import config
-from app.database import get_session
 from worker import app
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)

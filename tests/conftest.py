@@ -4,19 +4,21 @@ from typing import Any, Generator
 
 import pytest
 import pytest_asyncio
-from alembic.command import upgrade
-from alembic.config import Config
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
+from alembic.command import upgrade
+from alembic.config import Config
 from tests.db_setup import create_test_db, drop_test_db
 
 
 @pytest.fixture(scope="session")
 def apply_migrations():
     from app.config import config
+
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     db_url = config.SQLALCHEMY_DATABASE_URI
     db_name = config.POSTGRES_DB
@@ -35,13 +37,13 @@ def apply_migrations():
 @pytest.fixture
 async def db(mocker) -> Generator[AsyncSession, Any, None]:
     from app.config import config
+
     engine = create_async_engine(config.SQLALCHEMY_DATABASE_URI, echo=False)
     async_session = sessionmaker(engine, autoflush=False, class_=AsyncSession, autocommit=False)
     async with async_session() as session:
         mocker.patch("sqlalchemy.orm.sessionmaker.__call__", return_value=session)
         yield session
         await session.rollback()
-
 
 
 @pytest_asyncio.fixture
@@ -61,6 +63,7 @@ def event_loop():
 @pytest_asyncio.fixture
 async def client(app: FastAPI) -> AsyncClient:
     from app.config import config
+
     url = f"http://{config.BACKEND_HOST}:{config.BACKEND_PORT}"
     async with LifespanManager(app):
         async with AsyncClient(app=app, base_url=url, headers={"Content-Type": "application/json"}) as client_:

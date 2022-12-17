@@ -2,14 +2,11 @@ import logging
 import os
 from typing import Generator
 
-from fastapi import Depends
 from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
 from rtu_schedule_parser.constants import ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
-from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.crud_schedule as schedule_crud
-from app.database import get_session
 from app.database.connection import async_session
 from app.models import (
     CampusCreate,
@@ -76,20 +73,20 @@ async def parse_schedule() -> None:
                         year_start=schedule.period.year_start,
                         year_end=schedule.period.year_end,
                         semester=schedule.period.semester,
-                    )
+                    ),
                 )
                 degree = await schedule_crud.get_or_create_degree(
                     db,
                     DegreeCreate(
                         name=schedule.degree.name,
-                    )
+                    ),
                 )
                 institute = await schedule_crud.get_or_create_institute(
                     db,
                     InstituteCreate(
                         name=schedule.institute.name,
                         short_name=schedule.institute.short_name,
-                    )
+                    ),
                 )
                 group = await schedule_crud.get_or_create_group(
                     db,
@@ -98,7 +95,7 @@ async def parse_schedule() -> None:
                         period_id=period.id,
                         degree_id=degree.id,
                         institute_id=institute.id,
-                    )
+                    ),
                 )
 
                 for lesson in schedule.lessons:
@@ -108,7 +105,7 @@ async def parse_schedule() -> None:
                             num=lesson.num,
                             time_start=lesson.time_start,
                             time_end=lesson.time_end,
-                        )
+                        ),
                     )
                     if type(lesson) is LessonEmpty:
                         await schedule_crud.delete_lesson(
@@ -119,7 +116,7 @@ async def parse_schedule() -> None:
                                 time_end=lesson.time_end,
                                 num=lesson.num,
                                 weekday=lesson.weekday.value[0],
-                            )
+                            ),
                         )
                     else:
                         lesson_type = None
@@ -128,7 +125,7 @@ async def parse_schedule() -> None:
                             db,
                             DisciplineCreate(
                                 name=lesson.name,
-                            )
+                            ),
                         )
                         if lesson.room is not None:
                             campus_id = None
@@ -138,7 +135,7 @@ async def parse_schedule() -> None:
                                     CampusCreate(
                                         name=lesson.room.campus.name,
                                         short_name=lesson.room.campus.short_name,
-                                    )
+                                    ),
                                 )
                                 campus_id = campus.id
 
@@ -147,14 +144,14 @@ async def parse_schedule() -> None:
                                 RoomCreate(
                                     name=lesson.room.name,
                                     campus_id=campus_id,
-                                )
+                                ),
                             )
                         if lesson.type:
                             lesson_type = await schedule_crud.get_or_create_lesson_type(
                                 db,
                                 LessonTypeCreate(
                                     name=lesson.type.value,
-                                )
+                                ),
                             )
 
                         teachers_id = [
@@ -163,7 +160,7 @@ async def parse_schedule() -> None:
                                     db,
                                     TeacherCreate(
                                         name=teacher,
-                                    )
+                                    ),
                                 )
                             ).id
                             for teacher in lesson.teachers
@@ -181,5 +178,5 @@ async def parse_schedule() -> None:
                                 weekday=lesson.weekday.value[0],
                                 subgroup=lesson.subgroup,
                                 weeks=lesson.weeks,
-                            )
+                            ),
                         )

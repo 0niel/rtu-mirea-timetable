@@ -1,40 +1,32 @@
-#name: Check
-#
-#on:
-#  pull_request:
-#    branches:
-#      - main
-#
-#jobs:
-#  lint-backend:
-#    runs-on: ubuntu-latest
-#    defaults:
-#      run:
-#        working-directory: ./backend/src/
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      - name: Set up Python 3.9
-#        uses: actions/setup-python@v4
-#        with:
-#          python-version: '3.9'
-#      - name: Install Poetry
-#        uses: snok/install-poetry@v1
-#        with:
-#          virtualenvs-create: true
-#          virtualenvs-in-project: true
-#          installer-parallel: true
-#      - name: Install dependencies
-#        run: poetry install --no-interaction
-#      - name: Run linters
-#        run: |
-#          source .venv/bin/activate
-#          make check
+name: Check
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  check-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'poetry'
+      - run: poetry install
+      - run: poetry run pytest
+      - name: Run linters
+        run: |
+          source .venv/bin/activate
+          make check
 #  test-backend:
 #    runs-on: ubuntu-latest
-#    defaults:
-#      run:
-#        working-directory: ./backend/src/
+#    needs: [check-backend]
 #    steps:
 #      - uses: actions/checkout@v3
 #      - name: Set up Python 3.9
@@ -60,4 +52,3 @@
 #          files: coverage.xml
 #          name: codecov-rtu-app-backend
 #          verbose: true
-#
