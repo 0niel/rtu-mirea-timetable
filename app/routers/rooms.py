@@ -65,14 +65,14 @@ async def get_rooms_lesson_by_room_and_week(
     return [models.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_week(room_id, week)]
 
 
-@router.get("/search/{name}", response_model=list[models.RoomGet], status_code=200)
+@router.get("/search/{name}", response_model=list[models.Room], status_code=200)
 async def search_rooms(
     name: str,
 ) -> Any:
     """
     Search rooms.
     """
-    return [models.RoomGet.from_orm(room) for room in await schedule_crud.search_room(name)]
+    return [models.Room.from_orm(room) for room in await schedule_crud.search_room(name)]
 
 
 @router.get("/workload/{room_id}", response_model=models.Msg, status_code=200)

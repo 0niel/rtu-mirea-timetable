@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from app import config
+from app.config import config
 
 from celery import Celery
 

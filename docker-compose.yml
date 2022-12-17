@@ -79,7 +79,7 @@ services:
     build:
       context: .
       args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
+        INSTALL_DEV: ${INSTALL_DEV-true}
     depends_on:
       db:
         condition: service_healthy
@@ -96,16 +96,16 @@ services:
         BACKEND_PORT: ${BACKEND_PORT}
         BACKEND_RELOAD: ${BACKEND_RELOAD}
 
-        BACKEND_JWT_SECRET: ${BACKEND_JWT_SECRET}
-        BACKEND_JWT_ALGORITHM: ${BACKEND_JWT_ALGORITHM}
-        BACKEND_JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${BACKEND_JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
-
-        BACKEND_DISABLE_AUTH: ${BACKEND_DISABLE_AUTH}
-
         POSTGRES_SERVER: ${POSTGRES_SERVER}
         POSTGRES_USER: ${POSTGRES_USER}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         POSTGRES_DB: ${POSTGRES_DB}
+
+        BROKER_HOST: ${BROKER_HOST}
+        BROKER_PORT: ${BROKER_PORT}
+        BROKER_USER: ${BROKER_USER}
+        BROKER_PASS: ${BROKER_PASS}
+        BROKER_URL: ${BROKER_URL}
 
         ENV: development
     deploy:
