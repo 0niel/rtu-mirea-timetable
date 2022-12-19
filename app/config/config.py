@@ -39,6 +39,8 @@ class Config(_Settings):
             return v
         raise ValueError(v)
 
+    BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE: bool
+
     # Postgres
     POSTGRES_SERVER: str
     POSTGRES_USER: str
