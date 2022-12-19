@@ -1,12 +1,11 @@
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
-
 from app.config import config
 from app.routers.campuses import router as campuses_router
 from app.routers.groups import router as groups_router
 from app.routers.lessons import router as lessons_router
 from app.routers.rooms import router as rooms_router
 from app.routers.utils import router as utils_router
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 tags_metadata = [
     {"name": "campuses", "description": "Работа с кампусами"},
@@ -24,14 +23,7 @@ app = FastAPI(
     description=config.BACKEND_DESCRIPTION,
 )
 
-# if config.BACKEND_CORS_ORIGINS:
-#     app.add_middleware(
-#         CORSMiddleware,
-#         allow_origins=[str(origin) for origin in config.BACKEND_CORS_ORIGINS],
-#         allow_credentials=True,
-#         allow_methods=["*"],
-#         allow_headers=["*"],
-#     )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -32,3 +32,13 @@ class Group(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class GroupTiny(BaseModel):
+    id: PositiveInt
+    name: str
+    institute: Institute
+    degree: Degree
+
+    class Config:
+        orm_mode = True

@@ -2,11 +2,6 @@ import datetime
 from collections import Counter
 from typing import Optional
 
-from sqlalchemy import and_, delete, func, select
-from sqlalchemy.dialects.postgresql import array
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app import models
 from app.database.tables import (
     Group,
     Institute,
@@ -21,6 +16,11 @@ from app.database.tables import (
     Teacher,
     lessons_to_teachers,
 )
+from sqlalchemy import and_, delete, func, select
+from sqlalchemy.dialects.postgresql import array
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app import models
 from app.services import utils
 
 
@@ -244,7 +244,7 @@ async def get_lessons_by_teacher(db: AsyncSession, teacher_id: int):
     return res.scalars().all()
 
 
-async def search_tachers(db: AsyncSession, name: str):
+async def search_teachers(db: AsyncSession, name: str):
     res = await db.execute(select(Teacher).where(func.lower(Teacher.name).contains(name.lower())))
     return res.scalars().all()
 
