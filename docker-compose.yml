@@ -76,7 +76,7 @@ services:
         - traefik.http.services.traefik-pgadmin.loadbalancer.server.port=5050
 
   backend:
-    #image: ${BACKEND_IMAGE}
+    image: ${BACKEND_IMAGE}
     build:
       context: .
       args:
@@ -143,7 +143,7 @@ services:
       retries: 5
 
   worker:
-    #image: ${WORKER_IMAGE}
+    image: ${WORKER_IMAGE}
     build:
       context: .
       dockerfile: ./worker/Dockerfile
