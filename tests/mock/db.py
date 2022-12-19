@@ -1,7 +1,8 @@
 import copy
 
-from app import models
 from app.database.interface import DBFacadeInterface
+
+from app import models
 from tests import data as mock_data
 
 

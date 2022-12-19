@@ -2,12 +2,12 @@ import logging
 import os
 from typing import Generator
 
-from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
-from rtu_schedule_parser.constants import ScheduleType
-from rtu_schedule_parser.downloader import ScheduleDownloader
-
 import app.services.crud_schedule as schedule_crud
 from app.database.connection import async_session
+from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
+from rtu_schedule_parser.constants import Degree, ScheduleType
+from rtu_schedule_parser.downloader import ScheduleDownloader
+
 from app.models import (
     CampusCreate,
     DegreeCreate,
@@ -46,7 +46,9 @@ def parse() -> Generator[list[Schedule], None, None]:
         os.mkdir(docs_dir)
 
     # Get documents for specified institute and degree
-    all_docs = downloader.get_documents(specific_schedule_types={ScheduleType.SEMESTER})
+    all_docs = downloader.get_documents(
+        specific_schedule_types={ScheduleType.SEMESTER}, specific_degrees={Degree.BACHELOR, Degree.MASTER, Degree.PHD}
+    )
 
     # Download only if they are not downloaded yet.
     downloaded = downloader.download_all(all_docs)

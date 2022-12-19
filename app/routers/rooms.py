@@ -1,24 +1,25 @@
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, Query
-from fastapi.responses import FileResponse, Response
-
 import app.services.crud_schedule as schedule_crud
-from app import models
 from app.config import config
+from fastapi import APIRouter, Query
+
+from app import models
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
-@router.get("/lessons/{room_id}", response_model=list[models.Lesson], status_code=200)
+@router.get(
+    "/lessons/{room_id}",
+    response_model=list[models.Lesson],
+    status_code=200,
+    description="Получить расписание аудитории",
+    summary="Получение расписания аудитории",
+)
 async def get_room_lessons(
     room_id: int,
 ) -> Any:
-    """
-    Get all lessons for room.
-    """
     return [models.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room(room_id)]
 
 
@@ -30,15 +31,13 @@ tz = timezone(timedelta(hours=3))
     "/lessons-by-date/{room_id}/{date}",
     response_model=list[models.Lesson],
     status_code=200,
+    description="Получить расписание аудитории на указанную дату",
+    summary="Получение расписания аудитории на указанную дату",
 )
 async def get_rooms_lesson_by_room_and_date(
     room_id: int,
-    date: str = Query(..., description="Date in format: YYYY-MM-DD"),
+    date: str = Query(..., description="Дата в формате: YYYY-MM-DD"),
 ) -> Any:
-    """
-    Get all lessons for room by date. Date must be in format YYYY-MM-DD.
-    """
-
     # Convert date to datetime
     try:
         date = datetime.strptime(date, "%Y-%m-%d")
@@ -52,50 +51,57 @@ async def get_rooms_lesson_by_room_and_date(
     "/lessons-by-week/{room_id}/{week}",
     response_model=list[models.Lesson],
     status_code=200,
+    description="Получить расписание аудитории на указанную неделю",
+    summary="Получение расписания аудитории на указанную неделю",
 )
 async def get_rooms_lesson_by_room_and_week(
     room_id: int,
     week: int,
 ) -> Any:
-    """
-    Get all lessons for room by date. Date must be in format YYYY-MM-DD.
-    """
     return [models.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_week(room_id, week)]
 
 
-@router.get("/search/{name}", response_model=list[models.Room], status_code=200)
+@router.get(
+    "/search/{name}",
+    response_model=list[models.Room],
+    status_code=200,
+    description="Поиск аудитории по названию аудитории (по подстроке)",
+    summary="Поиск аудитории",
+)
 async def search_rooms(
     name: str,
 ) -> Any:
-    """
-    Search rooms.
-    """
     return [models.Room.from_orm(room) for room in await schedule_crud.search_room(name)]
 
 
-@router.get("/workload/{room_id}", response_model=models.Msg, status_code=200)
+@router.get(
+    "/workload/{room_id}",
+    response_model=models.Msg,
+    status_code=200,
+    description="Получить загруженность аудитории",
+    summary="Получение загруженности аудитории",
+)
 async def get_workload(
     room_id: int,
 ) -> Any:
-    """
-    Get workload.
-    """
     workload = await schedule_crud.get_room_workload(room_id)
     return models.Msg(msg=workload)
 
 
-@router.get("/statuses/", status_code=200)
+@router.get(
+    "/statuses/",
+    status_code=200,
+    description="Получить статусы аудиторий (свободна/занята) для указанного времени",
+    summary="Получение статусов аудиторий",
+)
 async def get_statuses(
     date_time: datetime = Query(
         datetime.now(),
-        description="Datetime in ISO format. Example: " "2021-09-01T00:00:00+03:00",
+        description="Дата и время в ISO формате. Пример: " "2021-09-01T00:00:00+03:00",
     ),
     *,
-    rooms: list[str] = Query(..., description="List of rooms names. Example: ['А-101', 'А-102']"),
+    rooms: list[str] = Query(..., description="Список аудиторий. Пример: ['А-101', 'А-102']"),
 ) -> Any:
-    """
-    Get statuses.
-    """
     date_time = date_time.replace(tzinfo=None)
     return await schedule_crud.get_rooms_statuses(rooms, date_time)
 
@@ -145,38 +151,40 @@ async def get_statuses(
 #     return
 
 
-@router.get("/download")
-def download_rooms_data():
-    try:
-        return FileResponse(
-            "rooms.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-    except Exception:
-        return Response(status_code=404)
+# @router.get("/download")
+# def download_rooms_data():
+#     try:
+#         return FileResponse(
+#             "rooms.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+#         )
+#     except Exception:
+#         return Response(status_code=404)
+#
+
+# @router.get("/report-status")
+# def report_status():
+#     if os.path.exists("rooms.xlsx") and os.stat("rooms.xlsx").st_size > 1000000:
+#         return {"status": "ready"}
+#     return {"status": "not ready"}
+#
+
+# @router.get("/info/{room_id}", response_model=models.RoomInfo, status_code=200)
+# async def get_info(room_id: int) -> Any:
+#     """
+#     Get info.
+#     """
+#     return await schedule_crud.get_room_info(room_id)
 
 
-@router.get("/report-status")
-def report_status():
-    if os.path.exists("rooms.xlsx") and os.stat("rooms.xlsx").st_size > 1000000:
-        return {"status": "ready"}
-    return {"status": "not ready"}
-
-
-@router.get("/info/{room_id}", response_model=models.RoomInfo, status_code=200)
-async def get_info(room_id: int) -> Any:
-    """
-    Get info.
-    """
-    return await schedule_crud.get_room_info(room_id)
-
-
-@router.get("/workload/all/{campus_substr}", status_code=200)
+@router.get(
+    "/workload/all/{campus_substr}",
+    status_code=200,
+    description="Получить загруженность всех аудиторий по корпусу (подстрока)",
+    summary="Получение загруженности всех аудиторий по корпусу",
+)
 async def get_all_workload(
     campus_substr: str,
 ) -> Any:
-    """
-    Get workload.
-    """
     rooms = await schedule_crud.search_room(campus_substr)
     workload = []
     for room in rooms:
@@ -190,17 +198,19 @@ async def get_all_workload(
     return workload
 
 
-@router.get("/statuses/all/{campus_substr}", status_code=200)
+@router.get(
+    "/statuses/all/{campus_substr}",
+    status_code=200,
+    description="Получить статусы всех аудиторий по корпусу (подстрока)",
+    summary="Получение статусов всех аудиторий по корпусу",
+)
 async def get_all_statuses(
     campus_substr: str,
     date_time: datetime = Query(
         datetime.now(),
-        description="Datetime in ISO format. Example: " "2021-09-01T00:00:00+03:00",
+        description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
     ),
 ) -> Any:
-    """
-    Get statuses.
-    """
     rooms = await schedule_crud.search_room(campus_substr)
     rooms = [room.name for room in rooms]
     date_time = date_time.replace(tzinfo=None)

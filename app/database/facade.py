@@ -1,12 +1,12 @@
 from typing import List
 
+from app.database.connection import get_session
+from app.database.dao.campuses import CampusesDAO
+from app.database.interface import DBFacadeInterface
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
-from app.database.connection import get_session
-from app.database.dao.campuses import CampusesDAO
-from app.database.interface import DBFacadeInterface
 
 
 class DBFacade(DBFacadeInterface):

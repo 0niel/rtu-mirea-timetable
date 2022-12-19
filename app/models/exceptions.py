@@ -1,14 +1,13 @@
 import traceback
 from typing import List, Optional
 
+from app.config import config
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException, RequestValidationError
 from loguru import logger
 from pydantic import UUID4, BaseModel
 from starlette.responses import JSONResponse
-
-from app.config import config
 
 
 async def catch_unhandled_exceptions(request: Request, call_next):
