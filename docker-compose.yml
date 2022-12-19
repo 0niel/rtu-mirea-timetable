@@ -76,6 +76,7 @@ services:
         - traefik.http.services.traefik-pgadmin.loadbalancer.server.port=5050
 
   backend:
+    image: ${BACKEND_IMAGE}
     build:
       context: .
       args:
@@ -95,6 +96,8 @@ services:
         BACKEND_HOST: ${BACKEND_HOST}
         BACKEND_PORT: ${BACKEND_PORT}
         BACKEND_RELOAD: ${BACKEND_RELOAD}
+
+        BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE: ${BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE}
 
         POSTGRES_SERVER: ${POSTGRES_SERVER}
         POSTGRES_USER: ${POSTGRES_USER}
