@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
-from app.database.table import (
+from app.database.tables import (
     Group,
     Institute,
     Lesson,
