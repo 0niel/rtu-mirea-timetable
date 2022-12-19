@@ -14,7 +14,7 @@ class CampusesDAO:
 
     async def get_campuses(self) -> list[models.Campus]:
         """Получение всех кампусов"""
-        query = select(select(tables.ScheduleCampus))
+        query = select(tables.ScheduleCampus)
         campuses = (await self._session.execute(query)).scalars().all()
         result = [models.Campus.from_orm(campus) for campus in campuses]
         return result
