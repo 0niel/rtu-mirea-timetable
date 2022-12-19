@@ -1,7 +1,7 @@
 from typing import Any
 
 from app.config import config
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app import models
 from worker import app
