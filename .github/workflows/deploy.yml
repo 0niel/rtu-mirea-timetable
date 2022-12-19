@@ -64,3 +64,12 @@ jobs:
           docker tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }} \
             cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
           docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Deploy Worker and Backend
+        run: |
+          docker compose -f docker-compose.yml pull
+          docker compose -f docker-compose.yml up -d
