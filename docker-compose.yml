@@ -150,9 +150,32 @@ services:
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
     environment:
-      - BROKER_URL=${BROKER_URL}
-      - LOG_LEVEL=TRACE
-      - C_FORCE_ROOT=true
+        LOG_LEVEL: TRACE
+        C_FORCE_ROOT: true
+        DEBUG: ${DEBUG}
+
+        BACKEND_TTILE: ${BACKEND_TTILE}
+        BACKEND_DESCRIPTION: ${BACKEND_DESCRIPTION}
+        BACKEND_PREFIX: ${BACKEND_PREFIX}
+
+        BACKEND_HOST: ${BACKEND_HOST}
+        BACKEND_PORT: ${BACKEND_PORT}
+        BACKEND_RELOAD: ${BACKEND_RELOAD}
+
+        BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE: ${BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE}
+
+        POSTGRES_SERVER: ${POSTGRES_SERVER}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+
+        BROKER_HOST: ${BROKER_HOST}
+        BROKER_PORT: ${BROKER_PORT}
+        BROKER_USER: ${BROKER_USER}
+        BROKER_PASS: ${BROKER_PASS}
+        BROKER_URL: ${BROKER_URL}
+
+        ENV: development
     depends_on:
       broker:
         condition: service_healthy
