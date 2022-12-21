@@ -1,7 +1,8 @@
 import sqlalchemy as db
-from app.database.connection import Base
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.orm import relationship
+
+from app.database.connection import Base
 
 lessons_to_teachers = db.Table(
     "schedule_lessons_to_teachers",

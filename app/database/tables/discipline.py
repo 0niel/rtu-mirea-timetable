@@ -1,6 +1,7 @@
 import sqlalchemy as db
-from app.database.connection import Base
 from sqlalchemy.orm import relationship
+
+from app.database.connection import Base
 
 
 class ScheduleDiscipline(Base):

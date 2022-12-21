@@ -1,8 +1,8 @@
-from app.database import DBFacadeInterface, get_db_facade
 from fastapi import Depends
 from loguru import logger
 
 from app import models
+from app.database import DBFacadeInterface, get_db_facade
 
 
 class CampusesService:

@@ -2,12 +2,12 @@ import logging
 import os
 from typing import Generator
 
-import app.services.crud_schedule as schedule_crud
-from app.database.connection import async_session
 from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
 from rtu_schedule_parser.constants import Degree, ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
 
+import app.services.crud_schedule as schedule_crud
+from app.database.connection import async_session
 from app.models import (
     CampusCreate,
     DegreeCreate,

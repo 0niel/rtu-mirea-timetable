@@ -41,6 +41,8 @@ class Config(_Settings):
 
     BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE: bool
 
+    BACKEND_PARSER_SECRET_KEY: str
+
     # Postgres
     POSTGRES_SERVER: str
     POSTGRES_USER: str
