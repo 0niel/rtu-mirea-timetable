@@ -76,6 +76,7 @@ jobs:
           cd ..
           cd ..
           cd ..
+          cd ..
           ls
           cd ${{ env.FOLDER }}
           sudo docker compose -f docker-compose.yml pull
