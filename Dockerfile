@@ -5,9 +5,6 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
-# Need to curriculum-parser
-RUN apt-get update && apt-get install -y ghostscript libsm6 libxext6 libgl1-mesa-dev
-
 ENV POETRY_HOME="/opt/poetry" \
     POETRY_NO_INTERACTION=1 \
     POETRY_VERSION=1.2.0 \
@@ -27,4 +24,7 @@ RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; els
 
 COPY . /app
 
-CMD ["bash", "./entrypoint.sh"]
+# Need to run anything berore starting the server. For example, migrations
+ENV PRE_START_PATH=./prestart.sh
+
+ENV APP_MODULE="app.main:app"

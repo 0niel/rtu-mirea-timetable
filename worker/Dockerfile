@@ -5,9 +5,6 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
-# Need to curriculum-parser
-RUN apt-get update && apt-get install -y ghostscript libsm6 libxext6 libgl1-mesa-dev
-
 ENV POETRY_HOME="/opt/poetry" \
     POETRY_NO_INTERACTION=1 \
     POETRY_VERSION=1.2.0 \

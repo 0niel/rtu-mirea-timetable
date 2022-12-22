@@ -85,7 +85,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - .:/app
+      - ./docs:/app/docs # schedule docs
     environment:
         DEBUG: ${DEBUG}
 
