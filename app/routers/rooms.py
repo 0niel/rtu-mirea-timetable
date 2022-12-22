@@ -3,7 +3,9 @@ from typing import Any
 
 import app.services.crud_schedule as schedule_crud
 from app.config import config
-from fastapi import APIRouter, Query
+from app.database.connection import get_session
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 
@@ -19,8 +21,9 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 )
 async def get_room_lessons(
     room_id: int,
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
-    return [models.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room(room_id)]
+    return [models.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room(session, room_id)]
 
 
 # Moscow timezone
@@ -37,6 +40,7 @@ tz = timezone(timedelta(hours=3))
 async def get_rooms_lesson_by_room_and_date(
     room_id: int,
     date: str = Query(..., description="Дата в формате: YYYY-MM-DD"),
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
     # Convert date to datetime
     try:
@@ -44,7 +48,10 @@ async def get_rooms_lesson_by_room_and_date(
     except ValueError:
         return {"msg": "Incorrect data format, should be YYYY-MM-DD"}
 
-    return [models.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_date(room_id, date)]
+    return [
+        models.Lesson.from_orm(room)
+        for room in await schedule_crud.get_lessons_by_room_and_date(session, room_id, date)
+    ]
 
 
 @router.get(
@@ -57,8 +64,12 @@ async def get_rooms_lesson_by_room_and_date(
 async def get_rooms_lesson_by_room_and_week(
     room_id: int,
     week: int,
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
-    return [models.Lesson.from_orm(room) for room in await schedule_crud.get_lessons_by_room_and_week(room_id, week)]
+    return [
+        models.Lesson.from_orm(room)
+        for room in await schedule_crud.get_lessons_by_room_and_week(session, room_id, week)
+    ]
 
 
 @router.get(
@@ -70,8 +81,9 @@ async def get_rooms_lesson_by_room_and_week(
 )
 async def search_rooms(
     name: str,
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
-    return [models.Room.from_orm(room) for room in await schedule_crud.search_room(name)]
+    return [models.Room.from_orm(room) for room in await schedule_crud.search_room(session, name)]
 
 
 @router.get(
@@ -83,8 +95,9 @@ async def search_rooms(
 )
 async def get_workload(
     room_id: int,
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
-    workload = await schedule_crud.get_room_workload(room_id)
+    workload = await schedule_crud.get_room_workload(session, room_id)
     return models.Msg(msg=workload)
 
 
@@ -101,9 +114,10 @@ async def get_statuses(
     ),
     *,
     rooms: list[str] = Query(..., description="Список аудиторий. Пример: ['А-101', 'А-102']"),
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
     date_time = date_time.replace(tzinfo=None)
-    return await schedule_crud.get_rooms_statuses(rooms, date_time)
+    return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
 
 
 # @router.get("/export-create/", status_code=200)
@@ -184,8 +198,9 @@ async def get_statuses(
 )
 async def get_all_workload(
     campus_substr: str,
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
-    rooms = await schedule_crud.search_room(campus_substr)
+    rooms = await schedule_crud.search_room(session, campus_substr)
     workload = []
     for room in rooms:
         workload.append(
@@ -210,8 +225,9 @@ async def get_all_statuses(
         datetime.now(),
         description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
     ),
+    session: AsyncSession = Depends(get_session),
 ) -> Any:
-    rooms = await schedule_crud.search_room(campus_substr)
+    rooms = await schedule_crud.search_room(session, campus_substr)
     rooms = [room.name for room in rooms]
     date_time = date_time.replace(tzinfo=None)
-    return await schedule_crud.get_rooms_statuses(rooms, date_time)
+    return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
