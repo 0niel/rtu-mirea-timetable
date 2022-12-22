@@ -26,5 +26,5 @@ COPY . /app
 
 # Need to run anything berore starting the server. For example, migrations
 ENV PRE_START_PATH=./prestart.sh
-
+ENV PORT="${PORT:-8080}"
 ENV APP_MODULE="app.main:app"
