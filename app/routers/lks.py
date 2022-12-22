@@ -7,12 +7,48 @@ from starlette import status
 
 from app import models
 
+router = APIRouter(prefix=config.BACKEND_PREFIX)
+
+
+# Расписание для ЛКс
+# Возвращаемые данные:
+# Json формата
+# result: {
+# 	WEEKS: {
+# 		[номер недели]: {
+# 			DAYS: {
+# 				[номер дня недели]: [массив уроков]
+#           }
+#       }
+#    }
+# }
+# День недели: 1 - понедельник, 7 - воскресенье
+# массив уроков формата
+# LESSONS: [
+# 	“PROPERTY_LESSON_TYPE” => “”,
+# 	“PROPERTY_NUMBER” => “”,
+# 	“PROPERTY_LECTOR” => “”,
+# 	“PROPERTY_PLACE” => “”
+#
+# ] (если группа делится на подгруппы - то LESSONS должен содержать 2 описанных выше набора данных)
+# PROPERTY_LESSON_TYPE - Тип пары (Л, ЛБ, П)
+# PROPERTY_NUMBER - Порядковый номер пары
+# '1' => ['start' => '09:00', 'end' => '10:30'],
+#     	'2' => ['start' => '10:40', 'end' => '12:10'],
+#     	'3' => ['start' => '12:40', 'end' => '14:10'],
+#    	 '4' => ['start' => '14:20', 'end' => '15:50'],
+#     	'5' => ['start' => '16:20', 'end' => '17:50'],
+#    	 '6' => ['start' => '18:00', 'end' => '19:30'],
+#     	'7' => ['start' => '19:40', 'end' => '21:10']
+# PROPERTY_LECTOR - преподаватель
+# PROPERTY_PLACE - аудитория
+
+
 @router.get(
     "/lks/{group_name}",
     status_code=status.HTTP_200_OK,
     response_model=models.LksSchedule,
     description="Получить расписание в формате ЛКс",
-    summary="Получение расписания в формате ЛКс",
 )
 async def get_lks_schedule(
     group_name: str = Path(..., min_length=1),
@@ -97,43 +133,6 @@ async def get_lks_schedule(
         lks_week_weeks[str(week)] = models.LksDay(DAYS=lks_week_days)
 
     return models.LksSchedule(result=models.LksWeeks(WEEKS=lks_week_weeks))
-
-
-# Расписание для ЛКс
-# Возвращаемые данные:
-# Json формата
-# result: {
-# 	WEEKS: {
-# 		[номер недели]: {
-# 			DAYS: {
-# 				[номер дня недели]: [массив уроков]
-#           }
-#       }
-#    }
-# }
-# День недели: 1 - понедельник, 7 - воскресенье
-# массив уроков формата
-# LESSONS: [
-# 	“PROPERTY_LESSON_TYPE” => “”,
-# 	“PROPERTY_NUMBER” => “”,
-# 	“PROPERTY_LECTOR” => “”,
-# 	“PROPERTY_PLACE” => “”
-#
-# ] (если группа делится на подгруппы - то LESSONS должен содержать 2 описанных выше набора данных)
-# PROPERTY_LESSON_TYPE - Тип пары (Л, ЛБ, П)
-# PROPERTY_NUMBER - Порядковый номер пары
-# '1' => ['start' => '09:00', 'end' => '10:30'],
-#     	'2' => ['start' => '10:40', 'end' => '12:10'],
-#     	'3' => ['start' => '12:40', 'end' => '14:10'],
-#    	 '4' => ['start' => '14:20', 'end' => '15:50'],
-#     	'5' => ['start' => '16:20', 'end' => '17:50'],
-#    	 '6' => ['start' => '18:00', 'end' => '19:30'],
-#     	'7' => ['start' => '19:40', 'end' => '21:10']
-# PROPERTY_LECTOR - преподаватель
-# PROPERTY_PLACE - аудитория
-
-
-router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
 def lat_to_cyr(string: str) -> str:
