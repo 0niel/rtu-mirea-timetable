@@ -2,12 +2,12 @@ import logging
 import os
 from typing import Generator
 
+import app.services.crud_schedule as schedule_crud
+from app.database.connection import async_session
 from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
 from rtu_schedule_parser.constants import Degree, ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
 
-import app.services.crud_schedule as schedule_crud
-from app.database.connection import async_session
 from app.models import (
     CampusCreate,
     DegreeCreate,
@@ -23,12 +23,12 @@ from app.models import (
     TeacherCreate,
 )
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def parse() -> Generator[list[Schedule], None, None]:
     """Parse parser from excel file"""
-    # get current script dir
     current_dir = os.path.dirname(os.path.realpath(__file__))
     docs_dir = os.path.join(current_dir, "docs")
 

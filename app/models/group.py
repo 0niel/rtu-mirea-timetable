@@ -34,11 +34,15 @@ class Group(BaseModel):
         orm_mode = True
 
 
-class GroupTiny(BaseModel):
-    id: PositiveInt
-    name: str
+class GroupList(BaseModel):
     institute: Institute
     degree: Degree
+    groups: list[str]  # group.name
 
     class Config:
         orm_mode = True
+
+
+class Groups(BaseModel):
+    total: PositiveInt
+    result: list[GroupList]

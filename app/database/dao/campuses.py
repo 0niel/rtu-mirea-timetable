@@ -1,9 +1,9 @@
+from app.database import tables
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app import models
-from app.database import tables
 
 
 class CampusesDAO:

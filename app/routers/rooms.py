@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+import app.services.crud_schedule as schedule_crud
+from app.config import config
 from fastapi import APIRouter, Query
 
-import app.services.crud_schedule as schedule_crud
 from app import models
-from app.config import config
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 

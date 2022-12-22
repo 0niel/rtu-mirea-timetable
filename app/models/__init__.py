@@ -6,6 +6,7 @@ from app.models.institute import *
 from app.models.lesson import *
 from app.models.lesson_call import *
 from app.models.lesson_type import *
+from app.models.lks_schedule import *
 from app.models.msg import *
 from app.models.period import *
 from app.models.room import *

@@ -1,7 +1,6 @@
 import sqlalchemy as db
-from sqlalchemy.orm import relationship
-
 from app.database.connection import Base
+from sqlalchemy.orm import relationship
 
 
 class Group(Base):
