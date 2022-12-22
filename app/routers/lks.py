@@ -9,6 +9,7 @@ from app import models
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
+
 # Расписание для ЛКс
 # Возвращаемые данные:
 # Json формата
@@ -89,26 +90,68 @@ async def get_lks_schedule(
     group = models.Group.from_orm(group)
     lessons = group.lessons  # type: list[models.Lesson]
 
-    week = models.Week(
-        WEEKS={
-            week: models.Day(
-                DAYS={
-                    day: [
-                        models.Lesson(
-                            PROPERTY_DISCIPLINE_NAME=lesson.discipline.name,
-                            PROPERTY_LESSON_TYPE=get_lesson_type(lesson.lesson_type.name if lesson.lesson_type else ""),
-                            PROPERTY_NUMBER=str(lesson.calls.num),
-                            PROPERTY_LECTOR=", ".join([teacher.name for teacher in lesson.teachers or []]),
-                            PROPERTY_PLACE=lesson.room.name if lesson.room else "",
-                        )
-                        for lesson in lessons
-                        if lesson.weekday == day and week in lesson.weeks
-                    ]
-                    for day in range(1, 8)
-                }
-            )
-            for week in range(1, 18)
-        }
-    )
+    def get_subgroup_substr(les: models.Lesson):
+        """Returns subgroup substring for lesson"""
+        return f" ({les.subgroup} подгруппа)" if les.subgroup else ""
 
-    return models.LksSchedule(result=week)
+    # week = models.LksWeeks(
+    #     WEEKS={
+    #         week: models.LksDay(
+    #             DAYS={
+    #                 day: models.LksLessons(
+    #                     LESSONS={
+    #                         str(lesson.calls.num): [
+    #                             models.LksLesson(
+    #                                 PROPERTY_DISCIPLINE_NAME=lesson.discipline.name + get_subgroup_substr(lesson),
+    #                                 PROPERTY_LESSON_TYPE=get_lesson_type(
+    #                                     lesson.lesson_type.name if lesson.lesson_type else ""),
+    #                                 PROPERTY_NUMBER=str(lesson.calls.num),
+    #                                 PROPERTY_LECTOR=", ".join([teacher.name for teacher in lesson.teachers or []]),
+    #                                 PROPERTY_PLACE=lesson.room.name if lesson.room else "",
+    #                             )
+    #                             for tmp in lessons if tmp.calls.num == lesson.calls.num
+    #                         ]
+    #                         for lesson in lessons if lesson.weekday == day and week in lesson.weeks
+    #                     }
+    #                 )
+    #                 for day in range(1, 8)
+    #             }
+    #         )
+    #         for week in range(1, 18)
+    #     }
+    # )
+
+    lks_week_weeks = {}
+    for week in range(1, 18):
+        lks_week_days = {}
+        for day in range(1, 8):
+            lks_week_lessons = {}
+            for lesson in lessons:
+                # Получаем все lessons с таким же calls.num (номером пары) для текущей недели и дня
+                tmp_lessons = [
+                    tmp
+                    for tmp in lessons
+                    if tmp.calls.num == lesson.calls.num and week in tmp.weeks and tmp.weekday == day
+                ]
+
+                # Если таких пар нет, то пропускаем
+                if not tmp_lessons:
+                    continue
+
+                # Добавляем в lks_week_lessons пару с номером calls.num если её ещё нет
+                if str(lesson.calls.num) not in lks_week_lessons:
+                    lks_week_lessons[str(lesson.calls.num)] = [
+                        models.LksLesson(
+                            PROPERTY_DISCIPLINE_NAME=tmp.discipline.name + get_subgroup_substr(tmp),
+                            PROPERTY_LESSON_TYPE=get_lesson_type(tmp.lesson_type.name if tmp.lesson_type else ""),
+                            PROPERTY_NUMBER=str(tmp.calls.num),
+                            PROPERTY_LECTOR=", ".join([teacher.name for teacher in tmp.teachers or []]),
+                            PROPERTY_PLACE=tmp.room.name if tmp.room else "",
+                        )
+                        for tmp in tmp_lessons
+                    ]
+
+            lks_week_days[str(day)] = models.LksLessons(LESSONS=lks_week_lessons)
+        lks_week_weeks[str(week)] = models.LksDay(DAYS=lks_week_days)
+
+    return models.LksSchedule(result=models.LksWeeks(WEEKS=lks_week_weeks))

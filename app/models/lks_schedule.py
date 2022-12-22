@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class Lesson(BaseModel):
+class LksLesson(BaseModel):
     PROPERTY_DISCIPLINE_NAME: str
     PROPERTY_LESSON_TYPE: str
     PROPERTY_NUMBER: str
@@ -9,13 +9,17 @@ class Lesson(BaseModel):
     PROPERTY_PLACE: str
 
 
-class Day(BaseModel):
-    DAYS: dict[int, list[Lesson]]
+class LksLessons(BaseModel):
+    LESSONS: dict[int, list[LksLesson]]
 
 
-class Week(BaseModel):
-    WEEKS: dict[int, Day]
+class LksDay(BaseModel):
+    DAYS: dict[int, LksLessons]
+
+
+class LksWeeks(BaseModel):
+    WEEKS: dict[int, LksDay]
 
 
 class LksSchedule(BaseModel):
-    result: Week
+    result: LksWeeks
