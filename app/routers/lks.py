@@ -100,9 +100,9 @@ async def get_lks_schedule(
     # )
 
     lks_week_weeks = {}
-    for week in range(1, 18):
+    for week in range(1, 18): # 17 - максимальное количество недель в семестре. TODO: загружать из настроек
         lks_week_days = {}
-        for day in range(1, 8):
+        for day in range(1, 7): # 1-6 - пн-сб
             lks_week_lessons = {}
             for lesson in lessons:
                 # Получаем все lessons с таким же calls.num (номером пары) для текущей недели и дня
@@ -112,7 +112,6 @@ async def get_lks_schedule(
                     if tmp.calls.num == lesson.calls.num and week in tmp.weeks and tmp.weekday == day
                 ]
 
-                # Если таких пар нет, то пропускаем
                 if not tmp_lessons:
                     continue
 
