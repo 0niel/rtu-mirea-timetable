@@ -1,11 +1,11 @@
-import app.services.groups as groups_service
-from app.config import config
-from app.database.connection import get_session
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+import app.services.groups as groups_service
 from app import models
+from app.config import config
+from app.database.connection import get_session
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
@@ -100,9 +100,9 @@ async def get_lks_schedule(
     # )
 
     lks_week_weeks = {}
-    for week in range(1, 18): # 17 - максимальное количество недель в семестре. TODO: загружать из настроек
+    for week in range(1, 18):  # 17 - максимальное количество недель в семестре. TODO: загружать из настроек
         lks_week_days = {}
-        for day in range(1, 7): # 1-6 - пн-сб
+        for day in range(1, 7):  # 1-6 - пн-сб
             lks_week_lessons = {}
             for lesson in lessons:
                 # Получаем все lessons с таким же calls.num (номером пары) для текущей недели и дня

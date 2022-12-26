@@ -1,6 +1,7 @@
-from app.database.tables import Group
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database.tables import Group
 
 
 async def get_groups(db: AsyncSession) -> list[Group]:

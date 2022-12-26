@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import app.services.crud_schedule as schedule_crud
-from app.config import config
-from app.database.connection import get_session
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import app.services.crud_schedule as schedule_crud
 from app import models
+from app.config import config
+from app.database.connection import get_session
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 

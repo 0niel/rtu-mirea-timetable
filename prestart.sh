@@ -3,7 +3,7 @@
 echo "$ENV"
 
 # Let the DB start
-sleep 10;
+# sleep 10;
 
 # Run migrations
 alembic upgrade head;

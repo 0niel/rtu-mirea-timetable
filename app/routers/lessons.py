@@ -1,4 +1,5 @@
-from app.config import config
 from fastapi import APIRouter
+
+from app.config import config
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)

@@ -1,11 +1,11 @@
-import app.services.groups as groups_service
-from app.config import config
-from app.database.connection import get_session
 from fastapi import APIRouter, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+import app.services.groups as groups_service
 from app import models
+from app.config import config
+from app.database.connection import get_session
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 

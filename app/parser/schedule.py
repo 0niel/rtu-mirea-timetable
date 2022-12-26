@@ -1,13 +1,16 @@
+import datetime
+import json
 import logging
 import os
 from typing import Generator
 
+from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
+from rtu_schedule_parser.constants import Degree, Institute, ScheduleType
+from rtu_schedule_parser.downloader import ScheduleDownloader
+from rtu_schedule_parser.utils import academic_calendar
+
 import app.services.crud_schedule as schedule_crud
 from app.database.connection import async_session
-from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
-from rtu_schedule_parser.constants import Degree, ScheduleType
-from rtu_schedule_parser.downloader import ScheduleDownloader
-
 from app.models import (
     CampusCreate,
     DegreeCreate,
@@ -27,10 +30,59 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def parse_by_json(docs_dir: str) -> Generator[list[Schedule], None, None]:
+    # Формат json:
+    # [
+    #     {
+    #         "file": "./расписание колледж.xlsx",
+    #         "institute": "КПК",
+    #         "type": 1,
+    #         "degree": 4
+    #     }
+    # ]
+
+    logger.error(f"Files and directories in {docs_dir}:")
+    for root, dirs, files in os.walk(docs_dir):
+        for file in files:
+            logger.error(os.path.join(root, file))
+        for dir in dirs:
+            logger.error(os.path.join(root, dir))
+
+    try:
+        with open(os.path.join(docs_dir, "files.json"), "r") as f:
+            files = json.load(f)
+
+            for file in files:
+                file_path = os.path.join(docs_dir, file["file"])
+                logger.info(f"Parsing {file['file']} from `files.json`")
+
+                if not os.path.exists(file_path):
+                    logger.error(f"File {file['file']} not found. See `files.json` for more info. Skipping...")
+                    continue
+
+                try:
+                    now_date = datetime.datetime.now()
+                    parser = ExcelScheduleParser(
+                        file_path,
+                        academic_calendar.get_period(now_date),
+                        Institute.get_by_short_name(file["institute"]),
+                        Degree(file["degree"]),
+                    )
+
+                    yield parser.parse(force=True).get_schedule()
+                except Exception as e:
+                    logger.error(f"Error while parsing {file['file']}: {e}")
+                    continue
+
+    except FileNotFoundError:
+        logger.error("File `files.json` not found. Skipping...")
+        return
+
+
 def parse() -> Generator[list[Schedule], None, None]:
     """Parse parser from excel file"""
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    docs_dir = os.path.join(current_dir, "docs")
+    docs_dir = os.path.dirname(os.path.abspath(__file__))
+    docs_dir = os.path.join(docs_dir, "docs")
 
     # Initialize downloader with default directory to save files
     downloader = ScheduleDownloader(base_file_dir=docs_dir)
@@ -62,8 +114,13 @@ def parse() -> Generator[list[Schedule], None, None]:
 
         yield parser.parse(force=True).get_schedule()
 
+    docs_dir = os.path.dirname(os.path.abspath(__file__))
+    docs_dir = os.path.join(docs_dir, "..", "..", "docs")
 
-async def parse_schedule() -> None:
+    yield from parse_by_json(docs_dir)
+
+
+async def parse_schedule() -> None:  # sourcery skip: low-code-quality
     """Parse parser and save it to database"""
     async with async_session() as db:
         for schedules in parse():
