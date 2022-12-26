@@ -151,7 +151,7 @@ services:
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
     environment:
-        LOG_LEVEL: TRACE
+        LOG_LEVEL: INFO
         C_FORCE_ROOT: true
         DEBUG: ${DEBUG}
 
