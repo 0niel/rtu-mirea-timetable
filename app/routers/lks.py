@@ -105,6 +105,19 @@ async def get_lks_schedule(
         for day in range(1, 7):  # 1-6 - пн-сб
             lks_week_lessons = {}
             for lesson in lessons:
+                # Если это предмет "Военная подготовка", то он должен проходить на всех неделях
+                if lesson.discipline.name == "Военная подготовка":
+                    lks_week_lessons[str(lesson.calls.num)] = [
+                        models.LksLesson(
+                            PROPERTY_DISCIPLINE_NAME=lesson.discipline.name + get_subgroup_substr(lesson),
+                            PROPERTY_LESSON_TYPE=get_lesson_type(lesson.lesson_type.name if lesson.lesson_type else ""),
+                            PROPERTY_NUMBER=str(lesson.calls.num),
+                            PROPERTY_LECTOR=", ".join([teacher.name for teacher in lesson.teachers or []]),
+                            PROPERTY_PLACE=lesson.room.name if lesson.room else "",
+                        )
+                    ]
+                    continue
+                
                 # Получаем все lessons с таким же calls.num (номером пары) для текущей недели и дня
                 tmp_lessons = [
                     tmp
@@ -130,7 +143,7 @@ async def get_lks_schedule(
 
             lks_week_days[str(day)] = models.LksLessons(LESSONS=lks_week_lessons)
         lks_week_weeks[str(week)] = models.LksDay(DAYS=lks_week_days)
-
+        
     return models.LksSchedule(result=models.LksWeeks(WEEKS=lks_week_weeks))
 
 
