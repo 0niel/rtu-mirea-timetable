@@ -137,8 +137,8 @@ async def get_lks_schedule(
 def lat_to_cyr(string: str) -> str:
     """Converts latin letters to cyrillic"""
     symbols = (
-        "abvgdeejzijklmnoprstufhzcss_y_euaABVGDEEJZIJKLMNOPRSTUFHZCSS_Y_EUA",
-        "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ",
+        "abvgdeejzijklmnoprstufhzcss_y_euABVGDEEJZIJKLMNOPRSTUFHZCSS_Y_EU",
+        "абвгдеёжзийклмнопрстуфхцчшщъыьэюАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮ",
     )
 
     tr = {ord(a): ord(b) for a, b in zip(*symbols)}
