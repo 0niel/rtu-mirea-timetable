@@ -51,6 +51,7 @@ async def group_schedule_html(
 ):
 
     group = await groups_service.get_group(db=db, name=name)
+    group = models.Group.from_orm(group)
 
     return templates.TemplateResponse("group_schedule.html", {"request": request, "group": group})
 
