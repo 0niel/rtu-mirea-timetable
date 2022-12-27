@@ -108,7 +108,7 @@ def parse() -> Generator[list[LessonsSchedule], None, None]:
     logger.info(f"Downloaded {len(downloaded)} files")
 
     for doc in downloaded:
-        logger.info(f"Processing document: {doc}")
+        print(f"Processing document: {doc}")
 
         parser = ExcelScheduleParser(doc[1], doc[0].period, doc[0].institute, doc[0].degree)
 
