@@ -106,7 +106,7 @@ async def get_lks_schedule(
             lks_week_lessons = {}
             for lesson in lessons:
                 # Если это предмет "Военная подготовка", то он должен проходить на всех неделях
-                if lesson.discipline.name == "Военная подготовка":
+                if lesson.discipline.name == "Военная подготовка" and week in lesson.weeks and lesson.weekday == day:
                     lks_week_lessons[str(lesson.calls.num)] = [
                         models.LksLesson(
                             PROPERTY_DISCIPLINE_NAME=lesson.discipline.name + get_subgroup_substr(lesson),
