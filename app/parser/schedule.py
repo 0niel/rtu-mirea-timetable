@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Generator
 
-from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, Schedule
+from rtu_schedule_parser import ExcelScheduleParser, LessonEmpty, LessonsSchedule
 from rtu_schedule_parser.constants import Degree, Institute, ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
 from rtu_schedule_parser.utils import academic_calendar
@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def parse_by_json(docs_dir: str) -> Generator[list[Schedule], None, None]:
+def parse_by_json(docs_dir: str) -> Generator[list[LessonsSchedule], None, None]:
     # Формат json:
     # [
     #     {
@@ -40,13 +40,6 @@ def parse_by_json(docs_dir: str) -> Generator[list[Schedule], None, None]:
     #         "degree": 4
     #     }
     # ]
-
-    logger.error(f"Files and directories in {docs_dir}:")
-    for root, dirs, files in os.walk(docs_dir):
-        for file in files:
-            logger.error(os.path.join(root, file))
-        for dir in dirs:
-            logger.error(os.path.join(root, dir))
 
     try:
         with open(os.path.join(docs_dir, "files.json"), "r") as f:
@@ -79,7 +72,7 @@ def parse_by_json(docs_dir: str) -> Generator[list[Schedule], None, None]:
         return
 
 
-def parse() -> Generator[list[Schedule], None, None]:
+def parse() -> Generator[list[LessonsSchedule], None, None]:
     """Parse parser from excel file"""
     docs_dir = os.path.dirname(os.path.abspath(__file__))
     docs_dir = os.path.join(docs_dir, "docs")
@@ -99,8 +92,11 @@ def parse() -> Generator[list[Schedule], None, None]:
 
     # Get documents for specified institute and degree
     all_docs = downloader.get_documents(
-        specific_schedule_types={ScheduleType.SEMESTER}, specific_degrees={Degree.BACHELOR, Degree.MASTER, Degree.PHD}
+        specific_schedule_types={ScheduleType.SEMESTER},
+        specific_degrees={Degree.BACHELOR, Degree.MASTER, Degree.PHD}
     )
+
+    logger.info(f"Found {len(all_docs)} documents to parse")
 
     # Download only if they are not downloaded yet.
     downloaded = downloader.download_all(all_docs)
