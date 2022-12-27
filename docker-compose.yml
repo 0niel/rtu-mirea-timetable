@@ -76,7 +76,7 @@ services:
         - traefik.http.services.traefik-pgadmin.loadbalancer.server.port=5050
 
   backend:
-    image: ${BACKEND_IMAGE}
+    # image: ${BACKEND_IMAGE}
     build:
       context: .
       args:
@@ -115,11 +115,11 @@ services:
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.http.routers.traefik-backend-http.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`)
+        - traefik.http.routers.traefik-backend-http.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`) || PathPrefix(`/schedule`) || PathPrefix(`/groups`)
         - traefik.http.services.traefik-backend.loadbalancer.server.port=${BACKEND_PORT}
         - traefik.http.routers.traefik-backend-http.entrypoints=http
         - traefik.http.routers.traefik-backend-http.middlewares=traefik-https-redirect
-        - traefik.http.routers.traefik-backend-https.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`)
+        - traefik.http.routers.traefik-backend-https.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`) || PathPrefix(`/schedule`) || PathPrefix(`/groups`)
         - traefik.http.routers.traefik-backend-https.entrypoints=https
         - traefik.http.routers.traefik-backend-https.tls=true
         - traefik.http.routers.traefik-backend-https.tls.certresolver=le
@@ -144,7 +144,7 @@ services:
       retries: 5
 
   worker:
-    image: ${WORKER_IMAGE}
+    # image: ${WORKER_IMAGE}
     build:
       context: .
       dockerfile: ./worker/Dockerfile

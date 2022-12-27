@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -8,19 +10,10 @@ from app.config import config
 from app.database.connection import get_session
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
+templates = Jinja2Templates(directory="app/templates")
 
 
-@router.get(
-    "/groups",
-    response_model=models.Groups,
-    response_description="Успешный возврат списка групп",
-    status_code=status.HTTP_200_OK,
-    description="Получить все учебные группы",
-    summary="Получение всех учебных групп",
-)
-async def get(db: AsyncSession = Depends(get_session)):
-    groups = await groups_service.get_groups(db=db)
-
+def groupy_groups_to_response_model(groups):
     groups_by_institute_and_degree = {}
 
     for group in groups:
@@ -40,6 +33,40 @@ async def get(db: AsyncSession = Depends(get_session)):
     total = sum(len(groups.groups) for groups in groups_list)
 
     return models.Groups(total=total, result=groups_list)
+
+
+@router.get("/", response_class=HTMLResponse)
+async def groups_html(request: Request, db: AsyncSession = Depends(get_session)):
+
+    groups = await groups_service.get_groups(db=db)
+
+    response_model = groupy_groups_to_response_model(groups)
+
+    return templates.TemplateResponse("groups.html", {"request": request, "groups": response_model})
+
+
+@router.get("/group-schedule/{name}", response_class=HTMLResponse)
+async def group_schedule_html(
+    request: Request, name: str = Path(None, description="Имя группы"), db: AsyncSession = Depends(get_session)
+):
+
+    group = await groups_service.get_group(db=db, name=name)
+
+    return templates.TemplateResponse("group_schedule.html", {"request": request, "group": group})
+
+
+@router.get(
+    "/groups",
+    response_model=models.Groups,
+    response_description="Успешный возврат списка групп",
+    status_code=status.HTTP_200_OK,
+    description="Получить все учебные группы",
+    summary="Получение всех учебных групп",
+)
+async def get(db: AsyncSession = Depends(get_session)):
+    groups = await groups_service.get_groups(db=db)
+
+    return groupy_groups_to_response_model(groups)
 
 
 @router.get(

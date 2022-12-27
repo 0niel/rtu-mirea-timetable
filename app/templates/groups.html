@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Учебные группы</title>
+        <!-- Tailwind CSS -->
+        <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+            rel="stylesheet">
+        <!-- Шрифт Inter -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+        </style>
+    </head>
+    <body class="bg-gray-100">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center my-10">
+                <h1 class="text-3xl font-medium">Учебные группы</h1>
+                <!-- <div class="text-gray-500">Найдено групп: {{ groups.total }}</div> -->
+                <div class="relative">
+                    <input type="text" class="w-64 border border-gray-300
+                        rounded-md pl-4 py-2 focus:outline-none
+                        focus:border-blue-400" placeholder="Поиск" id="search">
+                    <div class="absolute top-0 right-0 mt-2 mr-2">
+                        <!-- svg поиска -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6
+                            fill-gray-900 hover:fill-gray-900"><path d="M20.47
+                                21.53a.75.75 0 1 0 1.06-1.06l-1.06
+                                1.06Zm-9.97-4.28a6.75 6.75 0 0
+                                1-6.75-6.75h-1.5a8.25
+                                8.25 0 0 0 8.25 8.25v-1.5ZM3.75 10.5a6.75 6.75 0
+                                0 1
+                                6.75-6.75v-1.5a8.25 8.25 0 0 0-8.25
+                                8.25h1.5Zm6.75-6.75a6.75 6.75 0 0 1 6.75
+                                6.75h1.5a8.25 8.25 0 0 0-8.25-8.25v1.5Zm11.03
+                                16.72-5.196-5.197-1.061 1.06 5.197 5.197
+                                1.06-1.06Zm-4.28-9.97c0 1.864-.755 3.55-1.977
+                                4.773l1.06 1.06A8.226 8.226 0 0 0 18.75
+                                10.5h-1.5Zm-1.977 4.773A6.727 6.727 0 0 1 10.5
+                                17.25v1.5a8.226 8.226 0 0 0
+                                5.834-2.416l-1.061-1.061Z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Институты -->
+            <div class="flex flex-col gap-4">
+                {% for institute in groups.result %}
+
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-medium">{{ institute.institute.name
+                        }}, {{ institute.degree.name }}</h2>
+                </div>
+                <div class="flex flex-col grid grid-cols-3 gap-4">
+                    {% for group in institute.groups %}
+                    <a href="#" class="border border-gray-300 rounded-md
+                        py-2 px-4 hover:bg-blue-500 hover:text-white
+                        transition duration-300">{{ group }}</a>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+    <script>
+        <!-- Фильтр групп по поиску -->
+        const search = document.getElementById('search');
+        const groups = document.querySelectorAll('.flex.flex-col.grid.grid-cols-3.gap-4 > a');
+
+        search.addEventListener('input', (e) => {
+            const value = e.target.value;
+            groups.forEach((group) => {
+                if (group.textContent.toLowerCase().includes(value.toLowerCase())) {
+                    group.style.display = 'block';
+                } else {
+                    group.style.display = 'none';
+                }
+            });
+        });
+
+    </script>
+</html>
