@@ -926,7 +926,7 @@ idna2008 = ["idna"]
 
 [[package]]
 name = "rtu-schedule-parser"
-version = "2.1.0"
+version = "2.1.1"
 description = "Easy extraction of the MIREA - Russian Technological University schedule from Excel documents."
 category = "main"
 optional = false
@@ -945,7 +945,7 @@ xls2xlsx = "^0.1.5"
 type = "git"
 url = "https://github.com/mirea-ninja/rtu-schedule-parser.git"
 reference = "main"
-resolved_reference = "8f78576fa0b40d4e7fe015c3047ac27f02ea63a8"
+resolved_reference = "5abb2ab8e338307e04c777c36ceb43099a408d8e"
 
 [[package]]
 name = "six"
