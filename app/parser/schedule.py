@@ -159,11 +159,12 @@ async def parse_schedule() -> None:  # sourcery skip: low-code-quality
                     )
 
                     for lesson in schedule.lessons:
-                        if not lesson.weeks:
-                            continue
-                        
-                        if not all(isinstance(week, int) for week in lesson.weeks):
-                            continue
+                        if type(lesson) is not LessonEmpty:
+                            if not lesson.weeks:
+                                continue
+                            
+                            if not all(isinstance(week, int) for week in lesson.weeks):
+                                continue
                         
                         lesson_call = await schedule_crud.get_or_create_lesson_call(
                             db,
