@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, PositiveInt
 
@@ -12,6 +12,14 @@ class TeacherCreate(BaseModel):
     name: str
 
 
+class TeacherGroup(BaseModel):
+    id: PositiveInt
+    name: str
+    
+    class Config:
+        orm_mode = True
+
+
 class TeacherLesson(BaseModel):
     """For Teacher model"""
 
@@ -23,6 +31,8 @@ class TeacherLesson(BaseModel):
     weekday: PositiveInt
     subgroup: Optional[PositiveInt] = None
     weeks: list[PositiveInt]
+    
+    group: TeacherGroup
 
     class Config:
         orm_mode = True

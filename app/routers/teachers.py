@@ -12,7 +12,7 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
 @router.get(
-    "/teachears/search/{name}",
+    "/teachers/search/{name}",
     response_model=list[models.Teacher],
     status_code=200,
     description="Поиск преподавателя по имени",
