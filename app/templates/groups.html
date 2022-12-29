@@ -22,7 +22,7 @@
     </head>
     <body class="bg-gray-100">
         <div class="container mx-auto">
-            <div class="flex justify-between items-center my-10">
+            <div class="flex justify-between items-center my-10 px-4">
                 <h1 class="text-3xl font-medium">Учебные группы</h1>
                 <!-- <div class="text-gray-500">Найдено групп: {{ groups.total }}</div> -->
                 <div class="relative">
@@ -53,14 +53,15 @@
 
 
             <!-- Институты -->
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-4 px-4">
                 {% for institute in groups.result %}
 
                 <div class="flex items-center justify-between">
                     <h2 class="text-xl font-medium">{{ institute.institute.name
                         }}, {{ institute.degree.name }}</h2>
                 </div>
-                <div class="flex flex-col grid grid-cols-3 gap-4">
+                <!-- адаптивный грид с минимум 4 колонки -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 mt-4">
                     {% for group in institute.groups %}
                     <a href="/api/group-schedule/{{ group }}" class="border border-gray-300 rounded-md
                         py-2 px-4 hover:bg-blue-500 hover:text-white
