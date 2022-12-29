@@ -14,4 +14,5 @@ class Teacher(Base):
         cascade="delete",
         back_populates="teachers",
         secondary="schedule_lessons_to_teachers",
+        lazy="subquery",
     )

@@ -34,6 +34,20 @@ class Group(BaseModel):
         orm_mode = True
 
 
+class GroupTiny(BaseModel):
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
+
+    id: PositiveInt
+    name: str
+    period: Period
+    institute: Institute
+    degree: Degree
+
+    class Config:
+        orm_mode = True
+
+
 class GroupList(BaseModel):
     institute: Institute
     degree: Degree
