@@ -37,7 +37,6 @@ def groupy_groups_to_response_model(groups):
 
 @router.get("/", response_class=HTMLResponse)
 async def groups_html(request: Request, db: AsyncSession = Depends(get_session)):
-
     groups = await groups_service.get_groups(db=db)
 
     response_model = groupy_groups_to_response_model(groups)
@@ -47,11 +46,22 @@ async def groups_html(request: Request, db: AsyncSession = Depends(get_session))
 
 @router.get("/group-schedule/{name}", response_class=HTMLResponse)
 async def group_schedule_html(
-    request: Request, name: str = Path(None, description="Имя группы"), db: AsyncSession = Depends(get_session)
+    request: Request, name: str = Path(None, description="Имя группы"), 
+    db: AsyncSession = Depends(get_session)
 ):
 
     group = await groups_service.get_group(db=db, name=name)
     group = models.Group.from_orm(group)
+
+    mode = request.query_params.get("mode")
+    week = request.query_params.get("week")
+
+    if mode or week:
+        if mode == "week" or week:
+            week = int(week) if week else 1
+            return templates.TemplateResponse("group_schedule_by_weeks.html", {"request": request, "group": group, "week": week})
+        elif mode == "table":
+            return templates.TemplateResponse("group_schedule.html", {"request": request, "group": group})
 
     return templates.TemplateResponse("group_schedule.html", {"request": request, "group": group})
 
