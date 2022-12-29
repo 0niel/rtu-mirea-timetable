@@ -25,7 +25,6 @@ from app.models import (
     RoomCreate,
     TeacherCreate,
 )
-from io import BytesIO
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -93,7 +92,8 @@ def parse() -> Generator[list[LessonsSchedule], None, None]:
 
     # Get documents for specified institute and degree
     all_docs = downloader.get_documents(
-        specific_schedule_types={ScheduleType.SEMESTER}, specific_degrees={Degree.BACHELOR, Degree.MASTER, Degree.PHD},
+        specific_schedule_types={ScheduleType.SEMESTER},
+        specific_degrees={Degree.BACHELOR, Degree.MASTER, Degree.PHD},
         specific_institutes={institute for institute in Institute if institute != Institute.COLLEGE},
     )
 
@@ -162,10 +162,10 @@ async def parse_schedule() -> None:  # sourcery skip: low-code-quality
                         if type(lesson) is not LessonEmpty:
                             if not lesson.weeks:
                                 continue
-                            
+
                             if not all(isinstance(week, int) for week in lesson.weeks):
                                 continue
-                        
+
                         lesson_call = await schedule_crud.get_or_create_lesson_call(
                             db,
                             LessonCallCreate(

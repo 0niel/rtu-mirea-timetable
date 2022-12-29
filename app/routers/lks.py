@@ -117,7 +117,7 @@ async def get_lks_schedule(
                         )
                     ]
                     continue
-                
+
                 # Получаем все lessons с таким же calls.num (номером пары) для текущей недели и дня
                 tmp_lessons = [
                     tmp
@@ -143,7 +143,7 @@ async def get_lks_schedule(
 
             lks_week_days[str(day)] = models.LksLessons(LESSONS=lks_week_lessons)
         lks_week_weeks[str(week)] = models.LksDay(DAYS=lks_week_days)
-        
+
     return models.LksSchedule(result=models.LksWeeks(WEEKS=lks_week_weeks))
 
 

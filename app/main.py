@@ -7,12 +7,14 @@ from app.routers.groups import router as groups_router
 from app.routers.lessons import router as lessons_router
 from app.routers.lks import router as lks_router
 from app.routers.rooms import router as rooms_router
+from app.routers.teachers import router as teachers_router
 from app.routers.utils import router as utils_router
 
 tags_metadata = [
     {"name": "campuses", "description": "Работа с кампусами"},
     {"name": "groups", "description": "Работа с группами"},
     {"name": "lessons", "description": "Работа с занятиями"},
+    {"name": "teachers", "description": "Работа с преподавателями"},
     {"name": "rooms", "description": "Работа с аудиториями"},
     {"name": "utils", "description": "Работа с утилитами"},
     {"name": "lks", "description": "Враппер для ЛКС РТУ МИРЭА"},
@@ -38,6 +40,7 @@ app.add_middleware(
 app.include_router(campuses_router, tags=["campuses"])
 app.include_router(groups_router, tags=["groups"])
 app.include_router(lessons_router, tags=["lessons"])
+app.include_router(teachers_router, tags=["teachers"])
 app.include_router(rooms_router, tags=["rooms"])
 app.include_router(utils_router, tags=["utils"])
 app.include_router(lks_router, tags=["lks"])

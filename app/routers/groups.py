@@ -46,8 +46,7 @@ async def groups_html(request: Request, db: AsyncSession = Depends(get_session))
 
 @router.get("/group-schedule/{name}", response_class=HTMLResponse)
 async def group_schedule_html(
-    request: Request, name: str = Path(None, description="Имя группы"), 
-    db: AsyncSession = Depends(get_session)
+    request: Request, name: str = Path(None, description="Имя группы"), db: AsyncSession = Depends(get_session)
 ):
 
     group = await groups_service.get_group(db=db, name=name)
@@ -59,7 +58,9 @@ async def group_schedule_html(
     if mode or week:
         if mode == "week" or week:
             week = int(week) if week else 1
-            return templates.TemplateResponse("group_schedule_by_weeks.html", {"request": request, "group": group, "week": week})
+            return templates.TemplateResponse(
+                "group_schedule_by_weeks.html", {"request": request, "group": group, "week": week}
+            )
         elif mode == "table":
             return templates.TemplateResponse("group_schedule.html", {"request": request, "group": group})
 
