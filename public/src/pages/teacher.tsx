@@ -1,6 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
+
+import { CalendarIcon, MapIcon, UserIcon } from "@heroicons/react/20/solid";
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
   ChevronDownIcon,
@@ -9,8 +10,10 @@ import {
 } from "@heroicons/react/20/solid";
 import axios from "axios";
 import { useQuery } from "react-query";
-import type { components } from "../api/schemas/openapi";
+import { paths } from "../api/schemas/openapi";
+import { components } from "../api/schemas/openapi";
 import { getWeek, getWeekByDate } from "../utils";
+
 import { Menu, Transition } from "@headlessui/react";
 import { useRouter } from "next/router";
 
@@ -85,29 +88,53 @@ const generateDays = (
 function classNames(...classes: unknown[]) {
   return classes.filter(Boolean).join(" ");
 }
-axios.defaults.baseURL = "https://timetable.mirea.ru";
-const getSchedule = async (group: string) => {
-  const url = "/api/groups/{name}";
 
-  const response = await axios.get(url.replace("{name}", group));
+const searchTeacherSchedule = async (name: string) => {
+  const url = "/api/teachers/search/{name}";
 
-  return response.data;
+  //   set axios base url as http://localhost
+  axios.defaults.baseURL = "http://localhost";
+
+  const response = await axios.get(url.replace("{name}", name));
+
+  const data = response.data;
+
+  //   если больше одного препода, то выбираем первого
+  return data[0];
 };
 
-const getLessonDuration = (timeStart: string, timeEnd: string) => {
-  const [startHour, startMinute] = timeStart.split(":");
-  const [endHour, endMinute] = timeEnd.split(":");
-  const start = new Date();
-  const end = new Date();
-  start.setHours(Number(startHour));
-  start.setMinutes(Number(startMinute));
-  end.setHours(Number(endHour));
-  end.setMinutes(Number(endMinute));
-  return end.getTime() - start.getTime();
+const joinLessonsByGroups = (
+  lessons: components["schemas"]["Teacher"]["lessons"]
+) => {
+  // Найти все lesson с одинаковым названием, weekday и calls.time_start. Оставить только первое вхождение и добавить в него в group.name все остальные lesson.group.name
+
+  const newLessons: components["schemas"]["Teacher"]["lessons"] = [];
+
+  lessons.forEach((lesson) => {
+    const newLesson = newLessons.find((newLesson) => {
+      return (
+        newLesson.name === lesson.name &&
+        newLesson.weekday === lesson.weekday &&
+        newLesson.calls.time_start === lesson.calls.time_start
+      );
+    });
+
+    if (newLesson) {
+      if (newLesson.group.name.indexOf(lesson.group.name) === -1) {
+        newLesson.group.name += `, ${lesson.group.name}`;
+      }
+    } else {
+      newLessons.push(lesson);
+    }
+  });
+
+  return newLessons;
 };
 
 const getLessonsForDate = (
-  lessons: components["schemas"]["Group"]["lessons"],
+  lessons:
+    | components["schemas"]["Group"]["lessons"]
+    | components["schemas"]["Teacher"]["lessons"],
   date: Date
 ) => {
   const week = getWeekByDate(date);
@@ -121,6 +148,8 @@ const getLessonsForDate = (
     return lesson.weeks.includes(week) && lesson.weekday === day;
   });
 
+  console.log("NEW LESSONS", newLessons);
+
   return newLessons;
 };
 
@@ -131,14 +160,13 @@ type Days = {
   isSelected?: boolean;
 }[];
 
-const Schedule: NextPage = () => {
+const Teacher: NextPage = () => {
+  //  Получить "name" преподавателя из URL
+  const { name } = useRouter().query as { name: string };
+  console.log("NAME", name);
   const container = useRef(null);
   const containerNav = useRef(null);
   const containerOffset = useRef(null);
-
-  // get `group` from query
-  const router = useRouter();
-  const { group } = router.query;
 
   const currentDate = new Date();
   const [monthToDisplay, setMonthToDisplay] = useState(currentDate.getMonth());
@@ -167,13 +195,14 @@ const Schedule: NextPage = () => {
     );
   }, [selectedDate]);
 
-  const [schedule, setSchedule] = useState<
-    components["schemas"]["Group"] | null
+  const [teacher, setTeacher] = useState<
+    components["schemas"]["Teacher"] | null
   >(null);
 
-  useQuery("schedule", () => getSchedule(group), {
+  console.log("TEACHER", name);
+  useQuery("teacher", () => searchTeacherSchedule(name), {
     onSuccess: (data) => {
-      setSchedule(data);
+      setTeacher(data);
     },
   });
 
@@ -181,44 +210,7 @@ const Schedule: NextPage = () => {
     setDays(generateDays(currentDate, monthToDisplay + 1, yearToDisplay));
   }, [monthToDisplay, yearToDisplay]);
 
-  const getLessonGridRow = (lesson: components["schemas"]["Lesson"]) => {
-    const row = lesson.calls.num === 1 ? 2 : lesson.calls.num * 2;
-    return `${row} / span 2`;
-  };
-
-  const getLessonTypeColor = (type: string) => {
-    switch (type) {
-      case "пр":
-        return "bg-blue-100 text-blue-800";
-      case "лек":
-        return "bg-green-100 text-green-800";
-      case "лаб":
-        return "bg-yellow-100 text-yellow-800";
-      case "зач":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getLessonTypeBackgroundColor = (type: string) => {
-    switch (type) {
-      case "пр":
-        return "bg-blue-50 hover:bg-blue-100";
-      case "лек":
-        return "bg-green-50 hover:bg-green-100";
-      case "лаб":
-        return "bg-yellow-50 hover:bg-yellow-100";
-      case "зач":
-        return "bg-red-50 hover:bg-red-100";
-      default:
-        return "bg-gray-50 hover:bg-gray-100";
-    }
-  };
-
   const getWeekDaysByDate = (date: Date) => {
-    const week = getWeek(date);
-
     const days = [];
 
     for (let i = 1; i <= 7; i++) {
@@ -233,12 +225,16 @@ const Schedule: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Расписание группы</title>
-        <meta name="description" content="Расписание группы" />
+        <title>Расписание преподавателя {name}</title>
+        <meta name="description" content="Расписание преподавателя" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex h-screen flex-col">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Расписание преподавателя {name}
+        </h2>
         <div className="flex flex-1 flex-col">
+          {/* Header with date */}
           <header className="relative z-20 flex flex-none items-center justify-between border-b border-gray-200 py-4 px-6">
             <div>
               <h1 className="text-lg font-semibold leading-6 text-gray-900">
@@ -541,133 +537,62 @@ const Schedule: NextPage = () => {
                   </button>
                 ))}
               </div>
-              <div className="flex w-full flex-auto">
-                <div className="w-14 flex-none bg-white ring-1 ring-gray-100" />
-                <div className="grid flex-auto grid-cols-1 grid-rows-1">
-                  {/* Horizontal lines */}
-                  <div
-                    className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
-                    style={{
-                      gridTemplateRows: "repeat(16, minmax(3.85rem, 1fr))",
-                    }}
-                  >
-                    <div ref={containerOffset} className="row-end-1 h-7"></div>
-                    <div>
-                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                        9:00 - 10:30
+              <ol className="mt-4 divide-y divide-gray-100 text-sm leading-6 lg:col-span-7 xl:col-span-8">
+                {/* if teacher, then map it lessons */}
+                {teacher &&
+                  joinLessonsByGroups(
+                    getLessonsForDate(teacher.lessons, selectedDate)
+                  ).map((lesson, index) => (
+                    <li
+                      key={index}
+                      className="relative flex space-x-6 py-6 xl:static"
+                    >
+                      <div className="flex-auto">
+                        <h3 className="pr-10 font-semibold text-gray-900 xl:pr-0">
+                          {lesson.discipline.name}
+                        </h3>
+                        <dl className="mt-2 flex flex-col text-gray-500 xl:flex-row">
+                          <div className="flex items-start space-x-3">
+                            <dt className="mt-0.5">
+                              <span className="sr-only">Date</span>
+                              <CalendarIcon
+                                className="h-5 w-5 text-gray-400"
+                                aria-hidden="true"
+                              />
+                            </dt>
+                            <dd>
+                              <time dateTime={lesson.datetime}>
+                                {lesson.calls.time_start.slice(0, 5)} -{" "}
+                                {lesson.calls.time_end.slice(0, 5)}
+                              </time>
+                            </dd>
+                          </div>
+                          <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
+                            <dt className="mt-0.5">
+                              <span className="sr-only">Location</span>
+                              <MapIcon
+                                className="h-5 w-5 text-gray-400"
+                                aria-hidden="true"
+                              />
+                            </dt>
+                            <dd>{lesson.room?.name}</dd>
+                          </div>
+                          {/* Список групп */}
+                          <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
+                            <dt className="mt-0.5">
+                              <span className="sr-only">Groups</span>
+                              <UserIcon
+                                className="h-5 w-5 text-gray-400"
+                                aria-hidden="true"
+                              />
+                            </dt>
+                            <dd>{lesson.group.name}</dd>
+                          </div>
+                        </dl>
                       </div>
-                    </div>
-                    <div />
-                    <div>
-                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                        10:40 - 12:10
-                      </div>
-                    </div>
-                    <div />
-                    <div>
-                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                        12:40 - 14:10
-                      </div>
-                    </div>
-                    <div />
-                    <div>
-                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                        14:20 - 15:50
-                      </div>
-                    </div>
-                    <div />
-                    <div>
-                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                        16:20 - 17:50
-                      </div>
-                    </div>
-                    <div />
-                    <div>
-                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                        18:00 - 19:30
-                      </div>
-                    </div>
-                    <div />
-                    <div>
-                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                        19:40 - 21:10
-                      </div>
-                    </div>
-                    <div />
-                  </div>
-
-                  {/* Events */}
-                  <ol
-                    className="col-start-1 col-end-2 row-start-1 grid grid-cols-1"
-                    style={{
-                      // 1.75rem for the time labels + 288 rows for 12 hours * 24 (min-height)
-                      gridTemplateRows:
-                        "1.75rem repeat(16, minmax(0, 1fr)) auto",
-                    }}
-                  >
-                    {/* for lesson in schedule.lessons if schedule != null */}
-                    {schedule != null &&
-                      getLessonsForDate(schedule.lessons, selectedDate).map(
-                        (lesson) => (
-                          <li
-                            key={lesson.id}
-                            className="relative mt-px flex"
-                            // calls.time_start и calls.time_end в формате HH:MM:SS
-                            style={{
-                              gridRow: getLessonGridRow(lesson),
-                            }}
-                          >
-                            <a
-                              href="#"
-                              className={
-                                "group absolute inset-1 flex flex-col overflow-y-auto rounded-lg p-2 text-xs leading-5 " +
-                                getLessonTypeBackgroundColor(
-                                  lesson.lesson_type?.name
-                                )
-                              }
-                            >
-                              <div className="flex font-medium text-blue-600">
-                                <div className="ml-2 flex flex-auto flex-col">
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {lesson.discipline.name}
-                                  </p>
-                                  <p className="text-sm text-gray-500">
-                                    {lesson.teachers.map((teacher) => (
-                                      <Link
-                                        key={teacher.id}
-                                        href={`/teacher?name=${teacher.name}`}
-                                        className="text-blue-600 hover:text-blue-900"
-                                      >
-                                        {teacher.name}
-                                      </Link>
-                                    ))}
-                                  </p>
-
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {lesson.room?.name}
-                                  </p>
-                                </div>
-
-                                <p className="text-sm text-gray-500">
-                                  <span
-                                    className={
-                                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium " +
-                                      getLessonTypeColor(
-                                        lesson.lesson_type?.name
-                                      )
-                                    }
-                                  >
-                                    {lesson.lesson_type?.name}
-                                  </span>
-                                </p>
-                              </div>
-                            </a>
-                          </li>
-                        )
-                      )}
-                  </ol>
-                </div>
-              </div>
+                    </li>
+                  ))}
+              </ol>
             </div>
             <div className="hidden w-1/2 max-w-md flex-none border-l border-gray-100 py-10 px-8 md:block">
               <div className="flex items-center text-center text-gray-900">
@@ -729,7 +654,7 @@ const Schedule: NextPage = () => {
               <div className="isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-gray-200 text-sm shadow ring-1 ring-gray-200">
                 {days.map((day, dayIdx) => (
                   <button
-                    key={dayIdx}
+                    key={day.date}
                     type="button"
                     className={classNames(
                       "py-1.5 hover:bg-gray-100 focus:z-10",
@@ -755,7 +680,7 @@ const Schedule: NextPage = () => {
                     }}
                   >
                     <time
-                      dateTime={day.date?.toISOString()}
+                      dateTime={day.date}
                       className={classNames(
                         "mx-auto flex h-7 w-7 items-center justify-center rounded-full",
                         day.isSelected && day.isToday && "bg-indigo-600",
@@ -775,4 +700,4 @@ const Schedule: NextPage = () => {
   );
 };
 
-export default Schedule;
+export default Teacher;

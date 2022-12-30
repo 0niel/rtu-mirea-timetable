@@ -41,6 +41,13 @@ export interface paths {
      */
     get: operations["get_group_schedule_api_groups__name__get"];
   };
+  "/api/teachears/search/{name}": {
+    /**
+     * Поиск преподавателя по имени 
+     * @description Поиск преподавателя по имени
+     */
+    get: operations["search_teacher_by_name_api_teachears_search__name__get"];
+  };
   "/api/lessons/{room_id}": {
     /**
      * Получение расписания аудитории 
@@ -288,6 +295,29 @@ export interface components {
       name: string;
       /** Id */
       id: number;
+      /**
+       * Lessons 
+       * @default []
+       */
+      lessons?: (components["schemas"]["TeacherLesson"])[];
+    };
+    /**
+     * TeacherLesson 
+     * @description For Teacher model
+     */
+    TeacherLesson: {
+      /** Id */
+      id: number;
+      lesson_type?: components["schemas"]["LessonType"];
+      discipline: components["schemas"]["Discipline"];
+      room?: components["schemas"]["Room"];
+      calls: components["schemas"]["LessonCall"];
+      /** Weekday */
+      weekday: number;
+      /** Subgroup */
+      subgroup?: number;
+      /** Weeks */
+      weeks: (number)[];
     };
     /** ValidationError */
     ValidationError: {
@@ -414,6 +444,31 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["Group"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  search_teacher_by_name_api_teachears_search__name__get: {
+    /**
+     * Поиск преподавателя по имени 
+     * @description Поиск преподавателя по имени
+     */
+    parameters: {
+      path: {
+        name: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": (components["schemas"]["Teacher"])[];
         };
       };
       /** @description Validation Error */
