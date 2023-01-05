@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Path, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi_cache.decorator import cache
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -8,6 +9,7 @@ import app.services.groups as groups_service
 from app import models
 from app.config import config
 from app.database.connection import get_session
+from app.utils.cache import key_builder_exclude_db
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 templates = Jinja2Templates(directory="app/templates")
@@ -37,18 +39,15 @@ def groupy_groups_to_response_model(groups):
 
 @router.get("/", response_class=HTMLResponse)
 async def groups_html(request: Request, db: AsyncSession = Depends(get_session)):
-    groups = await groups_service.get_groups(db=db)
+    groups = await get(db)
 
-    response_model = groupy_groups_to_response_model(groups)
-
-    return templates.TemplateResponse("groups.html", {"request": request, "groups": response_model})
+    return templates.TemplateResponse("groups.html", {"request": request, "groups": groups})
 
 
 @router.get("/group-schedule/{name}", response_class=HTMLResponse)
 async def group_schedule_html(
     request: Request, name: str = Path(None, description="Имя группы"), db: AsyncSession = Depends(get_session)
 ):
-
     group = await groups_service.get_group(db=db, name=name)
     group = models.Group.from_orm(group)
 
@@ -75,6 +74,7 @@ async def group_schedule_html(
     description="Получить все учебные группы",
     summary="Получение всех учебных групп",
 )
+@cache(namespace="groups", expire=60 * 60 * 24, key_builder=key_builder_exclude_db)
 async def get(db: AsyncSession = Depends(get_session)):
     groups = await groups_service.get_groups(db=db)
 
@@ -87,8 +87,9 @@ async def get(db: AsyncSession = Depends(get_session)):
     status_code=200,
     description="Получить группу и её расписание по названию",
 )
+@cache(namespace="groups", expire=60 * 60, key_builder=key_builder_exclude_db)
 async def get_group_schedule(
     db: AsyncSession = Depends(get_session),
     name: str = Path(None, description="Имя группы"),
 ):
-    return await groups_service.get_group(db=db, name=name)
+    return models.Group.from_orm(await groups_service.get_group(db=db, name=name))
