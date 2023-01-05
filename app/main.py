@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 from starlette.middleware.cors import CORSMiddleware
 
 from app.config import config
@@ -27,6 +29,11 @@ app = FastAPI(
     title=config.BACKEND_TTILE,
     description=config.BACKEND_DESCRIPTION,
 )
+
+
+@app.on_event("startup")
+async def startup():
+    FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
 
 
 app.add_middleware(

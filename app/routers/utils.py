@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi_cache import FastAPICache
 
 from app import models
 from app.config import config
@@ -15,5 +16,6 @@ async def parse_schedule(secret_key: str = Query(..., description="Ключ до
         raise HTTPException(400, "Функция ручного обновления расписания отключена")
     if secret_key != config.BACKEND_PARSER_SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
+    await FastAPICache.clear(namespace="groups")
     app.send_task("worker.tasks.parse_schedule")
     return {"msg": "Parsing started"}
