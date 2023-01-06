@@ -18,7 +18,7 @@ The rtu-mirea-timetable service is a Web App (including a documented API) that p
 
 ```bash
 git clone https://github.com/mirea-ninja/rtu-mirea-timetable.git
-cd rtu-schedule-api
+cd rtu-mirea-timetable
 ```
 
 2. Edit `.env.example`
