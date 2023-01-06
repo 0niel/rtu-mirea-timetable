@@ -1,5 +1,7 @@
 
-# rtu-map-backend
+# rtu-mirea-timetable
+
+The rtu-mirea-timetable service is a Web App (including a documented API) that provides users with access to schedules and other related data. It allows users search for classes, teachers and lessons, and view detailed information about each lesson.
 
 ## Backend Requirements
 
@@ -15,8 +17,8 @@
 1. Clone this repo:
 
 ```bash
-git clone https://github.com/mirea-ninja/rtu-map-backend.git
-cd mobile-app-web
+git clone https://github.com/mirea-ninja/rtu-mirea-timetable.git
+cd rtu-schedule-api
 ```
 
 2. Edit `.env.example`
@@ -26,7 +28,6 @@ cd mobile-app-web
 4. Install dependencies using poetry:
 
 ```bash
-cd .\backend\src\
 poetry install
 ```
 
@@ -114,7 +115,7 @@ Make sure you create a "revision" of your models and that you "upgrade" your dat
 
 ### Running migrations locally without Docker
 
-In the directory `.\backend\src\`:
+In the main directory:
 * Make sure that all the Poetry dependencies are installed and you are in the Poetry Shell environment.
 
 ### Running migrations with Docker Compose 
@@ -127,7 +128,7 @@ docker-compose exec backend bash
 ```
 
 ### Migration rules and commands
-* If you created a new model in `./backend/src/app/pkg/sqlalchemy/schemes/`, make sure to import it in `./backend/src/app/pkg/sqlalchemy/schemes/__init__.py`, that all the models will be used by Alembic.
+* If you created a new model in `./app/database/tables/`, make sure to import it in `./app/database/tables/__init__.py`, that all the models will be used by Alembic.
 
 * After changing a model (for example, adding a column), create a revision, e.g.:
 
