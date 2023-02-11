@@ -6,7 +6,6 @@ on:
       - main
 
 env:
-  FOLDER: ${{ secrets.PRODUCTION_FOLDER }}
   JOB_STARTED_AT: ${{ github.event.created_at }}
   CR_REGISTRY: ${{ secrets.CR_REGISTRY }}
   CR_IMAGE_BACKEND: ${{ secrets.CR_IMAGE_BACKEND }}
@@ -66,17 +65,13 @@ jobs:
             cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
           docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
 #  deploy:
-#    runs-on: self-hosted
+#    runs-on: mn-rtu-gh-runner
 #    needs: [build-backend, build-worker]
 #    steps:
 #      - name: Checkout
 #        uses: actions/checkout@v3
 #      - name: Deploy Worker and Backend
 #        run: |
-#          cd ..
-#          cd ..
-#          cd ..
-#          cd ..
-#          cd ${{ env.FOLDER }}
-#          sudo docker compose -f docker-compose.yml pull
-#          sudo docker compose -f docker-compose.yml up -d
+#          cd ${{ secrets.PRODUCTION_FOLDER }}
+#          docker compose pull && docker compose up -d
+         

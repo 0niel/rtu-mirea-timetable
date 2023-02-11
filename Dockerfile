@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:latest
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -24,7 +24,6 @@ RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; els
 
 COPY . /app
 
-# Need to run anything berore starting the server. For example, migrations
-ENV PRE_START_PATH=./prestart.sh
-ENV PORT="${PORT:-8080}"
-ENV APP_MODULE="app.main:app"
+EXPOSE $BACKEND_PORT
+
+CMD ["python", "runserver.py"]

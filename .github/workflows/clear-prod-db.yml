@@ -1,0 +1,21 @@
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+jobs:
+  clear-prod-db:
+    runs-on: mn-rtu-gh-runner
+    steps:
+      if: $PASSWORD == ${{ secrets.DB_CLEAR_PASSWORD }}
+        - run: |
+            docker volume rm app-db-data || true
+            docker volume create app-db-data
+      else:
+        - run: |
+            echo "Incorrect action password"
+        env:
+          PASSWORD: ${{ inputs.password }}

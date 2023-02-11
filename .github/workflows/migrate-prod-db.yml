@@ -1,0 +1,21 @@
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+jobs:
+  migrate-prod-db:
+    runs-on: mn-rtu-gh-runner
+    steps:
+      if: $PASSWORD == ${{ secrets.DB_CLEAR_PASSWORD }}
+        - run: |
+            cd ${{ secrets.PRODUCTION_FOLDER }}
+            docker compose exec backend alembic upgrade head
+      else:
+        - run: |
+            echo "Incorrect action password"
+        env:
+          PASSWORD: ${{ inputs.password }}

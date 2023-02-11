@@ -1,36 +1,34 @@
 version: "3.9"
 
 services:
-  proxy:
-    image: traefik:v2.9
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
-      - /etc/localtime:/etc/localtime:ro
+      - conf:/etc/nginx/conf.d
+      - vhost:/etc/nginx/vhost.d
+      - dhparam:/etc/nginx/dhparam
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /usr/share/nginx/html
+      - acme:/etc/acme.sh
+    networks:
+      - proxy
+    restart: always
+
+  letsencrypt:
+    image: nginxproxy/acme-companion:latest
+    container_name: nginx-proxy-le
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./etc/traefik.yml:/traefik.yml:ro
-      - ./etc/acme.json:/acme.json
-    command:
-      - --providers.docker
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.swarmmode
-      - --accesslog
-      - --log
-      - --api
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https
-        - traefik.http.middlewares.traefik-https-redirect.redirectscheme.permanent=true
-        - traefik.http.routers.traefik-proxy-http.rule=Host(`${DOMAIN?Variable not set}`) || Host(`www.${DOMAIN?Variable not set}`)
-        - traefik.http.routers.traefik-proxy-http.entrypoints=http
-        - traefik.http.routers.traefik-proxy-https.rule=Host(`${DOMAIN?Variable not set}`) || Host(`www.${DOMAIN?Variable not set}`)
-        - traefik.http.routers.traefik-proxy-https.entrypoints=https
-        - traefik.http.routers.traefik-proxy-https.tls=true
-        - traefik.http.routers.traefik-proxy-https.tls.certresolver=le
-        - traefik.http.services.traefik-proxy.loadbalancer.server.port=80
-        - traefik.http.middlewares.traefik-www-redirect.redirectregex.regex=^https?://(www.)?(${DOMAIN?Variable not set})/(.*)
-        - traefik.http.middlewares.traefik-www-redirect.redirectregex.replacement=https://${DOMAIN?Variable not set}/$${3}
-        - traefik.http.routers.traefik-proxy-https.middlewares=traefik-www-redirect
-        - traefik.http.routers.traefik-proxy-http.middlewares=traefik-www-redirect,traefik-https-redirect
+      - acme:/etc/acme.sh
+    restart: always
 
   db:
     image: postgres:latest
@@ -39,6 +37,8 @@ services:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - default
     ports:
       - "5432:5432"
     healthcheck:
@@ -46,46 +46,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    deploy:
-      placement:
-        constraints:
-          - node.labels.traefik.app-db-data == true
 
-  pgadmin:
-    image: dpage/pgadmin4
+  backend:
+    image: ${BACKEND_IMAGE}
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    networks:
-      - default
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.traefik-pgadmin-http.rule=PathPrefix(`/pgadmin`)
-        - traefik.http.routers.traefik-pgadmin-http.entrypoints=http
-        - traefik.http.routers.traefik-pgadmin-http.middlewares=traefik-https-redirect
-        - traefik.http.routers.traefik-pgadmin-https.rule=PathPrefix(`/pgadmin`)
-        - traefik.http.routers.traefik-pgadmin-https.entrypoints=https
-        - traefik.http.routers.traefik-pgadmin-https.tls=true
-        - traefik.http.routers.traefik-pgadmin-https.tls.certresolver=le
-        - traefik.http.services.traefik-pgadmin.loadbalancer.server.port=5050
-
-  backend:
-    # image: ${BACKEND_IMAGE}
-    build:
-      context: .
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
-    depends_on:
-      db:
+      broker:
         condition: service_healthy
     volumes:
       - ./docs:/app/docs # schedule docs
+    networks:
+      - proxy
+      - default
     environment:
         DEBUG: ${DEBUG}
 
@@ -111,19 +84,11 @@ services:
         BROKER_PASS: ${BROKER_PASS}
         BROKER_URL: ${BROKER_URL}
 
+        VIRTUAL_HOST: ${DOMAIN}
+        LETSENCRYPT_HOST: ${DOMAIN}
+        VIRTUAL_PORT: ${BACKEND_PORT}
+
         ENV: development
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.traefik-backend-http.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`) || PathPrefix(`/schedule`) || PathPrefix(`/groups`)
-        - traefik.http.services.traefik-backend.loadbalancer.server.port=${BACKEND_PORT}
-        - traefik.http.routers.traefik-backend-http.entrypoints=http
-        - traefik.http.routers.traefik-backend-http.middlewares=traefik-https-redirect
-        - traefik.http.routers.traefik-backend-https.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`) || PathPrefix(`/schedule`) || PathPrefix(`/groups`)
-        - traefik.http.routers.traefik-backend-https.entrypoints=https
-        - traefik.http.routers.traefik-backend-https.tls=true
-        - traefik.http.routers.traefik-backend-https.tls.certresolver=le
-        - traefik.http.routers.traefik-backend-https.middlewares=traefik-https-redirect
 
   broker:
     image: rabbitmq:3-management
@@ -144,12 +109,7 @@ services:
       retries: 5
 
   worker:
-    # image: ${WORKER_IMAGE}
-    build:
-      context: .
-      dockerfile: ./worker/Dockerfile
-      args:
-        INSTALL_DEV: ${INSTALL_DEV-false}
+    image: ${WORKER_IMAGE}
     environment:
         LOG_LEVEL: INFO
         C_FORCE_ROOT: true
@@ -189,3 +149,13 @@ volumes:
   app-db-data:
   pgadmin-data:
   broker:
+  conf:
+  vhost:
+  dhparam:
+  certs:
+  acme:
+
+networks:
+  proxy:
+    external:
+      true
