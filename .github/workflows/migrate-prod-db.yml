@@ -6,12 +6,13 @@ on:
         type: string
         required: true
 
+env:
+  PASSWORD: ${{ inputs.password }}
+
 jobs:
   migrate-prod-db:
     runs-on: mn-rtu-gh-runner
     steps:
-      - env:
-          PASSWORD: ${{ inputs.password }}
       - name: Check workflow password(true)
         if: $PASSWORD == ${{ secrets.DB_CLEAR_PASSWORD }}
         run: |
