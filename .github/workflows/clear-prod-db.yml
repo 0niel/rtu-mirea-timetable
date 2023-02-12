@@ -16,13 +16,12 @@ jobs:
   clear-prod-db:
     runs-on: mn-rtu-gh-runner
     steps:
-      - name: Check workflow password(true)
-        if: $PASSWORD == $DB_CLEAR_PASSWORD
+      - name: Clear production db
         run: |
-            docker volume rm app-db-data || true
-            docker volume create app-db-data
-      - name: Check workflow password(false)
-        if: $PASSWORD != $DB_CLEAR_PASSWORD
-        run: |
-            echo "Incorrect action password"
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              docker volume rm app-db-data || true
+              docker volume create app-db-data
+            else
+              echo "Incorrect action password"
+            fi
             

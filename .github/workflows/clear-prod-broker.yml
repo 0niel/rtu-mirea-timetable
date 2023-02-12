@@ -16,13 +16,12 @@ jobs:
   clear-prod-broker:
     runs-on: mn-rtu-gh-runner
     steps:
-      - name: Check workflow password(true)
-        if: $PASSWORD == $DB_CLEAR_PASSWORD
+      - name: Clear production broker
         run: |
-            docker volume rm broker || true
-            docker volume create broker
-      - name: Check workflow password(false)
-        if: $PASSWORD != $DB_CLEAR_PASSWORD
-        run: |
-            echo "Incorrect action password"
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              docker volume rm broker || true
+              docker volume create broker
+            else
+              echo "Incorrect action password"
+            fi
             
