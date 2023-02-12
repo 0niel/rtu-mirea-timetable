@@ -1,3 +1,5 @@
+name: Clear production broker
+
 on:
   workflow_dispatch:
     inputs:
@@ -5,7 +7,7 @@ on:
         description: 'Workflow password'
         type: string
         required: true
-        
+
 env:
   PASSWORD: ${{ inputs.password }}
 

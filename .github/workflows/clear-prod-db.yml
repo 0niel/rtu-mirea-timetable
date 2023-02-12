@@ -1,3 +1,5 @@
+name: Clear production database
+
 on:
   workflow_dispatch:
     inputs:
@@ -8,7 +10,7 @@ on:
 
 env:
   PASSWORD: ${{ inputs.password }}
-  
+
 jobs:
   clear-prod-db:
     runs-on: mn-rtu-gh-runner
