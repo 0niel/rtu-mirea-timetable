@@ -14,7 +14,7 @@ env:
 
 jobs:
   migrate-prod-db:
-    runs-on: mn-rtu-gh-runner
+    runs-on: mn-rtu-timetable-runner
     steps:
       - name: Migrate production database
         run: |

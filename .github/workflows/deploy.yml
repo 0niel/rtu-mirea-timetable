@@ -65,7 +65,7 @@ jobs:
             cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
           docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
 #  deploy:
-#    runs-on: mn-rtu-gh-runner
+#    runs-on: mn-rtu-timetable-runner
 #    needs: [build-backend, build-worker]
 #    steps:
 #      - name: Checkout

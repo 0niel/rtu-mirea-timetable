@@ -14,7 +14,7 @@ env:
 
 jobs:
   clear-prod-broker:
-    runs-on: mn-rtu-gh-runner
+    runs-on: mn-rtu-timetable-runner
     steps:
       - name: Clear production broker
         run: |
