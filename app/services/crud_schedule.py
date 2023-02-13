@@ -210,16 +210,28 @@ async def get_or_create_lesson(db: AsyncSession, cmd: models.LessonCreate):
 
 
 async def clear_group_schedule(db: AsyncSession, group_name: str, period_id: int):
-    await db.execute(
-        delete(Lesson, synchronize_session=False).where(
+    res = await db.execute(
+        select(Group)
+        .where(
             and_(
-                Lesson.group_id == select(Group.id).where(Group.name == group_name),
-                Lesson.group_id == select(Group.id).where(Group.period_id == period_id),
+                Group.name == group_name,
+                Group.period_id == period_id,
             )
-        ),
-        # synchronize_session=False,
+        )
+        .limit(1)
     )
-    await db.commit()
+
+    if group := res.scalar():
+        await db.execute(
+            delete(Lesson)
+            .where(
+                and_(
+                    Lesson.group_id == group.id,
+                    Lesson.period_id == period_id,
+                )
+            )
+        )
+        await db.commit()
 
 
 async def delete_lesson(db: AsyncSession, cmd: models.LessonDelete):
