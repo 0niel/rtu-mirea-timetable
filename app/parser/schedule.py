@@ -123,8 +123,8 @@ def parse() -> Generator[list[LessonsSchedule], None, None]:
 async def parse_schedule() -> None:  # sourcery skip: low-code-quality
     """Parse parser and save it to database"""
     for schedules in parse():
-        for schedule in schedules:
-            try:
+        try:
+            for schedule in schedules:
                 async with async_session() as db:
                     await db.begin()
                     period = await schedule_crud.get_or_create_period(
@@ -249,6 +249,5 @@ async def parse_schedule() -> None:  # sourcery skip: low-code-quality
                                     weeks=lesson.weeks,
                                 ),
                             )
-
-            except Exception as e:
-                logger.error(f"Error while parsing schedule: {e}")
+        except Exception as e:
+            logger.error(f"Error while parsing schedule: {e}")

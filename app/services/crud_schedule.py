@@ -223,11 +223,21 @@ async def clear_group_schedule(db: AsyncSession, group_name: str, period_id: int
 
     if group := res.scalar():
         await db.execute(
-            delete(Lesson)
-            .where(
+            delete(lessons_to_teachers).where(
+                lessons_to_teachers.c.lesson_id.in_(
+                    select(Lesson.id).where(
+                        and_(
+                            Lesson.group_id == select(Group.id).where(Group.name == group_name),
+                        )
+                    )
+                )
+            )
+        )
+
+        await db.execute(
+            delete(Lesson).where(
                 and_(
                     Lesson.group_id == group.id,
-                    Lesson.period_id == period_id,
                 )
             )
         )
