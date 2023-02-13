@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+FROM tiangolo/uvicorn-gunicorn-fastapi:latest
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -22,8 +22,11 @@ COPY pyproject.toml poetry.lock* /app/
 ARG INSTALL_DEV=false
 RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
 
-COPY . /app
+COPY . /app/
 
 EXPOSE $BACKEND_PORT
 
-CMD ["python", "runserver.py"]
+# Need to run anything berore starting the server. For example, migrations
+ENV PRE_START_PATH=./prestart.sh
+ENV PORT="${PORT:-8080}"
+ENV APP_MODULE="app.main:app"

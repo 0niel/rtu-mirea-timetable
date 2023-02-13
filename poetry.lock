@@ -965,7 +965,7 @@ idna2008 = ["idna"]
 
 [[package]]
 name = "rtu-schedule-parser"
-version = "2.1.1"
+version = "2.1.5"
 description = "Easy extraction of the MIREA - Russian Technological University schedule from Excel documents."
 category = "main"
 optional = false

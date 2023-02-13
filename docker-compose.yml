@@ -49,6 +49,7 @@ services:
 
   backend:
     image: ${BACKEND_IMAGE}
+    build: .
     depends_on:
       db:
         condition: service_healthy
@@ -110,6 +111,9 @@ services:
 
   worker:
     image: ${WORKER_IMAGE}
+    build:
+      context: .
+      dockerfile: worker.dockerfile
     environment:
         LOG_LEVEL: INFO
         C_FORCE_ROOT: true

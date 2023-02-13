@@ -126,7 +126,7 @@ async def parse_schedule() -> None:  # sourcery skip: low-code-quality
         for schedules in parse():
             for schedule in schedules:
                 try:
-                    # await self.repository.clear_group_schedule(parser.group)
+                    await schedule_crud.clear_group_schedule(db, schedule.group, schedule.period)
                     period = await schedule_crud.get_or_create_period(
                         db,
                         PeriodCreate(
