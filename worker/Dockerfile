@@ -24,6 +24,4 @@ RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; els
 
 COPY . /app
 
-ENV PRE_START_PATH=./prestart.sh
-
 CMD ["celery", "-A", "worker.tasks", "worker", "-B", "-E", "--concurrency=2"]

@@ -113,7 +113,7 @@ services:
     image: ${WORKER_IMAGE}
     build:
       context: .
-      dockerfile: worker.dockerfile
+      dockerfile: worker/Dockerfile
     environment:
         LOG_LEVEL: INFO
         C_FORCE_ROOT: true
