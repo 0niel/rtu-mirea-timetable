@@ -122,133 +122,137 @@ def parse() -> Generator[list[LessonsSchedule], None, None]:
 
 async def parse_schedule() -> None:  # sourcery skip: low-code-quality
     """Parse parser and save it to database"""
-    for schedules in parse():
-        try:
-            for schedule in schedules:
-                async with async_session() as db:
-                    await db.begin()
-                    period = await schedule_crud.get_or_create_period(
-                        db,
-                        PeriodCreate(
-                            year_start=schedule.period.year_start,
-                            year_end=schedule.period.year_end,
-                            semester=schedule.period.semester,
-                        ),
-                    )
-
-                    await schedule_crud.clear_group_schedule(db, schedule.group, period.id)
-                    degree = await schedule_crud.get_or_create_degree(
-                        db,
-                        DegreeCreate(
-                            name=schedule.degree.name,
-                        ),
-                    )
-                    institute = await schedule_crud.get_or_create_institute(
-                        db,
-                        InstituteCreate(
-                            name=schedule.institute.name,
-                            short_name=schedule.institute.short_name,
-                        ),
-                    )
-                    group = await schedule_crud.get_or_create_group(
-                        db,
-                        GroupCreate(
-                            name=schedule.group,
-                            period_id=period.id,
-                            degree_id=degree.id,
-                            institute_id=institute.id,
-                        ),
-                    )
-
-                    for lesson in schedule.lessons:
-                        if type(lesson) is not LessonEmpty:
-                            if not lesson.weeks:
-                                continue
-
-                            if not all(isinstance(week, int) for week in lesson.weeks):
-                                continue
-
-                        lesson_call = await schedule_crud.get_or_create_lesson_call(
+    try:
+        for schedules in parse():
+            try:
+                for schedule in schedules:
+                    async with async_session() as db:
+                        await db.begin()
+                        period = await schedule_crud.get_or_create_period(
                             db,
-                            LessonCallCreate(
-                                num=lesson.num,
-                                time_start=lesson.time_start,
-                                time_end=lesson.time_end,
+                            PeriodCreate(
+                                year_start=schedule.period.year_start,
+                                year_end=schedule.period.year_end,
+                                semester=schedule.period.semester,
                             ),
                         )
-                        if type(lesson) is LessonEmpty:
-                            await schedule_crud.delete_lesson(
+
+                        await schedule_crud.clear_group_schedule(db, schedule.group, period.id)
+                        degree = await schedule_crud.get_or_create_degree(
+                            db,
+                            DegreeCreate(
+                                name=schedule.degree.name,
+                            ),
+                        )
+                        institute = await schedule_crud.get_or_create_institute(
+                            db,
+                            InstituteCreate(
+                                name=schedule.institute.name,
+                                short_name=schedule.institute.short_name,
+                            ),
+                        )
+                        group = await schedule_crud.get_or_create_group(
+                            db,
+                            GroupCreate(
+                                name=schedule.group,
+                                period_id=period.id,
+                                degree_id=degree.id,
+                                institute_id=institute.id,
+                            ),
+                        )
+
+                        for lesson in schedule.lessons:
+                            if type(lesson) is not LessonEmpty:
+                                if not lesson.weeks:
+                                    continue
+
+                                if not all(isinstance(week, int) for week in lesson.weeks):
+                                    continue
+
+                            lesson_call = await schedule_crud.get_or_create_lesson_call(
                                 db,
-                                LessonDelete(
-                                    group=schedule.group,
+                                LessonCallCreate(
+                                    num=lesson.num,
                                     time_start=lesson.time_start,
                                     time_end=lesson.time_end,
-                                    num=lesson.num,
-                                    weekday=lesson.weekday.value[0],
                                 ),
                             )
-                        else:
-                            lesson_type = None
-                            room = None
-                            discipline = await schedule_crud.get_or_create_discipline(
-                                db,
-                                DisciplineCreate(
-                                    name=lesson.name,
-                                ),
-                            )
-                            if lesson.room is not None:
-                                campus_id = None
-                                if lesson.room.campus:
-                                    campus = await schedule_crud.get_or_create_campus(
-                                        db,
-                                        CampusCreate(
-                                            name=lesson.room.campus.name,
-                                            short_name=lesson.room.campus.short_name,
-                                        ),
-                                    )
-                                    campus_id = campus.id
-
-                                room = await schedule_crud.get_or_create_room(
+                            if type(lesson) is LessonEmpty:
+                                await schedule_crud.delete_lesson(
                                     db,
-                                    RoomCreate(
-                                        name=lesson.room.name,
-                                        campus_id=campus_id,
+                                    LessonDelete(
+                                        group=schedule.group,
+                                        time_start=lesson.time_start,
+                                        time_end=lesson.time_end,
+                                        num=lesson.num,
+                                        weekday=lesson.weekday.value[0],
                                     ),
                                 )
-                            if lesson.type:
-                                lesson_type = await schedule_crud.get_or_create_lesson_type(
+                            else:
+                                lesson_type = None
+                                room = None
+                                discipline = await schedule_crud.get_or_create_discipline(
                                     db,
-                                    LessonTypeCreate(
-                                        name=lesson.type.value,
+                                    DisciplineCreate(
+                                        name=lesson.name,
                                     ),
                                 )
+                                if lesson.room is not None:
+                                    campus_id = None
+                                    if lesson.room.campus:
+                                        campus = await schedule_crud.get_or_create_campus(
+                                            db,
+                                            CampusCreate(
+                                                name=lesson.room.campus.name,
+                                                short_name=lesson.room.campus.short_name,
+                                            ),
+                                        )
+                                        campus_id = campus.id
 
-                            teachers_id = [
-                                (
-                                    await schedule_crud.get_or_create_teacher(
+                                    room = await schedule_crud.get_or_create_room(
                                         db,
-                                        TeacherCreate(
-                                            name=teacher,
+                                        RoomCreate(
+                                            name=lesson.room.name,
+                                            campus_id=campus_id,
                                         ),
                                     )
-                                ).id
-                                for teacher in lesson.teachers
-                            ]
+                                if lesson.type:
+                                    lesson_type = await schedule_crud.get_or_create_lesson_type(
+                                        db,
+                                        LessonTypeCreate(
+                                            name=lesson.type.value,
+                                        ),
+                                    )
 
-                            await schedule_crud.get_or_create_lesson(
-                                db,
-                                LessonCreate(
-                                    lesson_type_id=lesson_type.id if lesson.type else None,
-                                    discipline_id=discipline.id,
-                                    teachers_id=teachers_id,
-                                    room_id=room.id if lesson.room else None,
-                                    group_id=group.id,
-                                    call_id=lesson_call.id,
-                                    weekday=lesson.weekday.value[0],
-                                    subgroup=lesson.subgroup,
-                                    weeks=lesson.weeks,
-                                ),
-                            )
-        except Exception as e:
-            logger.error(f"Error while parsing schedule: {e}")
-            pass
+                                teachers_id = [
+                                    (
+                                        await schedule_crud.get_or_create_teacher(
+                                            db,
+                                            TeacherCreate(
+                                                name=teacher,
+                                            ),
+                                        )
+                                    ).id
+                                    for teacher in lesson.teachers
+                                ]
+
+                                await schedule_crud.get_or_create_lesson(
+                                    db,
+                                    LessonCreate(
+                                        lesson_type_id=lesson_type.id if lesson.type else None,
+                                        discipline_id=discipline.id,
+                                        teachers_id=teachers_id,
+                                        room_id=room.id if lesson.room else None,
+                                        group_id=group.id,
+                                        call_id=lesson_call.id,
+                                        weekday=lesson.weekday.value[0],
+                                        subgroup=lesson.subgroup,
+                                        weeks=lesson.weeks,
+                                    ),
+                                )
+            except Exception as e:
+                logger.error(f"Error while parsing schedule: {e}")
+                pass
+    except Exception as e:
+        logger.error(f"Error while parsing schedule: {e}")
+        pass
