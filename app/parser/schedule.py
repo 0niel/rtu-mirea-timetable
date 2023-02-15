@@ -251,3 +251,4 @@ async def parse_schedule() -> None:  # sourcery skip: low-code-quality
                             )
         except Exception as e:
             logger.error(f"Error while parsing schedule: {e}")
+            pass
