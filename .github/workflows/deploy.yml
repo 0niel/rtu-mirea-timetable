@@ -64,14 +64,14 @@ jobs:
           docker tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }} \
             cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
           docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
-#  deploy:
-#    runs-on: mn-rtu-timetable-runner
-#    needs: [build-backend, build-worker]
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      - name: Deploy Worker and Backend
-#        run: |
-#          cd ${{ secrets.PRODUCTION_FOLDER }}
-#          docker compose pull && docker compose up -d
+  deploy:
+    runs-on: mn-rtu-timetable-runner
+    needs: [build-backend, build-worker]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Deploy Worker and Backend
+        run: |
+          cd ${{ secrets.PRODUCTION_FOLDER }}
+          docker compose pull && docker compose up -d
          
