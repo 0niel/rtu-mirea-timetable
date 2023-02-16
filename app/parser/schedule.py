@@ -109,10 +109,13 @@ def parse() -> Generator[list[LessonsSchedule], None, None]:
 
     for doc in downloaded:
         print(f"Processing document: {doc}")
+        try:
+            parser = ExcelScheduleParser(doc[1], doc[0].period, doc[0].institute, doc[0].degree)
 
-        parser = ExcelScheduleParser(doc[1], doc[0].period, doc[0].institute, doc[0].degree)
-
-        yield parser.parse(force=True).get_schedule()
+            yield parser.parse(force=True).get_schedule()
+        except Exception as e:
+            logger.error("Parsing exception from pkg")
+            pass
 
     docs_dir = os.path.dirname(os.path.abspath(__file__))
     docs_dir = os.path.join(docs_dir, "..", "..", "docs")
