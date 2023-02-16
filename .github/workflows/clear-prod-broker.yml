@@ -19,7 +19,7 @@ jobs:
       - name: Clear production broker
         run: |
             if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
-              docker volume rm broker || true
+              docker volume rm broker --force
               docker volume create broker
             else
               echo "Incorrect action password"
