@@ -1,0 +1,30 @@
+name: Deploy promtail agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+env:
+  PASSWORD: ${{ inputs.password }}
+  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
+
+jobs:
+  deploy-promtail:
+    runs-on: mn-rtu-timetable-runner
+    steps:
+      - name: Deploy promtail
+        run: |
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              cd ${{ secrets.PRODUCTION_FOLDER }}
+              docker container rm -f timetable-promtail
+              docker run -d --name=timetable-promtail \
+                -v /var/lib/docker/containers:/var/lib/docker/containers/ \
+                -v $(pwd)/promtail/config.yml:/etc/promtail/config.yml:z \
+                grafana/promtail:latest 
+            else
+              echo "Incorrect action password"
+            fi
