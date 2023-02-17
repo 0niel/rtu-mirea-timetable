@@ -19,7 +19,7 @@ jobs:
       - name: Deploy promtail
         run: |
             if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
-              cd ${{ secrets.PRODUCTION_FOLDER }}
+              cd ${{ secrets.CORE_FOLDER }}
               docker container rm -f timetable-promtail
               docker run -d --name=timetable-promtail \
                 -v /var/lib/docker/containers:/var/lib/docker/containers/ \
