@@ -9,89 +9,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models
 from app.database.tables import (
     Group,
-    Institute,
     Lesson,
     LessonCall,
     LessonType,
     Room,
     ScheduleCampus,
-    ScheduleDegree,
     ScheduleDiscipline,
-    SchedulePeriod,
     Teacher,
     lessons_to_teachers,
 )
 from app.services import utils
 
 
-async def get_or_create_period(db: AsyncSession, cmd: models.PeriodCreate):
-    res = await db.execute(
-        select(SchedulePeriod)
-        .where(
-            and_(
-                SchedulePeriod.year_start == cmd.year_start,
-                SchedulePeriod.year_end == cmd.year_end,
-                SchedulePeriod.semester == cmd.semester,
-            )
-        )
-        .limit(1)
-    )
-    period = res.scalar()
-    if not period:
-        period = SchedulePeriod(**cmd.dict())
-        db.add(period)
-        await db.commit()
-        await db.refresh(period)
-    return period
-
-
-async def get_or_create_degree(db: AsyncSession, cmd: models.DegreeCreate):
-
-    res = await db.execute(select(ScheduleDegree).where(ScheduleDegree.name == cmd.name).limit(1))
-    degree = res.scalar()
-    if not degree:
-        degree = ScheduleDegree(**cmd.dict())
-        db.add(degree)
-        await db.commit()
-        await db.refresh(degree)
-    return degree
-
-
-async def get_or_create_institute(db: AsyncSession, cmd: models.InstituteCreate):
-
-    res = await db.execute(select(Institute).where(Institute.name == cmd.name).limit(1))
-    institute = res.scalar()
-    if not institute:
-        institute = Institute(**cmd.dict())
-        db.add(institute)
-        await db.commit()
-        await db.refresh(institute)
-    return institute
-
-
-async def get_or_create_group(db: AsyncSession, cmd: models.GroupCreate):
-
-    res = await db.execute(
-        select(Group)
-        .where(
-            and_(
-                Group.name == cmd.name,
-                Group.degree_id == cmd.degree_id,
-                Group.institute_id == cmd.institute_id,
-            )
-        )
-        .limit(1)
-    )
-    group = res.scalar()
-    if not group:
-        group = Group(**cmd.dict())
-        db.add(group)
-        await db.commit()
-        await db.refresh(group)
-    return group
-
-
 async def get_or_create_lesson_type(db: AsyncSession, cmd: models.LessonTypeCreate):
+    # migrated to api v2
 
     res = await db.execute(select(LessonType).where(LessonType.name == cmd.name).limit(1))
     lesson_type = res.scalar()
@@ -104,7 +35,7 @@ async def get_or_create_lesson_type(db: AsyncSession, cmd: models.LessonTypeCrea
 
 
 async def get_or_create_campus(db: AsyncSession, cmd: models.CampusCreate):
-
+    # migrated to api v2
     res = await db.execute(select(ScheduleCampus).where(ScheduleCampus.name == cmd.name).limit(1))
     campus = res.scalar()
     if not campus:
@@ -116,7 +47,7 @@ async def get_or_create_campus(db: AsyncSession, cmd: models.CampusCreate):
 
 
 async def get_or_create_room(db: AsyncSession, cmd: models.RoomCreate):
-
+    # migrated to api v2
     res = await db.execute(select(Room).where(Room.name == cmd.name).limit(1))
     room = res.scalar()
     if not room:
@@ -128,7 +59,7 @@ async def get_or_create_room(db: AsyncSession, cmd: models.RoomCreate):
 
 
 async def get_or_create_discipline(db: AsyncSession, cmd: models.DisciplineCreate):
-
+    # migrated to api v2
     res = await db.execute(select(ScheduleDiscipline).where(ScheduleDiscipline.name == cmd.name).limit(1))
     discipline = res.scalar()
     if not discipline:
@@ -140,7 +71,7 @@ async def get_or_create_discipline(db: AsyncSession, cmd: models.DisciplineCreat
 
 
 async def get_or_create_teacher(db: AsyncSession, cmd: models.TeacherCreate):
-
+    # migrated to api v2
     res = await db.execute(select(Teacher).where(Teacher.name == cmd.name).limit(1))
     teacher = res.scalar()
     if not teacher:
@@ -152,7 +83,7 @@ async def get_or_create_teacher(db: AsyncSession, cmd: models.TeacherCreate):
 
 
 async def get_or_create_lesson_call(db: AsyncSession, cmd: models.LessonCallCreate):
-
+    # migrated to api v2
     res = await db.execute(
         select(LessonCall)
         .where(
@@ -174,7 +105,7 @@ async def get_or_create_lesson_call(db: AsyncSession, cmd: models.LessonCallCrea
 
 
 async def get_or_create_lesson(db: AsyncSession, cmd: models.LessonCreate):
-
+    # migrated to api v2
     res = await db.execute(
         select(Lesson)
         .join(lessons_to_teachers)
@@ -279,6 +210,7 @@ async def search_teachers(db: AsyncSession, name: str):
 
 
 async def get_lessons_by_room(db: AsyncSession, room_id: int):
+    # migrated to api v2
     res = await db.execute(select(Lesson).where(Lesson.room_id == room_id))
     return res.scalars().all()
 
@@ -308,6 +240,7 @@ async def get_room(db: AsyncSession, name: str, campus_short_name: Optional[str]
 
 
 async def get_lessons_by_room_and_date(db: AsyncSession, room_id: int, date: datetime.date) -> list[Lesson]:
+    # partially migrated to api v2
     week = utils.get_week(date=date)
     res = await db.execute(
         select(Lesson)
@@ -324,6 +257,7 @@ async def get_lessons_by_room_and_date(db: AsyncSession, room_id: int, date: dat
 
 
 async def get_lessons_by_room_and_week(db: AsyncSession, room_id: int, week: int) -> list[Lesson]:
+    # migrated to api v2
     res = await db.execute(
         select(Lesson)
         .where(
@@ -387,7 +321,7 @@ async def get_rooms_statuses(db: AsyncSession, rooms: list[str], time: datetime.
     rooms_res = []
 
     for room in rooms:
-        found = await search_room(room)
+        found = await search_room(db, room)
 
         # extend by found rooms
         rooms_res.extend(found)
@@ -423,7 +357,7 @@ async def get_rooms_statuses(db: AsyncSession, rooms: list[str], time: datetime.
 
 
 async def get_all_rooms(db: AsyncSession) -> list[Room]:
-
+    # migrated to api v2
     res = await db.execute(select(Room))
     return res.scalars().all()
 
@@ -439,7 +373,7 @@ async def get_room_info(db: AsyncSession, room_id: int) -> models.RoomInfo:
     res2 = await db.execute(select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id))
     lessons = res2.scalars().all()
 
-    workload = await get_room_workload(room_id)
+    workload = await get_room_workload(db, room_id)
 
     purpose = Counter([lesson.lesson_type.name for lesson in lessons]).most_common(1)[0][0]
 

@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-import app.services.groups as groups_service
 from app import models
 from app.config import config
 from app.database.connection import get_session
+from app.services.api import GroupService
 
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
@@ -52,12 +52,12 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 )
 async def get_lks_schedule(
     group_name: str = Path(..., min_length=1),
-    session: AsyncSession = Depends(get_session),
+    db: AsyncSession = Depends(get_session),
 ):
     # ivbo-01-21 -> ИВБО-01-21
     group_name = lat_to_cyr(group_name)
 
-    group = await groups_service.get_group(session, group_name.upper())
+    group = await GroupService.get_group_by_name(db=db, name=group_name)
 
     if not group:
         raise HTTPException(
@@ -65,7 +65,6 @@ async def get_lks_schedule(
             detail=f"Группа `{group_name}` не найдена",
         )
 
-    group = models.Group.from_orm(group)
     lessons = group.lessons  # type: list[models.Lesson]
 
     def get_subgroup_substr(les: models.Lesson):
@@ -155,7 +154,7 @@ def lat_to_cyr(string: str) -> str:
     )
 
     tr = {ord(a): ord(b) for a, b in zip(*symbols)}
-    return string.translate(tr)
+    return string.translate(tr).upper()
 
 
 def get_lesson_type(lesson_type_name: str) -> str:

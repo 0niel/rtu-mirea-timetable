@@ -1,9 +1,8 @@
 version: "3.9"
 
 services:
-  nginx-proxy:
+  proxy:
     image: jwilder/nginx-proxy
-    container_name: nginx-proxy
     ports:
       - "80:80"
       - "443:443"
@@ -21,9 +20,8 @@ services:
 
   letsencrypt:
     image: nginxproxy/acme-companion:latest
-    container_name: nginx-proxy-le
     volumes_from:
-      - nginx-proxy
+      - proxy
     volumes:
       - certs:/etc/nginx/certs:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -49,13 +47,18 @@ services:
 
   backend:
     image: ${BACKEND_IMAGE}
-    build: .
+#    build:
+#        context: .
+#        dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
       broker:
         condition: service_healthy
     volumes:
+      - ./:/app
       - ./docs:/app/docs # schedule docs
     networks:
       - proxy
@@ -85,11 +88,12 @@ services:
         BROKER_PASS: ${BROKER_PASS}
         BROKER_URL: ${BROKER_URL}
 
+        SENTRY_DSN: ${SENTRY_DSN}
+        SENTRY_DISABLE_LOGGING: ${SENTRY_DISABLE_LOGGING}
+
         VIRTUAL_HOST: ${DOMAIN}
         LETSENCRYPT_HOST: ${DOMAIN}
         VIRTUAL_PORT: ${BACKEND_PORT}
-
-        ENV: development
 
   broker:
     image: rabbitmq:3-management
@@ -111,9 +115,9 @@ services:
 
   worker:
     image: ${WORKER_IMAGE}
-    build:
-      context: .
-      dockerfile: worker/Dockerfile
+#    build:
+#      context: .
+#      dockerfile: worker/Dockerfile
     environment:
         LOG_LEVEL: INFO
         C_FORCE_ROOT: true
@@ -141,7 +145,8 @@ services:
         BROKER_PASS: ${BROKER_PASS}
         BROKER_URL: ${BROKER_URL}
 
-        ENV: development
+        SENTRY_DSN: ${SENTRY_DSN}
+        SENTRY_DISABLE_LOGGING: ${SENTRY_DISABLE_LOGGING}
     depends_on:
       broker:
         condition: service_healthy

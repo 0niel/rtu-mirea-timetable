@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:latest
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -7,7 +7,7 @@ WORKDIR /app/
 
 ENV POETRY_HOME="/opt/poetry" \
     POETRY_NO_INTERACTION=1 \
-    POETRY_VERSION=1.2.0 \
+    POETRY_VERSION=1.3.1 \
     POETRY_VIRTUALENVS_CREATE=false
 
 # Install Poetry
@@ -26,7 +26,4 @@ COPY . /app/
 
 EXPOSE $BACKEND_PORT
 
-# Need to run anything berore starting the server. For example, migrations
-ENV PRE_START_PATH=./prestart.sh
-ENV PORT="${PORT:-8080}"
-ENV APP_MODULE="app.main:app"
+CMD ["python", "runserver.py"]

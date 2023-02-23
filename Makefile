@@ -8,10 +8,12 @@ fmt: format
 format:
 	isort --force-single-line-imports app
 	isort --force-single-line-imports tests
+	isort --force-single-line-imports worker
 	autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place app --exclude=__init__.py
 	autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place tests --exclude=__init__.py
-	black app tests
-	isort app tests
+	autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place worker --exclude=__init__.py
+	black app tests worker
+	isort app tests worker
 
 
 ## Check code quality
@@ -25,27 +27,22 @@ tests: test
 test:
 	pytest --asyncio-mode=strict -v
 
-cov: coverage
-coverage:
-	coverage run -m pytest --asyncio-mode=strict -v && coverage report -m
-
-
 ## Sort imports
 isort:
-	isort app tests
+	isort app tests worker
 
 isort_check:
-	isort --check-only app tests
+	isort --check-only app tests worker
 
 
 ## Format code
 black:
-	black app tests
+	black app tests worker
 
 black_check:
-	black --diff --check app tests
+	black --diff --check app tests worker
 
 
 # Check pep8
 flake:
-	flake8 app tests
+	flake8 app tests worker

@@ -7,7 +7,7 @@ WORKDIR /app/
 
 ENV POETRY_HOME="/opt/poetry" \
     POETRY_NO_INTERACTION=1 \
-    POETRY_VERSION=1.2.0 \
+    POETRY_VERSION=1.3.1 \
     POETRY_VIRTUALENVS_CREATE=false
 
 # Install Poetry

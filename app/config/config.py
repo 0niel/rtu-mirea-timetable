@@ -66,6 +66,10 @@ class Config(_Settings):
     # RabbitMQ
     BROKER_URL: str
 
+    # Sentry
+    SENTRY_DSN: str
+    SENTRY_DISABLE_LOGGING: bool
+
 
 @lru_cache()
 def get_config(env_file: str = ".env") -> Config:
