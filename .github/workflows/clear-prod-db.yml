@@ -1,27 +1,26 @@
-#name: Clear production database
-#
-#on:
-#  workflow_dispatch:
-#    inputs:
-#      password:
-#        description: 'Workflow password'
-#        type: string
-#        required: true
-#
-#env:
-#  PASSWORD: ${{ inputs.password }}
-#  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
-#
-#jobs:
-#  clear-prod-db:
-#    runs-on: mn-rtu-timetable-runner
-#    steps:
-#      - name: Clear production db
-#        run: |
-#            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
-#              docker volume rm app-db-data --force
-#              docker volume create app-db-data
-#            else
-#              echo "Incorrect action password"
-#            fi
-#
+name: Clear production database
+
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+env:
+  PASSWORD: ${{ inputs.password }}
+  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
+
+jobs:
+  clear-prod-db:
+    runs-on: mn-rtu-timetable-runner
+    steps:
+      - name: Clear production db
+        run: |
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              docker volume rm app-db-data --force
+              docker volume create app-db-data
+            else
+              echo "Incorrect action password"
+            fi

@@ -1,26 +1,26 @@
-#name: Migrate production database
-#
-#on:
-#  workflow_dispatch:
-#    inputs:
-#      password:
-#        description: 'Workflow password'
-#        type: string
-#        required: true
-#
-#env:
-#  PASSWORD: ${{ inputs.password }}
-#  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
-#
-#jobs:
-#  migrate-prod-db:
-#    runs-on: mn-rtu-timetable-runner
-#    steps:
-#      - name: Migrate production database
-#        run: |
-#            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
-#              cd ${{ secrets.PRODUCTION_FOLDER }}
-#              docker compose exec backend alembic upgrade head
-#            else
-#              echo "Incorrect action password"
-#            fi
+name: Migrate production database
+
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+env:
+  PASSWORD: ${{ inputs.password }}
+  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
+
+jobs:
+  migrate-prod-db:
+    runs-on: mn-rtu-timetable-runner
+    steps:
+      - name: Migrate production database
+        run: |
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              cd ${{ secrets.PRODUCTION_FOLDER }}
+              docker compose exec backend alembic upgrade head
+            else
+              echo "Incorrect action password"
+            fi
