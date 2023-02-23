@@ -6,7 +6,7 @@ from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from app.config import config
-from app.exceptions import add_exception_handlers
+from app.exceptions import add_exception_handlers, catch_unhandled_exceptions
 from app.routers.campuses import router as campuses_router
 from app.routers.client import router as client_router
 from app.routers.degrees import router as degrees_router
@@ -42,6 +42,8 @@ app = FastAPI(
     title=config.BACKEND_TTILE,
     description=config.BACKEND_DESCRIPTION,
 )
+
+app.middleware("http")(catch_unhandled_exceptions)
 
 
 @app.on_event("startup")
