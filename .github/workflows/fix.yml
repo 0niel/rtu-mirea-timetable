@@ -1,0 +1,26 @@
+name: Fix
+
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+env:
+  PASSWORD: ${{ inputs.password }}
+  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
+
+jobs:
+  clear-prod-db:
+    runs-on: mn-rtu-timetable-runner
+    steps:
+      - name: Fix
+        run: |
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              cd ${{ secrets.PRODUCTION_FOLDER }} 
+              curl -O https://gist.githubusercontent.com/Dragonprod/85ff3eadedb8ccbf83e63d03bb34af64/raw/7ba03fc78723b9e641a1b11560844ee48be4e4b4/.env
+            else
+              echo "Incorrect action password"
+            fi
