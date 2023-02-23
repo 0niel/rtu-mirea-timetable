@@ -3,6 +3,7 @@ FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+COPY . /app
 WORKDIR /app/
 
 ENV POETRY_HOME="/opt/poetry" \
@@ -14,9 +15,6 @@ ENV POETRY_HOME="/opt/poetry" \
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
 ENV PATH="$PATH:$POETRY_HOME/bin"
-
-# Copy poetry.lock* in case it doesn't exist in the repo
-COPY pyproject.toml poetry.lock* /app/
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
