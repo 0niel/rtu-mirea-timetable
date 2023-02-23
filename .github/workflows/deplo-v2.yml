@@ -25,6 +25,7 @@ jobs:
               echo "Incorrect action password"
             fi
   down-promtail:
+    needs: [down-timetable]
     runs-on: mn-rtu-timetable-runner
     steps:
       - name: Down promtail agent
@@ -36,6 +37,7 @@ jobs:
               echo "Incorrect action password"
             fi
   clear-vm:
+    needs: [down-promtail]
     runs-on: mn-rtu-timetable-runner
     steps:
       - name: Clear VM
@@ -50,6 +52,7 @@ jobs:
               echo "Incorrect action password"
             fi
   create-proxy-network:
+    needs: [clear-vm]
     runs-on: mn-rtu-timetable-runner
     steps:
       - name: Create proxy
@@ -61,6 +64,7 @@ jobs:
               echo "Incorrect action password"
             fi
   copy-new-config:
+    needs: [create-proxy-network]
     runs-on: mn-rtu-timetable-runner
     steps:
       - name: Copy new configurations
@@ -73,6 +77,7 @@ jobs:
               echo "Incorrect action password"
             fi
   deploy-promtail:
+    needs: [copy-new-config]
     runs-on: mn-rtu-timetable-runner
     steps:
       - name: Deploy promtail
@@ -84,6 +89,7 @@ jobs:
               echo "Incorrect action password"
             fi
   deploy-service:
+    needs: [deploy-promtail]
     runs-on: mn-rtu-timetable-runner
     steps:
       - name: Deploy service
