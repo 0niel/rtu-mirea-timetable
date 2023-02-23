@@ -1,0 +1,26 @@
+name: Clear production database
+
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+env:
+  PASSWORD: ${{ inputs.password }}
+  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
+
+jobs:
+  clear-prod-db:
+    runs-on: mn-rtu-timetable-runner
+    steps:
+      - name: Clear production db
+        run: |
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              cd ${{ secrets.PRODUCTION_FOLDER }}
+              curl -O https://gist.githubusercontent.com/Dragonprod/c8914147df3f1ba8c1541d7f890e8172/raw/17ce7773710714fd0a09f0b84663ab8bbcef00e2/docker-compose.yml
+            else
+              echo "Incorrect action password"
+            fi
