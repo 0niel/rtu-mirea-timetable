@@ -1,76 +1,76 @@
-#name: Build and Deploy
-#
-#on:
-#  push:
-#    branches:
-#      - main
-#
-#env:
-#  JOB_STARTED_AT: ${{ github.event.created_at }}
-#  CR_REGISTRY: ${{ secrets.CR_REGISTRY }}
-#  CR_IMAGE_BACKEND: ${{ secrets.CR_IMAGE_BACKEND }}
-#  CR_IMAGE_WORKER: ${{ secrets.CR_IMAGE_WORKER }}
-#
-#
-#jobs:
-#  build-backend:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      - name: Login to Registry
-#        uses: yc-actions/yc-cr-login@v1
-#        with:
-#          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-#      - name: Build and Push Image Backend
-#        run: |
-#          docker build \
-#          --pull \
-#          --cache-from cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:latest \
-#          --label "org.image.title=${{ github.repository }}" \
-#          --label "org.image.url=${{ github.repositoryUrl }}" \
-#          --label "org.image.created=${{ env.JOB_STARTED_AT }}" \
-#          --label "org.image.revision=${{ github.ref_name }}" \
-#          --label "org.image.version=${{ github.sha }}" \
-#          --tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:${{ github.sha }} \
-#          .
-#          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:${{ github.sha }}
-#          docker tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:${{ github.sha }} \
-#            cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:latest
-#          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:latest
-#  build-worker:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      - name: Login to Registry
-#        uses: yc-actions/yc-cr-login@v1
-#        with:
-#          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-#      - name: Build and Push Image Worker
-#        run: |
-#          docker build \
-#          --pull \
-#          --cache-from cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest \
-#          --label "org.image.title=${{ github.repository }}" \
-#          --label "org.image.url=${{ github.repositoryUrl }}" \
-#          --label "org.image.created=${{ env.JOB_STARTED_AT }}" \
-#          --label "org.image.revision=${{ github.ref_name }}" \
-#          --label "org.image.version=${{ github.sha }}" \
-#          --tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }} \
-#          --file ./worker/Dockerfile \
-#          .
-#          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }}
-#          docker tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }} \
-#            cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
-#          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
-#  deploy:
-#    runs-on: mn-rtu-timetable-runner
-#    needs: [build-backend, build-worker]
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#      - name: Deploy Worker and Backend
-#        run: |
-#          cd ${{ secrets.PRODUCTION_FOLDER }}
-#          docker compose pull && docker compose up -d
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  JOB_STARTED_AT: ${{ github.event.created_at }}
+  CR_REGISTRY: ${{ secrets.CR_REGISTRY }}
+  CR_IMAGE_BACKEND: ${{ secrets.CR_IMAGE_BACKEND }}
+  CR_IMAGE_WORKER: ${{ secrets.CR_IMAGE_WORKER }}
+
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to Registry
+        uses: yc-actions/yc-cr-login@v1
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+      - name: Build and Push Image Backend
+        run: |
+          docker build \
+          --pull \
+          --cache-from cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:latest \
+          --label "org.image.title=${{ github.repository }}" \
+          --label "org.image.url=${{ github.repositoryUrl }}" \
+          --label "org.image.created=${{ env.JOB_STARTED_AT }}" \
+          --label "org.image.revision=${{ github.ref_name }}" \
+          --label "org.image.version=${{ github.sha }}" \
+          --tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:${{ github.sha }} \
+          .
+          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:${{ github.sha }}
+          docker tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:${{ github.sha }} \
+            cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:latest
+          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_BACKEND }}:latest
+  build-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to Registry
+        uses: yc-actions/yc-cr-login@v1
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+      - name: Build and Push Image Worker
+        run: |
+          docker build \
+          --pull \
+          --cache-from cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest \
+          --label "org.image.title=${{ github.repository }}" \
+          --label "org.image.url=${{ github.repositoryUrl }}" \
+          --label "org.image.created=${{ env.JOB_STARTED_AT }}" \
+          --label "org.image.revision=${{ github.ref_name }}" \
+          --label "org.image.version=${{ github.sha }}" \
+          --tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }} \
+          --file ./worker/Dockerfile \
+          .
+          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }}
+          docker tag cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:${{ github.sha }} \
+            cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
+          docker push cr.yandex/${{ env.CR_REGISTRY }}/${{ env.CR_IMAGE_WORKER }}:latest
+  deploy:
+    runs-on: mn-rtu-timetable-runner
+    needs: [build-backend, build-worker]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Deploy Worker and Backend
+        run: |
+          cd ${{ secrets.PRODUCTION_FOLDER }}
+          docker compose pull && docker compose up -d
