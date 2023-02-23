@@ -47,7 +47,6 @@ jobs:
               docker image prune -af
               docker volume prune -f
               docker system prune -f
-              docker network create proxy
             else
               echo "Incorrect action password"
             fi
