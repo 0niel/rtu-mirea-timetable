@@ -3,8 +3,7 @@ FROM tiangolo/uvicorn-gunicorn-fastapi:latest
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-COPY . /app
-WORKDIR /app
+WORKDIR /app/
 
 ENV POETRY_HOME="/opt/poetry" \
     POETRY_NO_INTERACTION=1 \
@@ -16,8 +15,13 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 ENV PATH="$PATH:$POETRY_HOME/bin"
 
+# Copy poetry.lock* in case it doesn't exist in the repo
+COPY pyproject.toml poetry.lock* /app/
+
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
 RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
+
+COPY . /app
 
 CMD ["celery", "-A", "worker.tasks", "worker", "-B", "-E", "--concurrency=2"]

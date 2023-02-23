@@ -3,7 +3,6 @@ FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-COPY . /app
 WORKDIR /app/
 
 ENV POETRY_HOME="/opt/poetry" \
