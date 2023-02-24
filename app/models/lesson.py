@@ -7,7 +7,7 @@ from .discipline import Discipline
 from .lesson_call import LessonCall
 from .lesson_type import LessonType
 from .room import Room
-from .teacher import Teacher
+from .teacher import TeacherGroup
 
 
 class LessonCreate(BaseModel):
@@ -26,7 +26,7 @@ class Lesson(BaseModel):
     id: PositiveInt
     lesson_type: Optional[LessonType] = None
     discipline: Discipline
-    teachers: list[Teacher]
+    teachers: list[TeacherGroup]
     room: Optional[Room] = None
     calls: LessonCall
     weekday: PositiveInt

@@ -26,7 +26,7 @@ class Lesson(Base):
         "Teacher",
         secondary="schedule_lessons_to_teachers",
         back_populates="lessons",
-        lazy="subquery",
+        lazy="joined",
     )
     subgroup = db.Column(db.Integer, nullable=True)
     weeks = db.Column(pg.ARRAY(db.Integer, dimensions=1))
@@ -34,29 +34,29 @@ class Lesson(Base):
         "LessonCall",
         cascade="delete",
         back_populates="lesson",
-        lazy="subquery",
+        lazy="joined",
     )
     discipline = relationship(
         "ScheduleDiscipline",
         cascade="delete",
         back_populates="lessons",
-        lazy="subquery",
+        lazy="joined",
     )
     room = relationship(
         "Room",
         cascade="delete",
         back_populates="lessons",
-        lazy="subquery",
+        lazy="joined",
     )
     lesson_type = relationship(
         "LessonType",
         cascade="delete",
         back_populates="lessons",
-        lazy="subquery",
+        lazy="joined",
     )
     group = relationship(
         "Group",
         cascade="delete",
         back_populates="lessons",
-        lazy="subquery",
+        lazy="joined",
     )
