@@ -90,10 +90,8 @@ function classNames(...classes: unknown[]) {
 }
 
 const searchTeacherSchedule = async (name: string) => {
-  const url = "/api/teachers/search/{name}";
-
-  //   set axios base url as http://localhost
-  axios.defaults.baseURL = "http://localhost";
+  axios.defaults.baseURL = "https://timetable.mirea.ru";
+  const url = "/api/teacher/search/{name}";
 
   const response = await axios.get(url.replace("{name}", name));
 
@@ -148,8 +146,6 @@ const getLessonsForDate = (
     return lesson.weeks.includes(week) && lesson.weekday === day;
   });
 
-  console.log("NEW LESSONS", newLessons);
-
   return newLessons;
 };
 
@@ -199,12 +195,19 @@ const Teacher: NextPage = () => {
     components["schemas"]["Teacher"] | null
   >(null);
 
-  console.log("TEACHER", name);
-  useQuery("teacher", () => searchTeacherSchedule(name), {
-    onSuccess: (data) => {
+  const { data, isLoading } = useQuery(
+    ["teacher", name],
+    () => searchTeacherSchedule(name),
+    {
+      enabled: !!name,
+    }
+  );
+
+  useEffect(() => {
+    if (data) {
       setTeacher(data);
-    },
-  });
+    }
+  }, [data]);
 
   useEffect(() => {
     setDays(generateDays(currentDate, monthToDisplay + 1, yearToDisplay));

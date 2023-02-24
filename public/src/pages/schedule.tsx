@@ -85,9 +85,9 @@ const generateDays = (
 function classNames(...classes: unknown[]) {
   return classes.filter(Boolean).join(" ");
 }
-axios.defaults.baseURL = "https://timetable.mirea.ru";
+
 const getSchedule = async (group: string) => {
-  const url = "/api/groups/{name}";
+  const url = "/api/group/name/{name}";
 
   const response = await axios.get(url.replace("{name}", group));
 
@@ -136,9 +136,8 @@ const Schedule: NextPage = () => {
   const containerNav = useRef(null);
   const containerOffset = useRef(null);
 
-  // get `group` from query
   const router = useRouter();
-  const { group } = router.query;
+  const group = router.query.group as string;
 
   const currentDate = new Date();
   const [monthToDisplay, setMonthToDisplay] = useState(currentDate.getMonth());
@@ -171,11 +170,19 @@ const Schedule: NextPage = () => {
     components["schemas"]["Group"] | null
   >(null);
 
-  useQuery("schedule", () => getSchedule(group), {
-    onSuccess: (data) => {
+  const { data, error } = useQuery(
+    ["group", group],
+    () => getSchedule(group),
+    {
+      enabled: !!group,
+    }
+  );
+
+  useEffect(() => {
+    if (data) {
       setSchedule(data);
-    },
-  });
+    }
+  }, [data]);
 
   useEffect(() => {
     setDays(generateDays(currentDate, monthToDisplay + 1, yearToDisplay));
