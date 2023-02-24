@@ -8,7 +8,8 @@ export function getWeek(date: Date) {
 }
 
 export function getWeekByDate(date: Date) {
-    const start_date = new Date(2022, 8, 1);
+    // 9 февраля 2023 года
+    const start_date = new Date(2023, 1, 9);
     const now = date;
 
     if (now < start_date) {
