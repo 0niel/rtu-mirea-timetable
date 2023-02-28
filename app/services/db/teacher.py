@@ -53,6 +53,13 @@ class TeacherDBService:
         return (await db.execute(query)).scalar()
 
     @classmethod
+    async def search_teachers(cls, db: AsyncSession, name: str) -> List[tables.Teacher]:
+        """Поиск преподавателей по имени"""
+
+        query = select(tables.Teacher).where(func.lower(tables.Teacher.name).contains(name.lower()))
+        return (await db.execute(query)).scalars()
+
+    @classmethod
     async def create(cls, db: AsyncSession, teacher: models.TeacherCreate) -> tables.Teacher:
         """Создание преподавателя"""
 

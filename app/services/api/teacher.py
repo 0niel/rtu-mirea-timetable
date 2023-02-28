@@ -48,7 +48,7 @@ class TeacherService:
 
     @classmethod
     async def get_teacher_by_name(cls, db: AsyncSession, name: str) -> models.Teacher:
-        """Получение дисциплины по имени"""
+        """Получение преподавателя по имени"""
 
         logger.debug(f"Запрос на получение преподавателя с {name = }")
 
@@ -56,6 +56,20 @@ class TeacherService:
         logger.debug(f"Преподаватель получен: {teacher}")
 
         return models.Teacher.from_orm(teacher)
+
+    @classmethod
+    async def search_teachers(cls, db: AsyncSession, name: str) -> List[models.Teacher]:
+        """Поиск преподавателей по имени"""
+
+        logger.debug(f"Запрос на поиск преподавателей с {name = }")
+
+        if len(name) < 3:
+            raise HTTPException(status_code=400, detail="Имя должно быть не менее 3 символов")
+
+        teachers = await cls._search_teachers_by_name(db=db, name=name)
+        logger.debug(f"Преподаватели получен: {teachers}")
+
+        return [models.Teacher.from_orm(teacher) for teacher in teachers]
 
     @classmethod
     async def create_teacher(cls, db: AsyncSession, teacher: models.TeacherCreate) -> models.Teacher:
@@ -93,6 +107,17 @@ class TeacherService:
             logger.warning(f"Преподаватель с {name = } не найден")
             raise HTTPException(status_code=404, detail=f"Преподаватель {name} не найден")
         return teacher
+
+    @classmethod
+    async def _search_teachers_by_name(cls, db: AsyncSession, name: str) -> List[tables.Teacher]:
+        """Поиск преподавателя по имени и проверка на существование"""
+
+        teachers = await TeacherDBService.search_teachers(db=db, name=name)
+
+        if not teachers:
+            logger.warning(f"Преподаватели с {name = } не найдены")
+            raise HTTPException(status_code=404, detail=f"Преподаватели {name} не найдены")
+        return teachers
 
     @classmethod
     async def _check_teacher_existence_with_name(cls, db: AsyncSession, name: str) -> None:

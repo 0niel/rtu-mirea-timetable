@@ -1,10 +1,9 @@
 from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-import app.services.crud_schedule as schedule_crud
 from app import models
 from app.config import config
 from app.database.connection import get_session
@@ -53,10 +52,7 @@ async def get_teacher(
     summary="Поиск преподавателя по имени",
 )
 async def search_teacher_by_name(
-    name: str,
-    session: AsyncSession = Depends(get_session),
+    db: AsyncSession = Depends(get_session),
+    name: str = Path(..., description="Имя преподавателя"),
 ) -> Any:
-    if len(name) < 3:
-        raise HTTPException(status_code=400, detail="Имя должно быть не менее 3 символов")
-
-    return [models.Teacher.from_orm(teacher) for teacher in await schedule_crud.search_teachers(session, name)]
+    return TeacherService.search_teachers(db=db, name=name)

@@ -204,11 +204,6 @@ async def get_lessons_by_teacher(db: AsyncSession, teacher_id: int):
     return res.scalars().all()
 
 
-async def search_teachers(db: AsyncSession, name: str):
-    res = await db.execute(select(Teacher).where(func.lower(Teacher.name).contains(name.lower())))
-    return res.scalars().all()
-
-
 async def get_lessons_by_room(db: AsyncSession, room_id: int):
     # migrated to api v2
     res = await db.execute(select(Lesson).where(Lesson.room_id == room_id))
