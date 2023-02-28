@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,7 +32,7 @@ async def get_teachers(
 @router.get(
     "/teacher/{id}",
     response_model=models.Teacher,
-    response_description="Преподавателя успешно получен и возвращен в ответе",
+    response_description="Преподаватель успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
     description="Получить преподавателя по id и вернуть его",
     summary="Получение преподавателя по id",
@@ -47,12 +47,13 @@ async def get_teacher(
 @router.get(
     "/teacher/search/{name}",
     response_model=list[models.Teacher],
-    status_code=200,
-    description="Поиск преподавателя по имени",
-    summary="Поиск преподавателя по имени",
+    response_description="Преподаватели успешно получены и возвращены в ответе",
+    status_code=status.HTTP_200_OK,
+    description="Поиск преподавателей по имени",
+    summary="Поиск преподавателей по имени",
 )
 async def search_teacher_by_name(
     db: AsyncSession = Depends(get_session),
     name: str = Path(..., description="Имя преподавателя"),
-) -> Any:
-    return TeacherService.search_teachers(db=db, name=name)
+) -> list[models.Teacher]:
+    return await TeacherService.search_teachers(db=db, name=name)
