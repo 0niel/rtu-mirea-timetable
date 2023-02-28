@@ -23,7 +23,7 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 async def get_teachers(
     db: AsyncSession = Depends(get_session),
     ids: Optional[List[int]] = Query(None, description="Id преподавателей"),
-    limit: int = Query(10, description="", ge=1, le=1000),
+    limit: int = Query(30, description="", ge=1, le=5000),
     offset: int = Query(0, description="", ge=0, le=9000000000000000000),
 ) -> list[models.Teacher]:
     return await TeacherService.get_teachers(db=db, teachers_ids=ids, limit=limit, offset=offset)

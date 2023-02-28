@@ -23,7 +23,7 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 async def get_disciplines(
     db: AsyncSession = Depends(get_session),
     ids: Optional[List[int]] = Query(None, description="Id дисциплин"),
-    limit: int = Query(10, description="", ge=1, le=1000),
+    limit: int = Query(30, description="", ge=1, le=5000),
     offset: int = Query(0, description="", ge=0, le=9000000000000000000),
 ) -> list[models.Discipline]:
     return await DisciplineService.get_disciplines(db=db, disciplines_ids=ids, limit=limit, offset=offset)
