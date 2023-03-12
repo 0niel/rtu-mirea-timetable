@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -63,38 +64,89 @@ async def search_rooms(
     return [models.Room.from_orm(room) for room in await schedule_crud.search_room(session, name)]
 
 
-# @router.get(
-#     "/workload/{room_id}",
-#     response_model=models.Msg,
-#     status_code=200,
-#     description="Получить загруженность аудитории",
-#     summary="Получение загруженности аудитории",
-# )
-# async def get_workload(
-#     room_id: int,
-#     session: AsyncSession = Depends(get_session),
-# ) -> Any:
-#     workload = await schedule_crud.get_room_workload(session, room_id)
-#     return models.Msg(msg=workload)
+@router.get(
+    "/room/workload/{id}",
+    response_model=models.Msg,
+    status_code=200,
+    description="Получить загруженность аудитории",
+    summary="Получение загруженности аудитории",
+)
+async def get_workload(
+    db: AsyncSession = Depends(get_session),
+    id_: int = Path(..., description="Id аудитории", alias="id"),
+) -> Any:
+    workload = await schedule_crud.get_room_workload(db, id_)
+    return models.Msg(msg=workload)
 
 
-# @router.get(
-#     "/statuses/",
-#     status_code=200,
-#     description="Получить статусы аудиторий (свободна/занята) для указанного времени",
-#     summary="Получение статусов аудиторий",
-# )
-# async def get_statuses(
-#     date_time: datetime = Query(
-#         datetime.now(),
-#         description="Дата и время в ISO формате. Пример: " "2021-09-01T00:00:00+03:00",
-#     ),
-#     *,
-#     rooms: list[str] = Query(..., description="Список аудиторий. Пример: ['А-101', 'А-102']"),
-#     session: AsyncSession = Depends(get_session),
-# ) -> Any:
-#     date_time = date_time.replace(tzinfo=None)
-#     return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
+@router.get(
+    "/room/statuses/all",
+    status_code=200,
+    description="Получить статусы аудиторий (свободна/занята) для указанного времени",
+    summary="Получение статусов аудиторий",
+)
+async def get_statuses(
+    date_time: datetime = Query(
+        datetime.now(),
+        description="Дата и время в ISO формате. Пример: " "2021-09-01T00:00:00+03:00",
+    ),
+    *,
+    rooms: list[str] = Query(..., description="Список аудиторий. Пример: ['А-101', 'А-102']"),
+    session: AsyncSession = Depends(get_session),
+) -> Any:
+    date_time = date_time.replace(tzinfo=None)
+    return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
+
+
+@router.get("/room/info/{id}", response_model=models.RoomInfo, status_code=200)
+async def get_info(id: int) -> Any:
+    """
+    Get info.
+    """
+    return await schedule_crud.get_room_info(id)
+
+
+@router.get(
+    "/room/workload/all/{campus_substr}",
+    status_code=200,
+    description="Получить загруженность всех аудиторий по корпусу (подстрока)",
+    summary="Получение загруженности всех аудиторий по корпусу",
+)
+async def get_all_workload(
+    campus_substr: str,
+    session: AsyncSession = Depends(get_session),
+) -> Any:
+    rooms = await schedule_crud.search_room(session, campus_substr)
+    workload = []
+    for room in rooms:
+        workload.append(
+            {
+                "room": room.name,
+                "workload": await schedule_crud.get_room_workload(room.id),
+            }
+        )
+
+    return workload
+
+
+@router.get(
+    "/room/statuses/all/{campus_substr}",
+    status_code=200,
+    description="Получить статусы всех аудиторий по корпусу (подстрока)",
+    summary="Получение статусов всех аудиторий по корпусу",
+)
+async def get_all_statuses(
+    campus_substr: str,
+    date_time: datetime = Query(
+        datetime.now(),
+        description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
+    ),
+    session: AsyncSession = Depends(get_session),
+) -> Any:
+    rooms = await schedule_crud.search_room(session, campus_substr)
+    rooms = [room.name for room in rooms]
+    date_time = date_time.replace(tzinfo=None)
+    return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
 
 
 # @router.get("/export-create/", status_code=200)
@@ -158,53 +210,3 @@ async def search_rooms(
 #         return {"status": "ready"}
 #     return {"status": "not ready"}
 #
-
-# @router.get("/info/{room_id}", response_model=models.RoomInfo, status_code=200)
-# async def get_info(room_id: int) -> Any:
-#     """
-#     Get info.
-#     """
-#     return await schedule_crud.get_room_info(room_id)
-
-
-# @router.get(
-#     "/workload/all/{campus_substr}",
-#     status_code=200,
-#     description="Получить загруженность всех аудиторий по корпусу (подстрока)",
-#     summary="Получение загруженности всех аудиторий по корпусу",
-# )
-# async def get_all_workload(
-#     campus_substr: str,
-#     session: AsyncSession = Depends(get_session),
-# ) -> Any:
-#     rooms = await schedule_crud.search_room(session, campus_substr)
-#     workload = []
-#     for room in rooms:
-#         workload.append(
-#             {
-#                 "room": room.name,
-#                 "workload": await schedule_crud.get_room_workload(room.id),
-#             }
-#         )
-#
-#     return workload
-#
-#
-# @router.get(
-#     "/statuses/all/{campus_substr}",
-#     status_code=200,
-#     description="Получить статусы всех аудиторий по корпусу (подстрока)",
-#     summary="Получение статусов всех аудиторий по корпусу",
-# )
-# async def get_all_statuses(
-#     campus_substr: str,
-#     date_time: datetime = Query(
-#         datetime.now(),
-#         description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
-#     ),
-#     session: AsyncSession = Depends(get_session),
-# ) -> Any:
-#     rooms = await schedule_crud.search_room(session, campus_substr)
-#     rooms = [room.name for room in rooms]
-#     date_time = date_time.replace(tzinfo=None)
-#     return await schedule_crud.get_rooms_statuses(session, rooms, date_time)

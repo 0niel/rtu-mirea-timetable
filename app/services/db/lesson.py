@@ -112,3 +112,25 @@ class LessonDBService:
         for teacher_id in lesson.teachers_id:
             await db.execute(tables.lessons_to_teachers.insert().values(lesson_id=db_lesson.id, teacher_id=teacher_id))
         return db_lesson
+
+    @classmethod
+    async def delete(cls, db: AsyncSession, cmd: models.LessonDelete) -> None:
+        """Удаление занятия"""
+
+        await db.execute(
+            select(tables.Lesson)
+            .where(
+                and_(
+                    tables.Lesson.group_id == select(tables.Group.id).where(tables.Group.name == cmd.group),
+                    tables.Lesson.call_id
+                    == select(tables.LessonCall.id).where(
+                        tables.LessonCall.time_start == cmd.time_start,
+                        tables.LessonCall.time_end == cmd.time_end,
+                        tables.LessonCall.num == cmd.num,
+                    ),
+                    tables.Lesson.weekday == cmd.weekday,
+                )
+            )
+            .execution_options(synchronize_db=False)
+        )
+        await db.commit()

@@ -12,7 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.crud_schedule as schedule_crud
 from app import models
-from app.services.db import DegreeDBService, GroupDBService, InstituteDBService, PeriodDBService
+from app.services.db import (
+    DegreeDBService,
+    GroupDBService,
+    InstituteDBService,
+    LessonCallDBService,
+    LessonDBService,
+    PeriodDBService,
+)
 
 
 class ScheduleParsingService:
@@ -38,7 +45,7 @@ class ScheduleParsingService:
                         ),
                     )
 
-                # await schedule_crud.clear_group_schedule(db, schedule.group, period.id)
+                await schedule_crud.clear_group_schedule(db, schedule.group, period.id)
                 degree = await DegreeDBService.get_degree_by_name(db, schedule.degree.name)
                 if not degree:
                     degree = await DegreeDBService.create(db, models.DegreeCreate(name=schedule.degree.name))
@@ -73,16 +80,21 @@ class ScheduleParsingService:
                         if not all(isinstance(week, int) for week in lesson.weeks):
                             continue
 
-                    lesson_call = await schedule_crud.get_or_create_lesson_call(
-                        db,
-                        models.LessonCallCreate(
-                            num=lesson.num,
-                            time_start=lesson.time_start,
-                            time_end=lesson.time_end,
-                        ),
+                    lesson_call = await LessonCallDBService.get_call_by_params(
+                        db, lesson.num, lesson.time_start, lesson.time_end
                     )
+                    if not lesson_call:
+                        lesson_call = await LessonCallDBService.create(
+                            db,
+                            models.LessonCallCreate(
+                                num=lesson.num,
+                                time_start=lesson.time_start,
+                                time_end=lesson.time_end,
+                            ),
+                        )
+
                     if type(lesson) is LessonEmpty:
-                        await schedule_crud.delete_lesson(
+                        await LessonDBService.delete(
                             db,
                             models.LessonDelete(
                                 group=schedule.group,

@@ -26,4 +26,5 @@ COPY . /app
 
 EXPOSE $BACKEND_PORT
 
-CMD ["python", "runserver.py"]
+ENV PORT="${PORT:-8080}"
+ENV APP_MODULE="app.main:app"
