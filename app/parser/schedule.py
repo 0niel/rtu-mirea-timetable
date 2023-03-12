@@ -25,21 +25,6 @@ from app.services.db import (
 
 class ScheduleParsingService:
     @classmethod
-    def _parse(cls) -> Generator[list[LessonsSchedule | ExamsSchedule], None, None]:
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            # создаем список задач по загрузке и парсингу документов
-            tasks = []
-            for doc in cls._get_documents():
-                task = executor.submit(cls._parse_document, doc)
-                tasks.append(task)
-
-            for future in as_completed(tasks):
-                if schedules := future.result():  # type: list[LessonsSchedule | ExamsSchedule]
-                    groups = {schedule.group for schedule in schedules}
-                    logger.info(f"Получено расписание документа. Группы: {groups}")
-                    yield schedules
-
-    @classmethod
     async def parse_schedule(cls, db: AsyncSession) -> None:
         """Парсинг расписания используя пакет rtu_schedule_parser"""
 
@@ -183,6 +168,21 @@ class ScheduleParsingService:
                                 weeks=lesson.weeks,
                             ),
                         )
+
+    @classmethod
+    def _parse(cls) -> Generator[list[LessonsSchedule | ExamsSchedule], None, None]:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            # создаем список задач по загрузке и парсингу документов
+            tasks = []
+            for doc in cls._get_documents():
+                task = executor.submit(cls._parse_document, doc)
+                tasks.append(task)
+
+            for future in as_completed(tasks):
+                if schedules := future.result():  # type: list[LessonsSchedule | ExamsSchedule]
+                    groups = {schedule.group for schedule in schedules}
+                    logger.info(f"Получено расписание документа. Группы: {groups}")
+                    yield schedules
 
     @classmethod
     def _get_documents(cls) -> list:
