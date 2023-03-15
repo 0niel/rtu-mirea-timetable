@@ -130,7 +130,7 @@ const joinLessonsByGroups = (
 
 const getLessonsForDate = (lessons: any, date: Date) => {
   const week = getWeekByDate(date);
-  const day = date.getDay() - 1;
+  const day = date.getDay();
 
   if (day === -1) {
     return [];
