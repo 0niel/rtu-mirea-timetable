@@ -7,6 +7,7 @@
 
 /** @type {import("next").NextConfig} */
 const config = {
+  basePath: "/ui",
   reactStrictMode: true,
   output: 'standalone',
   swcMinify: true,
