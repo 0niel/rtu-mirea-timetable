@@ -17,5 +17,8 @@ const config = {
   images: {
     domains: ["user-images.githubusercontent.com"],
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 export default config;

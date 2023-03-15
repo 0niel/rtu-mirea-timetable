@@ -113,6 +113,20 @@ services:
       timeout: 5s
       retries: 5
 
+  frontend:
+    build:
+      context: ./public
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - proxy
+      - default
+    environment:
+        VIRTUAL_HOST: ${DOMAIN}
+        LETSENCRYPT_HOST: ${DOMAIN}
+        VIRTUAL_PORT: 3000
+
   worker:
     #image: ${WORKER_IMAGE}
     build:

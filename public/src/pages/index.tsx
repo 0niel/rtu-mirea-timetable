@@ -22,29 +22,29 @@ const Home: NextPage = () => {
             Поиск расписания на любой день недели
           </p>
           <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-            <a
-              href="https://nextjs.org/docs"
+            <Link
+              href="/schedule?group=ИКБО-30-20"
               className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
             >
               <h3 className="text-2xl font-bold">
                 Поиск расписания по группе &rarr;
               </h3>
               <p className="mt-4 text-xl">
-                Введите название группы, например: ИВТ-301
+                Введите название группы, например: ИКБО-30-20
               </p>
-            </a>
+            </Link>
 
-            <a
-              href="https://nextjs.org/learn"
+            <Link
+              href="https://github.com/mirea-ninja/rtu-mirea-mobile"
               className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
             >
               <h3 className="text-2xl font-bold">
-                Поиск расписания по преподавателю &rarr;
+                Мобильное приложение &rarr;
               </h3>
               <p className="mt-4 text-xl">
-                Введите ФИО преподавателя, например: Иванов Иван Иванович
+                Скачайте мобильное приложение для Android и iOS устройств
               </p>
-            </a>
+            </Link>
           </div>
         </main>
         

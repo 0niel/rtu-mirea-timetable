@@ -318,6 +318,13 @@ export interface components {
       subgroup?: number;
       /** Weeks */
       weeks: (number)[];
+
+      group: {
+        /** Id */
+        id: number;
+        /** Name */
+        name: string;
+      }
     };
     /** ValidationError */
     ValidationError: {

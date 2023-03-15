@@ -104,14 +104,13 @@ const searchTeacherSchedule = async (name: string) => {
 const joinLessonsByGroups = (
   lessons: components["schemas"]["Teacher"]["lessons"]
 ) => {
-  // Найти все lesson с одинаковым названием, weekday и calls.time_start. Оставить только первое вхождение и добавить в него в group.name все остальные lesson.group.name
-
+  console.log("LESSONS", lessons);
   const newLessons: components["schemas"]["Teacher"]["lessons"] = [];
 
-  lessons.forEach((lesson) => {
+  lessons?.forEach((lesson) => {
     const newLesson = newLessons.find((newLesson) => {
       return (
-        newLesson.name === lesson.name &&
+        newLesson.discipline.name === lesson.discipline.name &&
         newLesson.weekday === lesson.weekday &&
         newLesson.calls.time_start === lesson.calls.time_start
       );
@@ -129,12 +128,7 @@ const joinLessonsByGroups = (
   return newLessons;
 };
 
-const getLessonsForDate = (
-  lessons:
-    | components["schemas"]["Group"]["lessons"]
-    | components["schemas"]["Teacher"]["lessons"],
-  date: Date
-) => {
+const getLessonsForDate = (lessons: any, date: Date) => {
   const week = getWeekByDate(date);
   const day = date.getDay() - 1;
 
@@ -142,9 +136,15 @@ const getLessonsForDate = (
     return [];
   }
 
-  const newLessons = lessons.filter((lesson) => {
-    return lesson.weeks.includes(week) && lesson.weekday === day;
-  });
+  if (lessons === undefined) {
+    return [];
+  }
+
+  const newLessons = (lessons as components["schemas"]["Lesson"][]).filter(
+    (lesson: components["schemas"]["Lesson"]) => {
+      return lesson.weeks.includes(week) && lesson.weekday === day;
+    }
+  );
 
   return newLessons;
 };
@@ -157,7 +157,6 @@ type Days = {
 }[];
 
 const Teacher: NextPage = () => {
-  //  Получить "name" преподавателя из URL
   const { name } = useRouter().query as { name: string };
   console.log("NAME", name);
   const container = useRef(null);
@@ -557,14 +556,14 @@ const Teacher: NextPage = () => {
                         <dl className="mt-2 flex flex-col text-gray-500 xl:flex-row">
                           <div className="flex items-start space-x-3">
                             <dt className="mt-0.5">
-                              <span className="sr-only">Date</span>
+                              <span className="sr-only">Дата</span>
                               <CalendarIcon
                                 className="h-5 w-5 text-gray-400"
                                 aria-hidden="true"
                               />
                             </dt>
                             <dd>
-                              <time dateTime={lesson.datetime}>
+                              <time>
                                 {lesson.calls.time_start.slice(0, 5)} -{" "}
                                 {lesson.calls.time_end.slice(0, 5)}
                               </time>
@@ -572,7 +571,7 @@ const Teacher: NextPage = () => {
                           </div>
                           <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
                             <dt className="mt-0.5">
-                              <span className="sr-only">Location</span>
+                              <span className="sr-only">Аудитория</span>
                               <MapIcon
                                 className="h-5 w-5 text-gray-400"
                                 aria-hidden="true"
@@ -583,7 +582,7 @@ const Teacher: NextPage = () => {
                           {/* Список групп */}
                           <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
                             <dt className="mt-0.5">
-                              <span className="sr-only">Groups</span>
+                              <span className="sr-only">Группы</span>
                               <UserIcon
                                 className="h-5 w-5 text-gray-400"
                                 aria-hidden="true"
@@ -683,7 +682,6 @@ const Teacher: NextPage = () => {
                     }}
                   >
                     <time
-                      dateTime={day.date}
                       className={classNames(
                         "mx-auto flex h-7 w-7 items-center justify-center rounded-full",
                         day.isSelected && day.isToday && "bg-indigo-600",

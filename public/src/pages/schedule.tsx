@@ -331,7 +331,7 @@ const Schedule: NextPage = () => {
                                 "block px-4 py-2 text-sm"
                               )}
                             >
-                              Day view
+                              День
                             </a>
                           )}
                         </Menu.Item>
@@ -361,7 +361,7 @@ const Schedule: NextPage = () => {
                                 "block px-4 py-2 text-sm"
                               )}
                             >
-                              Month view
+                              Месяц
                             </a>
                           )}
                         </Menu.Item>
@@ -376,7 +376,7 @@ const Schedule: NextPage = () => {
                                 "block px-4 py-2 text-sm"
                               )}
                             >
-                              Year view
+                              Год
                             </a>
                           )}
                         </Menu.Item>
@@ -629,7 +629,7 @@ const Schedule: NextPage = () => {
                               className={
                                 "group absolute inset-1 flex flex-col overflow-y-auto rounded-lg p-2 text-xs leading-5 " +
                                 getLessonTypeBackgroundColor(
-                                  lesson.lesson_type?.name
+                                  lesson.lesson_type?.name as string
                                 )
                               }
                             >
@@ -660,7 +660,7 @@ const Schedule: NextPage = () => {
                                     className={
                                       "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium " +
                                       getLessonTypeColor(
-                                        lesson.lesson_type?.name
+                                        lesson.lesson_type?.name as string
                                       )
                                     }
                                   >
