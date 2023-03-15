@@ -45,11 +45,19 @@ services:
       timeout: 5s
       retries: 5
 
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    networks:
+      - proxy
+      - default
+    environment:
+        VIRTUAL_PATH: "/"
+        VIRTUAL_HOST: ${DOMAIN}
+        LETSENCRYPT_HOST: ${DOMAIN}
+        VIRTUAL_PORT: '3000'
+
   backend:
-    #image: ${BACKEND_IMAGE}
-    build:
-        context: .
-        dockerfile: Dockerfile
+    image: ${BACKEND_IMAGE}
     ports:
       - "8080:8080"
     depends_on:
@@ -58,7 +66,6 @@ services:
       broker:
         condition: service_healthy
     volumes:
-      - ./:/app
       - ./docs:/app/docs # schedule docs
     networks:
       - proxy
@@ -92,6 +99,7 @@ services:
         SENTRY_DISABLE_LOGGING: ${SENTRY_DISABLE_LOGGING}
 
         VIRTUAL_HOST: ${DOMAIN}
+        VIRTUAL_PATH: "/api"
         LETSENCRYPT_HOST: ${DOMAIN}
         VIRTUAL_PORT: ${BACKEND_PORT}
 
@@ -113,25 +121,8 @@ services:
       timeout: 5s
       retries: 5
 
-  frontend:
-    build:
-      context: ./public
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    networks:
-      - proxy
-      - default
-    environment:
-        VIRTUAL_HOST: ${DOMAIN}
-        LETSENCRYPT_HOST: ${DOMAIN}
-        VIRTUAL_PORT: 3000
-
   worker:
-    #image: ${WORKER_IMAGE}
-    build:
-      context: .
-      dockerfile: worker/Dockerfile
+    image: ${WORKER_IMAGE}
     environment:
         LOG_LEVEL: INFO
         C_FORCE_ROOT: true

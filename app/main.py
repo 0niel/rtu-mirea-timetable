@@ -65,7 +65,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(client_router, tags=["client"])
+# app.include_router(client_router, tags=["client"])
 app.include_router(campuses_router, tags=["campuses"])
 app.include_router(groups_router, tags=["groups"])
 app.include_router(lessons_router, tags=["lessons"])
