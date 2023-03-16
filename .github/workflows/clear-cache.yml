@@ -1,0 +1,25 @@
+name: Clear cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        description: 'Workflow password'
+        type: string
+        required: true
+
+env:
+  PASSWORD: ${{ inputs.password }}
+  DB_CLEAR_PASSWORD: ${{ secrets.DB_CLEAR_PASSWORD }}
+
+jobs:
+  clear:
+    runs-on: mn-rtu-timetable-runner
+    steps:
+      - name: Clear cache
+        run: |
+            if [[ $PASSWORD == $DB_CLEAR_PASSWORD ]]; then
+              docker system prune -f
+            else
+              echo "Incorrect action password"
+            fi
