@@ -1,21 +1,13 @@
-import { type NextPage } from "next";
+import {type NextPage} from "next";
 import Head from "next/head";
 
-import { CalendarIcon, MapIcon, UserIcon } from "@heroicons/react/20/solid";
-import { Fragment, useEffect, useRef, useState } from "react";
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
+import {CalendarIcon, ChevronLeftIcon, ChevronRightIcon, MapIcon, UserIcon} from "@heroicons/react/20/solid";
+import {useEffect, useRef, useState} from "react";
 import axios from "axios";
-import { useQuery } from "react-query";
-import { paths } from "../api/schemas/openapi";
-import { components } from "../api/schemas/openapi";
-import { getWeek, getWeekByDate } from "../utils";
-
-import { Menu, Transition } from "@headlessui/react";
-import { useRouter } from "next/router";
+import {useQuery} from "react-query";
+import {components} from "../api/schemas/openapi";
+import {getWeekByDate} from "../utils";
+import {useRouter} from "next/router";
 
 const generateDays = (
   currentDate = new Date(),
@@ -124,7 +116,6 @@ const joinLessonsByGroups = (
       newLessons.push(lesson);
     }
   });
-
   return newLessons;
 };
 
@@ -146,7 +137,7 @@ const getLessonsForDate = (lessons: any, date: Date) => {
     }
   );
 
-  return newLessons;
+  return newLessons.sort((a, b) => a.calls.num - b.calls.num);
 };
 
 type Days = {
