@@ -95,7 +95,7 @@ class LessonDBService:
             # query = query.where(tables.Lesson.weeks.contains([week]), tables.Lesson.weekday == date.weekday() + 1)
             pass
 
-        lessons = (await db.execute(query)).scalars()
+        lessons = (await db.execute(query)).scalars().unique()
 
         return lessons
 
