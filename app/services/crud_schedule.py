@@ -269,11 +269,11 @@ async def get_lessons_by_room_and_week(db: AsyncSession, room_id: int, week: int
 async def get_room_workload(db: AsyncSession, room_id: int):
     # get all lesson for room
     res = await db.execute(select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id))
-    lessons = res.scalars().all()
+    lessons = res.scalars().unique()
 
     # get all calls
     res = await db.execute(select(LessonCall))
-    calls = res.scalars().all()
+    calls = res.scalars().unique()
 
     checked = []
     workload = 0
@@ -366,7 +366,7 @@ async def get_room_info(db: AsyncSession, room_id: int) -> models.RoomInfo:
     room = res.scalar()
 
     res2 = await db.execute(select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id))
-    lessons = res2.scalars().all()
+    lessons = res2.scalars().unique()
 
     workload = await get_room_workload(db, room_id)
 

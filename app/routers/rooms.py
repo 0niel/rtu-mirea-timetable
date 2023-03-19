@@ -53,62 +53,52 @@ async def get_room(
 @router.get(
     "/room/search/{name}",
     response_model=list[models.Room],
-    status_code=200,
+    response_description="Аудитория найдена и возвращена в ответе",
+    status_code=status.HTTP_200_OK,
     description="Поиск аудитории по названию аудитории (по подстроке)",
     summary="Поиск аудитории",
 )
 async def search_rooms(
-    name: str,
-    session: AsyncSession = Depends(get_session),
-) -> Any:
-    return [models.Room.from_orm(room) for room in await schedule_crud.search_room(session, name)]
+    db: AsyncSession = Depends(get_session),
+    name: str = Path(..., description="Номер аудитории"),
+) -> list[models.Room]:
+    return [models.Room.from_orm(room) for room in await schedule_crud.search_room(db, name)]
+
+
+@router.get(
+    "/room/info/{id}",
+    response_model=models.RoomInfo,
+    response_description="Подробная информация об аудитории получена и возвращена в ответе",
+    status_code=status.HTTP_200_OK,
+    description="Получить подробную информацию об аудитории",
+    summary="Получение подробной информации об аудитории",
+)
+async def get_info(
+    db: AsyncSession = Depends(get_session),
+    id_: int = Path(..., description="Id аудитории", alias="id"),
+) -> models.RoomInfo:
+    return await schedule_crud.get_room_info(db, id_)
 
 
 @router.get(
     "/room/workload/{id}",
     response_model=models.Msg,
-    status_code=200,
+    response_description="Загруженность аудитории сформирована и возвращена в ответе",
+    status_code=status.HTTP_200_OK,
     description="Получить загруженность аудитории",
     summary="Получение загруженности аудитории",
 )
 async def get_workload(
     db: AsyncSession = Depends(get_session),
     id_: int = Path(..., description="Id аудитории", alias="id"),
-) -> Any:
+) -> models.Msg:
     workload = await schedule_crud.get_room_workload(db, id_)
     return models.Msg(msg=workload)
 
 
 @router.get(
-    "/room/statuses/all",
-    status_code=200,
-    description="Получить статусы аудиторий (свободна/занята) для указанного времени",
-    summary="Получение статусов аудиторий",
-)
-async def get_statuses(
-    date_time: datetime = Query(
-        datetime.now(),
-        description="Дата и время в ISO формате. Пример: " "2021-09-01T00:00:00+03:00",
-    ),
-    *,
-    rooms: list[str] = Query(..., description="Список аудиторий. Пример: ['А-101', 'А-102']"),
-    session: AsyncSession = Depends(get_session),
-) -> Any:
-    date_time = date_time.replace(tzinfo=None)
-    return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
-
-
-@router.get("/room/info/{id}", response_model=models.RoomInfo, status_code=200)
-async def get_info(id: int) -> Any:
-    """
-    Get info.
-    """
-    return await schedule_crud.get_room_info(id)
-
-
-@router.get(
     "/room/workload/all/{campus_substr}",
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     description="Получить загруженность всех аудиторий по корпусу (подстрока)",
     summary="Получение загруженности всех аудиторий по корпусу",
 )
@@ -122,7 +112,7 @@ async def get_all_workload(
         workload.append(
             {
                 "room": room.name,
-                "workload": await schedule_crud.get_room_workload(room.id),
+                "workload": await schedule_crud.get_room_workload(session. room.id),
             }
         )
 
@@ -130,8 +120,28 @@ async def get_all_workload(
 
 
 @router.get(
+    "/room/statuses/all",
+    response_description="Статусы аудиторий получены и возвращены в ответе",
+    status_code=status.HTTP_200_OK,
+    description="Получить статусы аудиторий (свободна/занята) для указанного времени",
+    summary="Получение статусов аудиторий",
+)
+async def get_statuses(
+    db: AsyncSession = Depends(get_session),
+    date_time: datetime = Query(
+        datetime.now(),
+        description="Дата и время в ISO формате. Пример: " "2021-09-01T00:00:00+03:00",
+    ),
+    *,
+    rooms: list[str] = Query(..., description="Список аудиторий. Пример: ['А-101', 'А-102']"),
+) -> Any:
+    date_time = date_time.replace(tzinfo=None)
+    return await schedule_crud.get_rooms_statuses(db, rooms, date_time)
+
+
+@router.get(
     "/room/statuses/all/{campus_substr}",
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     description="Получить статусы всех аудиторий по корпусу (подстрока)",
     summary="Получение статусов всех аудиторий по корпусу",
 )
@@ -149,7 +159,7 @@ async def get_all_statuses(
     return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
 
 
-# @router.get("/export-create/", status_code=200)
+# @router.get("/export-create/", status_code=status.HTTP_200_OK)
 # def export_create(db: Session = Depends(get_db)):
 #     if os.path.exists("rooms.xslx"):
 #         os.remove("rooms.xslx")

@@ -8,7 +8,6 @@ from starlette.middleware.cors import CORSMiddleware
 from app.config import config
 from app.exceptions import add_exception_handlers, catch_unhandled_exceptions
 from app.routers.campuses import router as campuses_router
-from app.routers.client import router as client_router
 from app.routers.degrees import router as degrees_router
 from app.routers.disciplines import router as disciplines_router
 from app.routers.groups import router as groups_router
