@@ -1,5 +1,21 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
+import { classNames } from "../utils";
+
+export const getColorByEvent = (event: { name: string }) => {
+  switch (event.name) {
+    case "пр":
+      return "bg-blue-400";
+    case "лек":
+      return "bg-green-400";
+    case "лаб":
+      return "bg-yellow-400";
+    case "зач":
+      return "bg-red-400";
+    default:
+      return "bg-gray-400";
+  }
+};
 
 type Days = {
   date: Date;
@@ -7,10 +23,6 @@ type Days = {
   isToday?: boolean;
   isSelected?: boolean;
 }[];
-
-function classNames(...classes: unknown[]) {
-  return classes.filter(Boolean).join(" ");
-}
 
 interface CalendarProps {
   selectedDate: Date;
@@ -23,7 +35,7 @@ interface CalendarProps {
   setYearToDisplay: (year: number) => void;
 
   // key - isoString даты
-  eventsByDate: { [key: string]: { name: string }[] } | null;
+  eventsByDate: { [key: string]: { name: string }[] };
 }
 
 export const Calendar = (props: CalendarProps) => {
@@ -129,21 +141,6 @@ export const Calendar = (props: CalendarProps) => {
     )
   );
 
-  const getColorByEvent = (event: { name: string }) => {
-    switch (event.name) {
-      case "пр":
-        return "bg-blue-400";
-      case "лек":
-        return "bg-green-400";
-      case "лаб":
-        return "bg-yellow-400";
-      case "зач":
-        return "bg-red-400";
-      default:
-        return "bg-gray-400";
-    }
-  };
-
   return (
     <div className="hidden w-1/2 max-w-md flex-none border-l border-gray-100 py-10 px-8 md:block">
       <div className="flex items-center text-center text-gray-900">
@@ -242,9 +239,9 @@ export const Calendar = (props: CalendarProps) => {
             </time>
 
             <div className="flex flex-row justify-center">
-              {props.eventsByDate !== null &&
-                props.eventsByDate[day.date?.toISOString()] &&
-                props.eventsByDate[day.date?.toISOString()].map(
+              {props.eventsByDate[day.date?.toISOString().split("T")[0]] !==
+                undefined &&
+                props.eventsByDate[day.date?.toISOString().split("T")[0]]?.map(
                   (event, eventIdx) => (
                     <div
                       key={eventIdx}

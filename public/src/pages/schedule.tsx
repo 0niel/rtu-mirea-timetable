@@ -10,14 +10,17 @@ import {
 import axios from "axios";
 import { useQuery } from "react-query";
 import type { components } from "../api/schemas/openapi";
-import { getLessonTypeBackgroundColor, getLessonTypeColor, getWeek, getWeekByDate, getWeekDaysByDate } from "../utils";
+import {
+  getLessonTypeBackgroundColor,
+  getLessonTypeColor,
+  getWeek,
+  getWeekByDate,
+  getWeekDaysByDate,
+} from "../utils";
 import { Menu, Transition } from "@headlessui/react";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
-
-function classNames(...classes: unknown[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { CalendarHeader } from "../components/CalendarHeader";
 
 const getSchedule = async (group: string) => {
   const url = "/api/group/name/{name}";
@@ -58,10 +61,6 @@ const getLessonsForDate = (
 };
 
 const Schedule: NextPage = () => {
-  const container = useRef(null);
-  const containerNav = useRef(null);
-  const containerOffset = useRef(null);
-
   const router = useRouter();
   const group = router.query.group as string;
 
@@ -131,7 +130,13 @@ const Schedule: NextPage = () => {
     daysToEvents.forEach((date) => {
       const lessonsForDate = getLessonsForDate(lessons, date);
       if (lessonsForDate.length > 0) {
-        eventsByDate[date.toISOString()] = lessonsForDate.map((lesson) => ({
+        const key = date.toISOString().split("T")[0];
+
+        if (key === undefined) {
+          return;
+        }
+        
+        eventsByDate[key] = lessonsForDate.map((lesson) => ({
           name: lesson.lesson_type?.name || "",
         }));
       }
@@ -182,35 +187,15 @@ const Schedule: NextPage = () => {
             </div>
           </header>
           <div className="flex flex-auto overflow-hidden bg-white">
-            <div
-              ref={container}
-              className="flex flex-auto flex-col overflow-auto"
-            >
-              <div
-                ref={containerNav}
-                className="sticky top-0 z-10 grid flex-none grid-cols-7 bg-white text-xs text-gray-500 shadow ring-1 ring-black ring-opacity-5 md:hidden"
-              >
-                {getWeekDaysByDate(selectedDate).map((day, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    className={classNames(
-                      "flex flex-col items-center pt-3 pb-1.5",
-                      selectedDate.getDate() === day.getDate()
-                        ? "bg-gray-100 text-gray-900"
-                        : "text-gray-700"
-                    )}
-                    onClick={() => setSelectedDate(day)}
-                  >
-                    <span>
-                      {day.toLocaleString("ru", { weekday: "short" })}
-                    </span>
-                    <span className="mt-3 flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold text-gray-900">
-                      {day.getDate()}
-                    </span>
-                  </button>
-                ))}
-              </div>
+            <div className="flex flex-auto flex-col overflow-auto">
+              {/* Calendar Header start */}
+              <CalendarHeader
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                eventsByDate={getEventsByDate()}
+              />
+              {/* Calendar Header end */}
+
               <div className="flex w-full flex-auto">
                 <div className="w-14 flex-none bg-white ring-1 ring-gray-100" />
                 <div className="grid flex-auto grid-cols-1 grid-rows-1">
@@ -221,7 +206,7 @@ const Schedule: NextPage = () => {
                       gridTemplateRows: "repeat(16, minmax(3.85rem, 1fr))",
                     }}
                   >
-                    <div ref={containerOffset} className="row-end-1 h-7"></div>
+                    <div className="row-end-1 h-7"></div>
                     <div>
                       <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
                         9:00 - 10:30

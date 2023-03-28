@@ -1,3 +1,7 @@
+export function classNames(...classes: unknown[]) {
+    return classes.filter(Boolean).join(" ");
+}
+
 // Returns the week number for this date. ISO 8601 week number
 export function getWeek(date: Date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -23,13 +27,15 @@ export function getWeekByDate(date: Date) {
 
 
 export function getWeekDaysByDate(date: Date) {
-    const week = getWeek(date);
-
     const days = [];
 
     for (let i = 1; i <= 7; i++) {
         const day = new Date(date);
-        day.setDate(day.getDate() - day.getDay() + i);
+        if (date.getDay() === 0) {
+            day.setDate(day.getDate() - day.getDay() + i - 7);
+        } else {
+            day.setDate(day.getDate() - day.getDay() + i);
+        }
         days.push(day);
     }
 

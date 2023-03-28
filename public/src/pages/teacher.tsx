@@ -9,13 +9,19 @@ import {
   MapIcon,
   UserIcon,
 } from "@heroicons/react/20/solid";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { components } from "../api/schemas/openapi";
-import { getLessonTypeColor, getWeekByDate, getWeekDaysByDate } from "../utils";
+import {
+  classNames,
+  getLessonTypeColor,
+  getWeekByDate,
+  getWeekDaysByDate,
+} from "../utils";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
+import { CalendarHeader } from "../components/CalendarHeader";
 
 const generateDays = (
   currentDate = new Date(),
@@ -85,10 +91,6 @@ const generateDays = (
   return days;
 };
 
-function classNames(...classes: unknown[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 const searchTeacherSchedule = async (name: string) => {
   axios.defaults.baseURL = "https://timetable.mirea.ru";
   const url = "/api/teacher/search/{name}";
@@ -157,9 +159,6 @@ type Days = {
 
 const Teacher: NextPage = () => {
   const { name } = useRouter().query as { name: string };
-
-  const container = useRef(null);
-  const containerNav = useRef(null);
 
   const currentDate = new Date();
 
@@ -246,7 +245,13 @@ const Teacher: NextPage = () => {
       }, [] as components["schemas"]["Lesson"][]);
 
       if (lessonsGrouped.length > 0) {
-        eventsByDate[date.toISOString()] = lessonsGrouped.map((lesson) => ({
+        const key = date.toISOString().split("T")[0];
+
+        if (key === undefined) {
+          return;
+        }
+
+        eventsByDate[key] = lessonsGrouped.map((lesson) => ({
           name: lesson.lesson_type?.name || "",
         }));
       }
@@ -296,35 +301,14 @@ const Teacher: NextPage = () => {
             </div>
           </header>
           <div className="flex flex-auto overflow-hidden bg-white">
-            <div
-              ref={container}
-              className="flex flex-auto flex-col overflow-auto"
-            >
-              <div
-                ref={containerNav}
-                className="sticky top-0 z-10 grid flex-none grid-cols-7 bg-white text-xs text-gray-500 shadow ring-1 ring-black ring-opacity-5 md:hidden"
-              >
-                {getWeekDaysByDate(selectedDate).map((day, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    className={classNames(
-                      "flex flex-col items-center pt-3 pb-1.5",
-                      selectedDate.getDate() === day.getDate()
-                        ? "bg-gray-100 text-gray-900"
-                        : "text-gray-700"
-                    )}
-                    onClick={() => setSelectedDate(day)}
-                  >
-                    <span>
-                      {day.toLocaleString("ru", { weekday: "short" })}
-                    </span>
-                    <span className="mt-3 flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold text-gray-900">
-                      {day.getDate()}
-                    </span>
-                  </button>
-                ))}
-              </div>
+            <div className="flex flex-auto flex-col overflow-auto">
+              {/* Calendar Header start */}
+              <CalendarHeader
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                eventsByDate={getEventsByDate()}
+              />
+              {/* Calendar Header end */}
               <ol className="mt-4 divide-y divide-gray-100 text-sm leading-6 lg:col-span-7 xl:col-span-8">
                 {/* if teacher, then map it lessons */}
                 {teacher &&
