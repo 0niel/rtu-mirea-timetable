@@ -10,7 +10,7 @@ import {
 import axios from "axios";
 import { useQuery } from "react-query";
 import type { components } from "../api/schemas/openapi";
-import { getWeek, getWeekByDate, getWeekDaysByDate } from "../utils";
+import { getLessonTypeBackgroundColor, getLessonTypeColor, getWeek, getWeekByDate, getWeekDaysByDate } from "../utils";
 import { Menu, Transition } from "@headlessui/react";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
