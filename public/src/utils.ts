@@ -20,3 +20,48 @@ export function getWeekByDate(date: Date) {
 
     return week + 1;
 }
+
+
+export function getWeekDaysByDate(date: Date) {
+    const week = getWeek(date);
+
+    const days = [];
+
+    for (let i = 1; i <= 7; i++) {
+        const day = new Date(date);
+        day.setDate(day.getDate() - day.getDay() + i);
+        days.push(day);
+    }
+
+    return days;
+}
+
+export function getLessonTypeColor(type: string) {
+    switch (type) {
+        case "пр":
+            return "bg-blue-100 text-blue-800";
+        case "лек":
+            return "bg-green-100 text-green-800";
+        case "лаб":
+            return "bg-yellow-100 text-yellow-800";
+        case "зач":
+            return "bg-red-100 text-red-800";
+        default:
+            return "bg-gray-100 text-gray-800";
+    }
+}
+
+export function getLessonTypeBackgroundColor(type: string) {
+    switch (type) {
+        case "пр":
+            return "bg-blue-50 hover:bg-blue-100";
+        case "лек":
+            return "bg-green-50 hover:bg-green-100";
+        case "лаб":
+            return "bg-yellow-50 hover:bg-yellow-100";
+        case "зач":
+            return "bg-red-50 hover:bg-red-100";
+        default:
+            return "bg-gray-50 hover:bg-gray-100";
+    }
+}
