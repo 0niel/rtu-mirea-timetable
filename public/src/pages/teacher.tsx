@@ -226,8 +226,27 @@ const Teacher: NextPage = () => {
 
     daysToEvents.forEach((date) => {
       const lessonsForDate = getLessonsForDate(lessons, date);
-      if (lessonsForDate.length > 0) {
-        eventsByDate[date.toISOString()] = lessonsForDate.map((lesson) => ({
+
+      // Не добавляем в качестве события одинаковые занятия в одно и то же время,
+      // но с разными группами (лекции)
+      const lessonsGrouped = lessonsForDate.reduce((acc, lesson) => {
+        const newLesson = acc.find((accLesson) => {
+          return (
+            accLesson.calls.time_start === lesson.calls.time_start &&
+            accLesson.calls.time_end === lesson.calls.time_end &&
+            accLesson.lesson_type?.name === lesson.lesson_type?.name
+          );
+        });
+
+        if (!newLesson) {
+          acc.push(lesson);
+        }
+
+        return acc;
+      }, [] as components["schemas"]["Lesson"][]);
+
+      if (lessonsGrouped.length > 0) {
+        eventsByDate[date.toISOString()] = lessonsGrouped.map((lesson) => ({
           name: lesson.lesson_type?.name || "",
         }));
       }
