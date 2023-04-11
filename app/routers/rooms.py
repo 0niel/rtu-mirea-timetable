@@ -112,7 +112,7 @@ async def get_all_workload(
         workload.append(
             {
                 "room": room.name,
-                "workload": await schedule_crud.get_room_workload(session. room.id),
+                "workload": await schedule_crud.get_room_workload(session.room.id),
             }
         )
 

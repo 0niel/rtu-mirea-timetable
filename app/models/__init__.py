@@ -11,3 +11,4 @@ from app.models.msg import *
 from app.models.period import *
 from app.models.room import *
 from app.models.teacher import *
+from app.models.version import *
