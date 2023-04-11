@@ -5,7 +5,7 @@ from app import models
 
 
 class InfoService:
-    """Сервис для работы с дисциплинами."""
+    """Сервис для работы с информацией о системе."""
 
     @classmethod
     async def get_info(cls) -> models.VersionBase:
