@@ -1975,7 +1975,7 @@ idna2008 = ["idna"]
 
 [[package]]
 name = "rtu-schedule-parser"
-version = "2.2.2"
+version = "2.2.4"
 description = "Easy extraction of the MIREA - Russian Technological University schedule from Excel documents."
 category = "main"
 optional = false
@@ -1995,7 +1995,7 @@ xls2xlsx = "^0.1.5"
 type = "git"
 url = "https://github.com/mirea-ninja/rtu-schedule-parser.git"
 reference = "main"
-resolved_reference = "7574141841f0d1026a5654035fcfbd5e1ad787be"
+resolved_reference = "90b3438f1ebb0bc99561c7704c797fde30c77ae3"
 
 [[package]]
 name = "sentry-sdk"
