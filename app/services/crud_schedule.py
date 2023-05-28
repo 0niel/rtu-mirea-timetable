@@ -5,6 +5,7 @@ from typing import Optional
 from sqlalchemy import and_, delete, func, select
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app import models
 from app.database.tables import (
@@ -58,18 +59,6 @@ async def get_or_create_room(db: AsyncSession, cmd: models.RoomCreate):
     return room
 
 
-async def get_or_create_discipline(db: AsyncSession, cmd: models.DisciplineCreate):
-    # migrated to api v2
-    res = await db.execute(select(ScheduleDiscipline).where(ScheduleDiscipline.name == cmd.name).limit(1))
-    discipline = res.scalar()
-    if not discipline:
-        discipline = ScheduleDiscipline(**cmd.dict())
-        db.add(discipline)
-        await db.commit()
-        await db.refresh(discipline)
-    return discipline
-
-
 async def get_or_create_teacher(db: AsyncSession, cmd: models.TeacherCreate):
     # migrated to api v2
     res = await db.execute(select(Teacher).where(Teacher.name == cmd.name).limit(1))
@@ -104,30 +93,42 @@ async def get_or_create_lesson_call(db: AsyncSession, cmd: models.LessonCallCrea
     return lesson_call
 
 
+async def get_or_create_discipline(db: AsyncSession, cmd: models.DisciplineCreate):
+    # migrated to api v2
+    res = await db.execute(select(ScheduleDiscipline).where(ScheduleDiscipline.name == cmd.name).limit(1))
+    discipline = res.scalar()
+    if not discipline:
+        discipline = ScheduleDiscipline(**cmd.dict())
+        db.add(discipline)
+        await db.commit()
+        await db.refresh(discipline)
+    return discipline
+
+
 async def get_or_create_lesson(db: AsyncSession, cmd: models.LessonCreate):
     # migrated to api v2
     res = await db.execute(
         select(Lesson)
-        .join(lessons_to_teachers)
+        .join(Lesson.teachers)
         .where(
             and_(
-                lessons_to_teachers.c.teacher_id.in_(cmd.teachers_id),
+                Lesson.discipline_id == cmd.discipline_id,
                 Lesson.lesson_type_id == cmd.lesson_type_id,
                 Lesson.group_id == cmd.group_id,
-                Lesson.discipline_id == cmd.discipline_id,
                 Lesson.room_id == cmd.room_id,
                 Lesson.weeks == array(cmd.weeks),
                 Lesson.call_id == cmd.call_id,
                 Lesson.subgroup == cmd.subgroup,
+                Lesson.teachers.any(Teacher.id.in_(cmd.teachers_id)),
             )
         )
+        .options(joinedload(Lesson.teachers))
         .limit(1)
     )
     lesson = res.scalar()
     if not lesson:
-        lesson = Lesson(**cmd.dict(exclude={"teachers_id", "weeks"}))
+        lesson = Lesson(**cmd.dict(exclude={"weeks", "teachers_id"}))
 
-        # insert list of weeks to lesson (postgres array)
         lesson.weeks = array(cmd.weeks)
 
         db.add(lesson)

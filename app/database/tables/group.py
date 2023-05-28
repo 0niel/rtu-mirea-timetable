@@ -8,20 +8,20 @@ class Group(Base):
     __tablename__ = "schedule_group"
 
     id = db.Column(db.BigInteger, primary_key=True)
-    name = db.Column(db.String(256), nullable=False, index=True)
-    period_id = db.Column(db.BigInteger, db.ForeignKey("schedule_period.id"))
+    name = db.Column(db.String(256), nullable=False, index=True, unique=False)
+    period_id = db.Column(db.BigInteger, db.ForeignKey("schedule_period.id"), nullable=False, index=True)
     period = relationship(
         "SchedulePeriod",
         back_populates="groups",
         lazy="joined",
     )
-    degree_id = db.Column(db.BigInteger, db.ForeignKey("schedule_degree.id"))
-    institute_id = db.Column(db.BigInteger, db.ForeignKey("schedule_institute.id"))
+    institute_id = db.Column(db.BigInteger, db.ForeignKey("schedule_institute.id"), nullable=False, index=True)
     institute = relationship(
         "Institute",
         back_populates="groups",
         lazy="joined",
     )
+    degree_id = db.Column(db.BigInteger, db.ForeignKey("schedule_degree.id"), nullable=False, index=True)
     degree = relationship(
         "ScheduleDegree",
         cascade="delete",
