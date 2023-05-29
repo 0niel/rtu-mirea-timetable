@@ -13,7 +13,7 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
 @router.get(
-    "/teacher",
+    "/teachers",
     response_model=list[models.Teacher],
     response_description="Список преподавателей успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -30,7 +30,7 @@ async def get_teachers(
 
 
 @router.get(
-    "/teacher/{id}",
+    "/teachers/{id}",
     response_model=models.Teacher,
     response_description="Преподаватель успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -45,7 +45,7 @@ async def get_teacher(
 
 
 @router.get(
-    "/teacher/search/{name}",
+    "/teachers/search/{name}",
     response_model=list[models.Teacher],
     response_description="Преподаватели успешно получены и возвращены в ответе",
     status_code=status.HTTP_200_OK,

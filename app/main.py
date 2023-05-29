@@ -20,7 +20,6 @@ from app.routers.teachers import router as teachers_router
 from app.routers.utils import router as utils_router
 
 tags_metadata = [
-    {"name": "client", "description": "Frontend"},
     {"name": "campuses", "description": "Работа с кампусами"},
     {"name": "groups", "description": "Работа с группами"},
     {"name": "lessons", "description": "Работа с занятиями"},
@@ -64,7 +63,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.include_router(client_router, tags=["client"])
 app.include_router(campuses_router, tags=["campuses"])
 app.include_router(groups_router, tags=["groups"])
 app.include_router(lessons_router, tags=["lessons"])

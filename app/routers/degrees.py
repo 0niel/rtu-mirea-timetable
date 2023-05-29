@@ -13,7 +13,7 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
 @router.get(
-    "/degree",
+    "/degrees",
     response_model=list[models.Degree],
     response_description="Список степеней успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,

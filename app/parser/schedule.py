@@ -13,14 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.crud_schedule as schedule_crud
 from app import models
-from app.services.db import (
-    DegreeDBService,
-    GroupDBService,
-    InstituteDBService,
-    LessonCallDBService,
-    LessonDBService,
-    PeriodDBService,
-)
+from app.services.db import DegreeDBService, GroupDBService, InstituteDBService, LessonCallDBService, PeriodDBService
 
 
 class ScheduleParsingService:
@@ -97,88 +90,77 @@ class ScheduleParsingService:
                             )
 
                         if type(lesson) is LessonEmpty:
-                            await LessonDBService.delete(
-                                db,
-                                models.LessonDelete(
-                                    group=schedule.group,
-                                    time_start=lesson.time_start,
-                                    time_end=lesson.time_end,
-                                    num=lesson.num,
-                                    weekday=lesson.weekday.value[0],
-                                ),
-                            )
-                        else:
-                            lesson_type = None
-                            room = None
-                            discipline = await schedule_crud.get_or_create_discipline(
-                                db,
-                                models.DisciplineCreate(
-                                    name=lesson.name,
-                                ),
-                            )
-                            if lesson.room is not None:
-                                campus_id = None
-                                if lesson.room.campus:
-                                    campus = await schedule_crud.get_or_create_campus(
-                                        db,
-                                        models.CampusCreate(
-                                            name=lesson.room.campus.name,
-                                            short_name=lesson.room.campus.short_name,
-                                        ),
-                                    )
-                                    campus_id = campus.id
+                            continue
 
-                                room = await schedule_crud.get_or_create_room(
+                        lesson_type = None
+                        room = None
+                        discipline = await schedule_crud.get_or_create_discipline(
+                            db,
+                            models.DisciplineCreate(
+                                name=lesson.name,
+                            ),
+                        )
+                        if lesson.room is not None:
+                            campus_id = None
+                            if lesson.room.campus:
+                                campus = await schedule_crud.get_or_create_campus(
                                     db,
-                                    models.RoomCreate(
-                                        name=lesson.room.name,
-                                        campus_id=campus_id,
+                                    models.CampusCreate(
+                                        name=lesson.room.campus.name,
+                                        short_name=lesson.room.campus.short_name,
                                     ),
                                 )
-                            if lesson.type:
-                                lesson_type = await schedule_crud.get_or_create_lesson_type(
-                                    db,
-                                    models.LessonTypeCreate(
-                                        name=lesson.type.value,
-                                    ),
-                                )
+                                campus_id = campus.id
 
-                            teachers_id = [
-                                (
-                                    await schedule_crud.get_or_create_teacher(
-                                        db,
-                                        models.TeacherCreate(
-                                            name=teacher,
-                                        ),
-                                    )
-                                ).id
-                                for teacher in lesson.teachers
-                            ]
-
-                            await schedule_crud.get_or_create_lesson(
+                            room = await schedule_crud.get_or_create_room(
                                 db,
-                                models.LessonCreate(
-                                    lesson_type_id=lesson_type.id if lesson.type else None,
-                                    discipline_id=discipline.id,
-                                    teachers_id=teachers_id,
-                                    room_id=room.id if lesson.room else None,
-                                    group_id=group.id,
-                                    call_id=lesson_call.id,
-                                    weekday=lesson.weekday.value[0],
-                                    subgroup=lesson.subgroup,
-                                    weeks=lesson.weeks,
+                                models.RoomCreate(
+                                    name=lesson.room.name,
+                                    campus_id=campus_id,
                                 ),
                             )
+                        if lesson.type:
+                            lesson_type = await schedule_crud.get_or_create_lesson_type(
+                                db,
+                                models.LessonTypeCreate(
+                                    name=lesson.type.value,
+                                ),
+                            )
+
+                        teachers_id = [
+                            (
+                                await schedule_crud.get_or_create_teacher(
+                                    db,
+                                    models.TeacherCreate(
+                                        name=teacher,
+                                    ),
+                                )
+                            ).id
+                            for teacher in lesson.teachers
+                        ]
+
+                        await schedule_crud.get_or_create_lesson(
+                            db,
+                            models.LessonCreate(
+                                lesson_type_id=lesson_type.id if lesson.type else None,
+                                discipline_id=discipline.id,
+                                teachers_id=teachers_id,
+                                room_id=room.id if lesson.room else None,
+                                group_id=group.id,
+                                call_id=lesson_call.id,
+                                weekday=lesson.weekday.value[0],
+                                subgroup=lesson.subgroup,
+                                weeks=lesson.weeks,
+                            ),
+                        )
                     logger.info(f"Сохранение группы {schedule.group} в БД завершено")
                 except Exception as e:
                     logger.error(f"Неожиданная ошибка при сохранении группы {schedule.group} в БД. Ошибка {str(e)}")
-                    pass
 
 
     @classmethod
     def _parse(cls) -> Generator[list[LessonsSchedule | ExamsSchedule], None, None]:
         with ThreadPoolExecutor(max_workers=4) as executor:
-            # создаем список задач по загрузке и парсингу документов
             tasks = []
             for doc in cls._get_documents():
                 task = executor.submit(cls._parse_document, doc)
