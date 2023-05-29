@@ -22,8 +22,8 @@ async def parse_schedule(secret_key: str = Query(..., description="Ключ до
     if secret_key != config.BACKEND_PARSER_SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
     await FastAPICache.clear(namespace="groups")
-    await ScheduleParsingService.parse_schedule(db=session)
-    # app.send_task("worker.tasks.parse_schedule")
+    # await ScheduleParsingService.parse_schedule(db=session)
+    app.send_task("worker.tasks.parse_schedule")
     return {"msg": "Parsing started"}
 
 
