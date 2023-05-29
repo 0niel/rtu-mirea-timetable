@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Annotated
 
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,12 +14,50 @@ from app.services.api import RoomService
 router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
-# Moscow timezone
-# tz = timezone(timedelta(hours=3))
+@router.get(
+    "/rooms/statuses",
+    response_description="Статусы аудиторий получены и возвращены в ответе",
+    status_code=status.HTTP_200_OK,
+    description="Получить статусы аудиторий (свободна/занята) для указанного времени",
+    summary="Получение статусов аудиторий",
+)
+async def get_statuses(
+    db: AsyncSession = Depends(get_session),
+    date_time: datetime = Query(
+        datetime.now(),
+        description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
+    ),
+    ids: List[int] = Query(None, description="Id аудиторий"),
+) -> Any:
+    date_time = date_time.replace(tzinfo=None)
+    return await schedule_crud.get_rooms_statuses(db, ids, date_time)
+
+
 
 
 @router.get(
-    "/room",
+    "/rooms/workload",
+    status_code=status.HTTP_200_OK,
+    description="Получить загруженность аудиторий",
+    summary="Получение загруженности аудиторий",
+)
+async def get_rooms_workload(
+    db: AsyncSession = Depends(get_session),
+    ids: Optional[List[int]] = Query(None, description="Id аудиторий"),
+):
+    workload = []
+    for room_id in ids:
+        workload.append(
+            {
+                "id": room_id,
+                "workload": await schedule_crud.get_room_workload(db, room_id),
+            }
+        )
+
+    return workload
+
+@router.get(
+    "/rooms",
     response_model=list[models.Room],
     response_description="Список аудиторий успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -29,14 +67,15 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 async def get_rooms(
     db: AsyncSession = Depends(get_session),
     ids: Optional[List[int]] = Query(None, description="Id аудиторий"),
+    campus_id: Optional[int] = Query(None, description="Id кампуса"),
     limit: int = Query(30, description="", ge=1, le=5000),
     offset: int = Query(0, description="", ge=0, le=9000000000000000000),
 ) -> list[models.Room]:
-    return await RoomService.get_rooms(db=db, rooms_ids=ids, limit=limit, offset=offset)
+    return await RoomService.get_rooms(db=db, rooms_ids=ids, campus_id=campus_id, limit=limit, offset=offset)
 
 
 @router.get(
-    "/room/{id}",
+    "/rooms/{id}",
     response_model=models.Room,
     response_description="Аудитория успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -51,7 +90,7 @@ async def get_room(
 
 
 @router.get(
-    "/room/search/{name}",
+    "/rooms/search/{name}",
     response_model=list[models.Room],
     response_description="Аудитория найдена и возвращена в ответе",
     status_code=status.HTTP_200_OK,
@@ -66,7 +105,7 @@ async def search_rooms(
 
 
 @router.get(
-    "/room/info/{id}",
+    "/rooms/info/{id}",
     response_model=models.RoomInfo,
     response_description="Подробная информация об аудитории получена и возвращена в ответе",
     status_code=status.HTTP_200_OK,
@@ -78,145 +117,3 @@ async def get_info(
     id_: int = Path(..., description="Id аудитории", alias="id"),
 ) -> models.RoomInfo:
     return await schedule_crud.get_room_info(db, id_)
-
-
-@router.get(
-    "/room/workload/{id}",
-    response_model=models.Msg,
-    response_description="Загруженность аудитории сформирована и возвращена в ответе",
-    status_code=status.HTTP_200_OK,
-    description="Получить загруженность аудитории",
-    summary="Получение загруженности аудитории",
-)
-async def get_workload(
-    db: AsyncSession = Depends(get_session),
-    id_: int = Path(..., description="Id аудитории", alias="id"),
-) -> models.Msg:
-    workload = await schedule_crud.get_room_workload(db, id_)
-    return models.Msg(msg=workload)
-
-
-@router.get(
-    "/room/workload/all/{campus_substr}",
-    status_code=status.HTTP_200_OK,
-    description="Получить загруженность всех аудиторий по корпусу (подстрока)",
-    summary="Получение загруженности всех аудиторий по корпусу",
-)
-async def get_all_workload(
-    campus_substr: str,
-    session: AsyncSession = Depends(get_session),
-) -> Any:
-    rooms = await schedule_crud.search_room(session, campus_substr)
-    workload = []
-    for room in rooms:
-        workload.append(
-            {
-                "room": room.name,
-                "workload": await schedule_crud.get_room_workload(session.room.id),
-            }
-        )
-
-    return workload
-
-
-@router.get(
-    "/room/statuses/all",
-    response_description="Статусы аудиторий получены и возвращены в ответе",
-    status_code=status.HTTP_200_OK,
-    description="Получить статусы аудиторий (свободна/занята) для указанного времени",
-    summary="Получение статусов аудиторий",
-)
-async def get_statuses(
-    db: AsyncSession = Depends(get_session),
-    date_time: datetime = Query(
-        datetime.now(),
-        description="Дата и время в ISO формате. Пример: " "2021-09-01T00:00:00+03:00",
-    ),
-    *,
-    rooms: list[str] = Query(..., description="Список аудиторий. Пример: ['А-101', 'А-102']"),
-) -> Any:
-    date_time = date_time.replace(tzinfo=None)
-    return await schedule_crud.get_rooms_statuses(db, rooms, date_time)
-
-
-@router.get(
-    "/room/statuses/all/{campus_substr}",
-    status_code=status.HTTP_200_OK,
-    description="Получить статусы всех аудиторий по корпусу (подстрока)",
-    summary="Получение статусов всех аудиторий по корпусу",
-)
-async def get_all_statuses(
-    campus_substr: str,
-    date_time: datetime = Query(
-        datetime.now(),
-        description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
-    ),
-    session: AsyncSession = Depends(get_session),
-) -> Any:
-    rooms = await schedule_crud.search_room(session, campus_substr)
-    rooms = [room.name for room in rooms]
-    date_time = date_time.replace(tzinfo=None)
-    return await schedule_crud.get_rooms_statuses(session, rooms, date_time)
-
-
-# @router.get("/export-create/", status_code=status.HTTP_200_OK)
-# def export_create(db: Session = Depends(get_db)):
-#     if os.path.exists("rooms.xslx"):
-#         os.remove("rooms.xslx")
-#
-#     # rooms = await schedule_crud.get_all_rooms()
-#
-#     rooms = schedule_crud.get_all_rooms_sync(db)
-#
-#     df = pd.DataFrame(
-#         columns=[
-#             "номер комнаты",
-#             "корпус",
-#             "день недели",
-#             "номер пары",
-#             "неделя",
-#             "дисциплина",
-#             "группа",
-#         ]
-#     )
-#
-#     all_rooms_data = []
-#     for room in rooms:
-#         campus = room.campus.name if room.campus else None
-#
-#         for lesson in room.lessons:
-#             all_rooms_data.extend(
-#                 {
-#                     "номер комнаты": room.name,
-#                     "корпус": campus,
-#                     "день недели": lesson.weekday,
-#                     "номер пары": lesson.calls.num,
-#                     "неделя": week,
-#                     "дисциплина": lesson.discipline.name,
-#                     "группа": lesson.group.name,
-#                 }
-#                 for week in lesson.weeks
-#             )
-#
-#     df = df.append(all_rooms_data, ignore_index=True)
-#     df.to_excel("rooms.xlsx", index=False)
-#
-#     return
-
-
-# @router.get("/download")
-# def download_rooms_data():
-#     try:
-#         return FileResponse(
-#             "rooms.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-#         )
-#     except Exception:
-#         return Response(status_code=404)
-#
-
-# @router.get("/report-status")
-# def report_status():
-#     if os.path.exists("rooms.xlsx") and os.stat("rooms.xlsx").st_size > 1000000:
-#         return {"status": "ready"}
-#     return {"status": "not ready"}
-#

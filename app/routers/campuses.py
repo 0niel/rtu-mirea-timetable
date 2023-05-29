@@ -13,7 +13,7 @@ router = APIRouter(prefix=config.BACKEND_PREFIX)
 
 
 @router.get(
-    "/campus",
+    "/campuses",
     response_model=list[models.Campus],
     response_description="Список кампусов успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,

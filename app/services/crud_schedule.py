@@ -1,5 +1,5 @@
 import datetime
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import Optional
 
 from sqlalchemy import and_, delete, func, select
@@ -276,26 +276,17 @@ async def get_room_workload(db: AsyncSession, room_id: int):
     res = await db.execute(select(LessonCall))
     calls = res.scalars().unique()
 
-    checked = []
+    checked = defaultdict(set)
     workload = 0
     for lesson in lessons:
-        for week in lesson.weeks:
-            for call in calls:
-                # у одной аудитории может быть несколько групп в одно и то же время
-                # (например, лекции и лабораторные)
-                if (
-                    call.id == lesson.call_id
-                    and (
-                        lesson.weekday,
-                        lesson.call_id,
-                        week,
-                    )
-                    not in checked
-                ):
+        if call := next((c for c in calls if c.id == lesson.call_id), None):
+            for week in lesson.weeks:
+                key = (lesson.weekday, lesson.call_id)
+                if week not in checked[key]:
                     workload += 1
-                    checked.append((lesson.weekday, lesson.call_id, week))
+                    checked[key].add(week)
 
-    workload = workload / (6 * 6 * 16) * 100
+    workload = workload / (6 * 6 * 17) * 100 # 6 дней * 6 пар * 17 недель
     return round(workload, 2)
 
 
@@ -313,20 +304,11 @@ async def get_call_by_time(db: AsyncSession, time: datetime.time) -> LessonCall:
     return res.scalar()
 
 
-async def get_rooms_statuses(db: AsyncSession, rooms: list[str], time: datetime.datetime) -> list[dict[str, str]]:
-    rooms_res = []
-
-    for room in rooms:
-        found = await search_room(db, room)
-
-        # extend by found rooms
-        rooms_res.extend(found)
-    rooms = rooms_res
-
+async def get_rooms_statuses(db: AsyncSession, rooms_ids: list[int], time: datetime.datetime) -> list[dict[str, str]]:
     res = await db.execute(
         select(Lesson).where(
             and_(
-                Lesson.room_id.in_([room.id for room in rooms]),
+                Lesson.room_id.in_(rooms_ids),
                 Lesson.weekday == time.weekday() + 1,
                 Lesson.weeks.contains([utils.get_week(date=time)]),
                 Lesson.call_id
@@ -345,10 +327,10 @@ async def get_rooms_statuses(db: AsyncSession, rooms: list[str], time: datetime.
     lessons = res.scalars().all()
     return [
         {
-            "name": room.name,
-            "status": "free" if room.id not in [lesson.room_id for lesson in lessons] else "busy",
+            "id": _id,
+            "status": "free" if _id not in [lesson.room_id for lesson in lessons] else "busy",
         }
-        for room in rooms
+        for _id in rooms_ids
     ]
 
 
