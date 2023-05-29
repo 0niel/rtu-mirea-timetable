@@ -10,6 +10,16 @@ from .room import Room
 from .teacher import TeacherGroup
 
 
+class GroupTiny(BaseModel):
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
+
+    id: PositiveInt
+    name: str
+
+    class Config:
+        orm_mode = True
+
 class LessonCreate(BaseModel):
     lesson_type_id: Optional[PositiveInt] = None
     discipline_id: PositiveInt
@@ -32,6 +42,7 @@ class Lesson(BaseModel):
     weekday: PositiveInt
     subgroup: Optional[PositiveInt] = None
     weeks: list[PositiveInt]
+    group: GroupTiny
 
     class Config:
         orm_mode = True
