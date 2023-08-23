@@ -12,5 +12,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE $PORT
 
-ENV PORT="${PORT:-8080}"
 ENV APP_MODULE="app.main:app"
