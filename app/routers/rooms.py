@@ -29,10 +29,10 @@ async def get_statuses(
         datetime.now(),
         description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
     ),
-    ids: List[int] = Query(..., description="Id аудиторий"),
+    campus_id: int = Query(..., description="Id кампуса"),
 ) -> Any:
     date_time = date_time.replace(tzinfo=None)
-    return await schedule_crud.get_rooms_statuses(db, ids, date_time)
+    return await schedule_crud.get_rooms_statuses(db, campus_id, date_time)
 
 
 @router.get(

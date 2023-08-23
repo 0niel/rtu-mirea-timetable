@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app import models
+from app.database import tables
 from app.database.tables import (
     Group,
     Lesson,
@@ -306,11 +307,14 @@ async def get_call_by_time(db: AsyncSession, time: datetime.time) -> LessonCall:
     return res.scalar()
 
 
-async def get_rooms_statuses(db: AsyncSession, rooms_ids: list[int], time: datetime.datetime) -> list[dict[str, str]]:
+async def get_rooms_statuses(db: AsyncSession, campus_id: int, time: datetime.datetime) -> list[dict[str, str]]:
+    rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
+    ids = [room.id for room in rooms]
+
     res = await db.execute(
         select(Lesson).where(
             and_(
-                Lesson.room_id.in_(rooms_ids),
+                Lesson.room_id.in_(ids),
                 Lesson.weekday == time.weekday() + 1,
                 Lesson.weeks.contains([utils.get_week(date=time)]),
                 Lesson.call_id
