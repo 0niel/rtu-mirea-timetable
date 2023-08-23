@@ -1,8 +1,8 @@
 [
     {
-        "file": "расписание колледж.xlsx",
-        "institute": "КПК",
+        "file": "test.xlsx",
+        "institute": "ИИТ",
         "type": 1,
-        "degree": 4
+        "degree": 1
     }
 ]

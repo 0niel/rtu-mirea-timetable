@@ -1,0 +1,136 @@
+version: "3.9"
+
+services:
+#  proxy:
+#    image: jwilder/nginx-proxy
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - conf:/etc/nginx/conf.d
+#      - vhost:/etc/nginx/vhost.d
+#      - dhparam:/etc/nginx/dhparam
+#      - certs:/etc/nginx/certs:ro
+#      - /var/run/docker.sock:/tmp/docker.sock:ro
+#      - /usr/share/nginx/html
+#      - acme:/etc/acme.sh
+#    networks:
+#      - proxy
+#    restart: always
+#
+#  letsencrypt:
+#    image: nginxproxy/acme-companion:latest
+#    volumes_from:
+#      - proxy
+#    volumes:
+#      - certs:/etc/nginx/certs:rw
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#      - acme:/etc/acme.sh
+#    restart: always
+
+  db:
+    image: postgres:latest
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    networks:
+      - default
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+#  frontend:
+#    image: ${FRONTEND_IMAGE}
+##    build:
+##      context: .
+##      dockerfile: ./public/Dockerfile
+#    networks:
+#      - proxy
+#      - default
+#    environment:
+#        VIRTUAL_PATH: "/"
+#        VIRTUAL_HOST: ${DOMAIN}
+#        LETSENCRYPT_HOST: ${DOMAIN}
+#        VIRTUAL_PORT: '3000'
+
+  backend:
+#    image: ${BACKEND_IMAGE}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - ./docs:/app/docs # schedule docs
+    networks:
+      - proxy
+      - default
+    environment:
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_DATABASE: ${DB_DATABASE}
+        DB_HOST: ${DB_HOST}
+
+        VIRTUAL_HOST: ${DOMAIN}
+        LETSENCRYPT_HOST: ${DOMAIN}
+        VIRTUAL_PORT: ${PORT}
+
+  broker:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${BROKER_USER}
+      RABBITMQ_DEFAULT_PASS: ${BROKER_PASS}
+    volumes:
+      - broker:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - default
+    healthcheck:
+      test: rabbitmq-diagnostics check_running
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+#    image: ${WORKER_IMAGE}
+    build:
+      context: .
+      dockerfile: ./worker/Dockerfile
+    environment:
+        BROKER_URL: ${BROKER_URL}
+        LOG_LEVEL: DEBUG
+        C_FORCE_ROOT: true
+    depends_on:
+      broker:
+        condition: service_healthy
+    networks:
+      - default
+
+
+volumes:
+  app-db-data:
+  broker:
+  conf:
+  vhost:
+  dhparam:
+  certs:
+  acme:
+
+networks:
+  proxy:
+    external:
+      true

@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 from typing import Generator
 
 from loguru import logger
@@ -12,7 +13,7 @@ from rtu_schedule_parser.utils import academic_calendar
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.crud_schedule as schedule_crud
-from app import models
+from app import models, config
 from app.services.db import DegreeDBService, GroupDBService, InstituteDBService, LessonCallDBService, PeriodDBService
 
 
@@ -157,7 +158,6 @@ class ScheduleParsingService:
                 except Exception as e:
                     logger.error(f"Неожиданная ошибка при сохранении группы {schedule.group} в БД. Ошибка {str(e)}")
 
-
     @classmethod
     def _parse(cls) -> Generator[list[LessonsSchedule | ExamsSchedule], None, None]:
         with ThreadPoolExecutor(max_workers=4) as executor:
@@ -175,8 +175,8 @@ class ScheduleParsingService:
     @classmethod
     def _get_documents(cls) -> list:
         """Get documents for specified institute and degree"""
-        docs_dir = os.path.dirname(os.path.abspath(__file__))
-        docs_dir = os.path.join(docs_dir, "docs")
+        docs_dir = f"{Path(__file__).parent.parent}/docs"
+        logger.info(f"{docs_dir = }")
 
         downloader = ScheduleDownloader(base_file_dir=docs_dir)
 
@@ -190,23 +190,28 @@ class ScheduleParsingService:
         else:
             os.mkdir(docs_dir)
 
-        all_docs = downloader.get_documents(
-            specific_schedule_types={ScheduleType.SEMESTER},
-            specific_degrees={Degree.BACHELOR, Degree.MASTER, Degree.PHD},
-            specific_institutes={institute for institute in Institute if institute != Institute.COLLEGE},
-        )
+        documents = []
 
-        logger.info(f"Найдено {len(all_docs)} документов для парсинга")
+        if config.ENABLE_SCHEDULE_DOWNLOAD:
+            all_docs = downloader.get_documents(
+                specific_schedule_types={ScheduleType.SEMESTER},
+                specific_degrees={Degree.BACHELOR, Degree.MASTER, Degree.PHD},
+                specific_institutes={institute for institute in Institute if institute != Institute.COLLEGE},
+            )
 
-        # Download only if they are not downloaded yet.
-        downloaded = downloader.download_all(all_docs)
+            logger.info(f"Найдено {len(all_docs)} документов для парсинга")
 
-        # сначала документы с Degree.PHD, потом Degree.MASTER, потом Degree.BACHELOR (то есть по убыванию)
-        downloaded = sorted(downloaded, key=lambda x: x[0].degree, reverse=True)
+            # Download only if they are not downloaded yet.
+            downloaded = downloader.download_all(all_docs)
 
-        logger.info(f"Скачано {len(downloaded)} файлов")
+            # сначала документы с Degree.PHD, потом Degree.MASTER, потом Degree.BACHELOR (то есть по убыванию)
+            downloaded = sorted(downloaded, key=lambda x: x[0].degree, reverse=True)
 
-        documents = [(doc[1], doc[0].period, doc[0].institute, doc[0].degree) for doc in downloaded]
+            logger.info(f"Скачано {len(downloaded)} файлов")
+
+            documents = [(doc[1], doc[0].period, doc[0].institute, doc[0].degree) for doc in downloaded]
+        else:
+            logger.warning("Функция скачивания расписания отключена")
         documents += cls._get_documents_by_json(docs_dir)
 
         return documents
@@ -234,6 +239,7 @@ class ScheduleParsingService:
         try:
             with open(os.path.join(docs_dir, "files.json"), "r") as f:
                 files = json.load(f)
+                logger.debug(f"{files = }")
 
                 documents = []
 
