@@ -37,9 +37,7 @@ class RoomDBService:
         if campus_id:
             query = query.where(tables.Room.campus_id == campus_id)
 
-        return (
-            await db.execute(query.limit(limit).offset(cast(offset, BigInteger)))
-        ).scalars()
+        return (await db.execute(query.limit(limit).offset(cast(offset, BigInteger)))).scalars()
 
     @classmethod
     async def get_room(cls, db: AsyncSession, id_: int) -> tables.Room:

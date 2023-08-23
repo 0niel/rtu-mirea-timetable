@@ -1,6 +1,6 @@
 [
     {
-        "file": "test.xlsx",
+        "file": "./test.xlsx",
         "institute": "ИИТ",
         "type": 1,
         "degree": 1

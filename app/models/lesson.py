@@ -20,6 +20,7 @@ class GroupTiny(BaseModel):
     class Config:
         orm_mode = True
 
+
 class LessonCreate(BaseModel):
     lesson_type_id: Optional[PositiveInt] = None
     discipline_id: PositiveInt

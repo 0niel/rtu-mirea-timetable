@@ -1,17 +1,19 @@
 from datetime import datetime
-from typing import Any, List, Optional, Annotated
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, Path, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 import app.services.crud_schedule as schedule_crud
 from app import models
 from app.config import config
+from app.database import tables
 from app.database.connection import get_session
 from app.services.api import RoomService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
@@ -27,12 +29,10 @@ async def get_statuses(
         datetime.now(),
         description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
     ),
-    ids: List[int] = Query(None, description="Id аудиторий"),
+    ids: List[int] = Query(..., description="Id аудиторий"),
 ) -> Any:
     date_time = date_time.replace(tzinfo=None)
     return await schedule_crud.get_rooms_statuses(db, ids, date_time)
-
-
 
 
 @router.get(
@@ -46,6 +46,11 @@ async def get_rooms_workload(
     ids: Optional[List[int]] = Query(None, description="Id аудиторий"),
 ):
     workload = []
+
+    if not ids:
+        rooms = (await db.execute(select(tables.Room))).scalars()
+        ids = [room.id for room in rooms]
+
     for room_id in ids:
         workload.append(
             {
@@ -55,6 +60,7 @@ async def get_rooms_workload(
         )
 
     return workload
+
 
 @router.get(
     "/rooms",

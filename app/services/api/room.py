@@ -23,13 +23,16 @@ class RoomService:
         return rooms_count
 
     @classmethod
-    async def get_rooms(cls, db: AsyncSession, rooms_ids: Optional[int], campus_id: Optional[int],
-    limit: int, offset: int) -> List[models.Room]:
+    async def get_rooms(
+        cls, db: AsyncSession, rooms_ids: Optional[int], campus_id: Optional[int], limit: int, offset: int
+    ) -> List[models.Room]:
         """Получение списка всех аудиторий"""
 
         logger.debug("Запрос на получение списка аудиторий")
 
-        rooms = await RoomDBService.get_rooms(db=db, rooms_ids=rooms_ids, campus_id=campus_id, limit=limit, offset=offset)
+        rooms = await RoomDBService.get_rooms(
+            db=db, rooms_ids=rooms_ids, campus_id=campus_id, limit=limit, offset=offset
+        )
         logger.debug(f"Аудитории получены: {rooms}")
 
         return [models.Room.from_orm(room) for room in rooms]

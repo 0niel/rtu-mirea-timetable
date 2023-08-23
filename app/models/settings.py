@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from pydantic import PositiveInt
+from pydantic import BaseModel, PositiveInt
 
 
 class SettingsCreate(BaseModel):

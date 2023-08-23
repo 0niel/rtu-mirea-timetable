@@ -177,7 +177,6 @@ async def clear_group_schedule(db: AsyncSession, group_name: str, period_id: int
 
 
 async def delete_lesson(db: AsyncSession, cmd: models.LessonDelete):
-
     await db.execute(
         select(Lesson)
         .where(
@@ -198,7 +197,6 @@ async def delete_lesson(db: AsyncSession, cmd: models.LessonDelete):
 
 
 async def get_lessons_by_teacher(db: AsyncSession, teacher_id: int):
-
     res = await db.execute(
         select(Lesson).join(lessons_to_teachers).where(lessons_to_teachers.c.teacher_id == teacher_id)
     )
@@ -286,7 +284,7 @@ async def get_room_workload(db: AsyncSession, room_id: int):
                     workload += 1
                     checked[key].add(week)
 
-    workload = workload / (6 * 6 * 17) * 100 # 6 дней * 6 пар * 17 недель
+    workload = workload / (6 * 6 * 17) * 100  # 6 дней * 6 пар * 17 недель
     return round(workload, 2)
 
 

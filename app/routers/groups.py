@@ -11,7 +11,7 @@ from app.database.connection import get_session
 from app.services.api import GroupService
 from app.utils.cache import key_builder_exclude_db
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
@@ -33,7 +33,7 @@ async def get_groups(
 
 
 @router.get(
-    "/group/{id}",
+    "/groups/{id}",
     response_model=models.Group,
     response_description="Группа успешно получена и возвращена в ответе",
     status_code=status.HTTP_200_OK,
@@ -48,7 +48,7 @@ async def get_group(
 
 
 @router.get(
-    "/group/name/{name}",
+    "/groups/name/{name}",
     response_model=models.Group,
     response_description="Группа успешно получена и возвращена в ответе",
     status_code=status.HTTP_200_OK,

@@ -12,5 +12,5 @@ from app.models.period import *
 from app.models.room import *
 from app.models.settings import *
 from app.models.teacher import *
-from app.models.version import *
 from app.models.utils import *
+from app.models.version import *

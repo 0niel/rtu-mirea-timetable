@@ -1,6 +1,4 @@
-from typing import Any
-
-from fastapi import APIRouter, HTTPException, Query, Depends, Body
+from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, Response, UploadFile
 from fastapi_cache import FastAPICache
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -9,28 +7,36 @@ from app import models
 from app.config import config
 from app.database.connection import get_session
 from app.models import SettingsCreate
-from app.parser.schedule import ScheduleParsingService
-
-from app.services.api import PeriodService
 from app.services.api.info import InfoService
 from app.services.utils import get_week
 from worker import app
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
-@router.post("/parse-schedule/", response_model=models.Msg, status_code=201)
-async def parse_schedule(
-    secret_key: str = Query(..., description="Ключ доступа"), session: AsyncSession = Depends(get_session)
-) -> models.Msg:
-    if config.BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE:
+@router.post("/parse-schedule/", status_code=204)
+async def parse_schedule(secret_key: str = Query(..., description="Ключ доступа")) -> Response:
+    if not config.ENABLE_MANUAL_SCHEDULE_UPDATE:
         raise HTTPException(400, "Функция ручного обновления расписания отключена")
-    if secret_key != config.BACKEND_PARSER_SECRET_KEY:
+    if secret_key != config.SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
     await FastAPICache.clear(namespace="groups")
-    # await ScheduleParsingService.parse_schedule(db=session)
     app.send_task("worker.tasks.parse_schedule")
-    return {"msg": "Parsing started"}
+    return Response(status_code=204)
+
+
+@router.post("/parse-file/", status_code=204)
+async def parse_file(
+    secret_key: str = Query(..., description="Ключ доступа"),
+    schedule: UploadFile = File(..., description="Файл с расписанием"),
+) -> Response:
+    if not config.ENABLE_MANUAL_SCHEDULE_UPDATE:
+        raise HTTPException(400, "Функция ручного обновления расписания отключена")
+    if secret_key != config.SECRET_KEY:
+        raise HTTPException(401, "Неверный ключ доступа")
+    await FastAPICache.clear(namespace="groups")
+    app.send_task("worker.tasks.parse_file")
+    return Response(status_code=204)
 
 
 @router.get(
@@ -56,7 +62,7 @@ async def get_system_info() -> models.VersionBase:
 async def get_max_week_count(
     db: AsyncSession = Depends(get_session), secret_key: str = Query(..., description="Ключ доступа")
 ) -> models.SettingsGet:
-    if secret_key != config.BACKEND_PARSER_SECRET_KEY:
+    if secret_key != config.SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
     return await InfoService.get_max_week(db=db)
 
@@ -69,14 +75,15 @@ async def get_max_week_count(
     description="Установить максимальное кол-во недель в семестре",
     summary="Установить максимальное кол-во недель в семестре",
 )
-async def get_max_week_count(
+async def update_max_week_count(
     db: AsyncSession = Depends(get_session),
     settings: SettingsCreate = Body(..., description="Максимальное кол-во недель"),
     secret_key: str = Query(..., description="Ключ доступа"),
 ) -> models.SettingsGet:
-    if secret_key != config.BACKEND_PARSER_SECRET_KEY:
+    if secret_key != config.SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
     return await InfoService.set_max_week(db=db, settings=settings)
+
 
 @router.get(
     "/current-week",
@@ -86,9 +93,7 @@ async def get_max_week_count(
     description="Получить текущую неделю",
     summary="Получить текущую неделю",
 )
-async def get_current_week(
-    db: AsyncSession = Depends(get_session)
-) -> models.CurrentWeek:
+async def get_current_week(db: AsyncSession = Depends(get_session)) -> models.CurrentWeek:
     # TODO: Refactor, very fast solution
     current_week = get_week()
     return models.CurrentWeek(week=current_week)

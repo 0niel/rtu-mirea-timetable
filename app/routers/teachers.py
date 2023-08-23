@@ -9,7 +9,7 @@ from app.config import config
 from app.database.connection import get_session
 from app.services.api import TeacherService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(

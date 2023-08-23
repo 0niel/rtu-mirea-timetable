@@ -36,9 +36,9 @@ tags_metadata = [
 app = FastAPI(
     debug=config.DEBUG,
     openapi_tags=tags_metadata,
-    openapi_url=f"{config.BACKEND_PREFIX}/openapi.json",
-    title=config.BACKEND_TTILE,
-    description=config.BACKEND_DESCRIPTION,
+    openapi_url=f"{config.PREFIX}/openapi.json",
+    title=config.TITLE,
+    description=config.DESCRIPTION,
 )
 
 app.middleware("http")(catch_unhandled_exceptions)
@@ -50,7 +50,7 @@ async def startup():
 
 
 if not config.SENTRY_DISABLE_LOGGING:
-    sentry_sdk.init(dsn=config.SENTRY_DSN, request_bodies="always", attach_stacktrace=True)
+    sentry_sdk.init(dsn=config.SENTRY_DSN, attach_stacktrace=True)
 app.add_middleware(SentryAsgiMiddleware)
 add_exception_handlers(app)
 

@@ -1,4 +1,3 @@
-from loguru import logger
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -22,9 +21,7 @@ class InfoDBService:
 
         old_settings = (await db.execute(select(tables.Settings).limit(1))).scalar()
         await db.execute(
-            update(tables.Settings)
-            .where(tables.Settings.id == old_settings.id)
-            .values({"max_week": max_week})
+            update(tables.Settings).where(tables.Settings.id == old_settings.id).values({"max_week": max_week})
         )
         await db.refresh(old_settings)
         await db.commit()

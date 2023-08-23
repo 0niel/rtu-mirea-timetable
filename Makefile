@@ -1,19 +1,15 @@
+include .env
 export
-## Connect to container
-connect:
-	docker-compose exec backend bash
+
+
+# Migration
+migrate:
+	docker compose exec backend alembic upgrade head
+
 
 ## Format all
 fmt: format
-format:
-	isort --force-single-line-imports app
-	isort --force-single-line-imports tests
-	isort --force-single-line-imports worker
-	autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place app --exclude=__init__.py
-	autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place tests --exclude=__init__.py
-	autoflake --remove-all-unused-imports --recursive --remove-unused-variables --in-place worker --exclude=__init__.py
-	black app tests worker
-	isort app tests worker
+format: isort black
 
 
 ## Check code quality
@@ -21,11 +17,9 @@ chk: check
 lint: check
 check: flake black_check isort_check
 
+mypy:
+	mypy app tests
 
-## Tests
-tests: test
-test:
-	pytest --asyncio-mode=strict -v
 
 ## Sort imports
 isort:
@@ -37,12 +31,12 @@ isort_check:
 
 ## Format code
 black:
-	black app tests worker
+	black --config pyproject.toml app tests worker
 
 black_check:
-	black --diff --check app tests worker
+	black --config pyproject.toml --diff --check app tests worker
 
 
 # Check pep8
 flake:
-	flake8 app tests worker
+	flake8 --config .flake8 app tests worker

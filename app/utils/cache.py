@@ -13,7 +13,6 @@ def key_builder_exclude_db(
     args: Optional[tuple] = None,
     kwargs: Optional[dict] = None,
 ):
-
     from fastapi_cache import FastAPICache
 
     # Exclude db from cache key

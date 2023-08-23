@@ -9,7 +9,7 @@ from app.config import config
 from app.database.connection import get_session
 from app.services.api import CampusService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
@@ -30,7 +30,7 @@ async def get_campuses(
 
 
 @router.get(
-    "/campus/{id}",
+    "/campuses/{id}",
     response_model=models.Campus,
     response_description="Кампус успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -45,7 +45,7 @@ async def get_campus(
 
 
 @router.get(
-    "/campus/{id}/rooms",
+    "/campuses/{id}/rooms",
     response_model=list[models.Room],
     response_description="Список аудиторий указанного кампуса успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
