@@ -336,7 +336,7 @@ async def get_rooms_statuses(db: AsyncSession, campus_id: int, time: datetime.da
             "id": _id,
             "status": "free" if _id not in [lesson.room_id for lesson in lessons] else "busy",
         }
-        for _id in rooms_ids
+        for _id in ids
     ]
 
 
