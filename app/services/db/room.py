@@ -25,7 +25,7 @@ class RoomDBService:
 
     @classmethod
     async def get_rooms(
-        cls, db: AsyncSession, rooms_ids: Optional[List[int]], campus_id: int | None, limit: int, offset: int
+        cls, db: AsyncSession, rooms_ids: Optional[List[int]], campus_id: Optional[int], limit: int, offset: int
     ) -> List[tables.Room]:
         """Получение списка всех аудиторий"""
 

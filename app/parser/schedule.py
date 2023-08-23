@@ -3,7 +3,7 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Union, List
 
 from loguru import logger
 from rtu_schedule_parser import ExamsSchedule, ExcelScheduleParser, LessonEmpty, LessonsSchedule
@@ -159,7 +159,7 @@ class ScheduleParsingService:
                     logger.error(f"Неожиданная ошибка при сохранении группы {schedule.group} в БД. Ошибка {str(e)}")
 
     @classmethod
-    def _parse(cls) -> Generator[list[LessonsSchedule | ExamsSchedule], None, None]:
+    def _parse(cls) -> Generator[List[Union[LessonsSchedule, ExamsSchedule]], None, None]:
         with ThreadPoolExecutor(max_workers=4) as executor:
             tasks = []
             for doc in cls._get_documents():
@@ -175,20 +175,20 @@ class ScheduleParsingService:
     @classmethod
     def _get_documents(cls) -> list:
         """Get documents for specified institute and degree"""
-        docs_dir = f"{Path(__file__).parent.parent}/docs"
+        docs_dir = f"{Path(__file__).parent.parent.parent}/docs"
         logger.info(f"{docs_dir = }")
 
         downloader = ScheduleDownloader(base_file_dir=docs_dir)
 
-        if os.path.exists(docs_dir):
-            # Delete all files and dirs in folder
-            for root, dirs, files in os.walk(docs_dir, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-        else:
-            os.mkdir(docs_dir)
+        # if os.path.exists(docs_dir):
+        #     # Delete all files and dirs in folder
+        #     for root, dirs, files in os.walk(docs_dir, topdown=False):
+        #         for name in files:
+        #             os.remove(os.path.join(root, name))
+        #         for name in dirs:
+        #             os.rmdir(os.path.join(root, name))
+        # else:
+        #     os.mkdir(docs_dir)
 
         documents = []
 
@@ -217,7 +217,7 @@ class ScheduleParsingService:
         return documents
 
     @classmethod
-    def _parse_document(cls, doc) -> list[LessonsSchedule | ExamsSchedule]:
+    def _parse_document(cls, doc) -> List[Union[LessonsSchedule, ExamsSchedule]]:
         logger.info(f"Обработка документа: {doc}")
         try:
             parser = ExcelScheduleParser(doc[0], doc[1], doc[2], doc[3])

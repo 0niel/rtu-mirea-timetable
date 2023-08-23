@@ -35,7 +35,7 @@ class LessonDBService:
         if lessons_ids:
             query = query.where(tables.Lesson.id.in_(lessons_ids))
 
-        lessons = (await db.execute(query.limit(limit).offset(cast(offset, BigInteger)))).scalars()
+        lessons = (await db.execute(query.limit(limit).offset(cast(offset, BigInteger)))).scalars().unique()
 
         return lessons
 

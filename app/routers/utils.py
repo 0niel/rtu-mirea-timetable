@@ -25,20 +25,6 @@ async def parse_schedule(secret_key: str = Query(..., description="Ключ до
     return Response(status_code=204)
 
 
-@router.post("/parse-file/", status_code=204)
-async def parse_file(
-    secret_key: str = Query(..., description="Ключ доступа"),
-    schedule: UploadFile = File(..., description="Файл с расписанием"),
-) -> Response:
-    if not config.ENABLE_MANUAL_SCHEDULE_UPDATE:
-        raise HTTPException(400, "Функция ручного обновления расписания отключена")
-    if secret_key != config.SECRET_KEY:
-        raise HTTPException(401, "Неверный ключ доступа")
-    await FastAPICache.clear(namespace="groups")
-    app.send_task("worker.tasks.parse_file")
-    return Response(status_code=204)
-
-
 @router.get(
     "/versions",
     response_model=models.VersionBase,
