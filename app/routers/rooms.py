@@ -43,13 +43,12 @@ async def get_statuses(
 )
 async def get_rooms_workload(
     db: AsyncSession = Depends(get_session),
-    ids: Optional[List[int]] = Query(None, description="Id аудиторий"),
+    campus_id: int = Query(..., description="Id кампуса"),
 ):
     workload = []
 
-    if not ids:
-        rooms = (await db.execute(select(tables.Room))).scalars()
-        ids = [room.id for room in rooms]
+    rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
+    ids = [room.id for room in rooms]
 
     for room_id in ids:
         workload.append(

@@ -211,10 +211,10 @@ async def get_lessons_by_room(db: AsyncSession, room_id: int):
 
 async def search_room(db: AsyncSession, name: str) -> list[Room]:
     # TODO: Refactor to better search
-    name = name.replace(".", "-")
-    name = name.replace(" ", "-")
-    name = name.replace("/", "-")
-    res = await db.execute(select(Room).where(func.lower(Room.name).like(name.lower())))
+    name = name.replace(".", "")
+    name = name.replace(" ", "")
+    name = name.replace("/", "")
+    res = await db.execute(select(Room).where(func.lower(Room.name).contains(name.lower())))
     return res.scalars().all()
 
 

@@ -3,7 +3,7 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Generator, Union, List
+from typing import Generator, List, Union
 
 from loguru import logger
 from rtu_schedule_parser import ExamsSchedule, ExcelScheduleParser, LessonEmpty, LessonsSchedule
@@ -13,7 +13,7 @@ from rtu_schedule_parser.utils import academic_calendar
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.crud_schedule as schedule_crud
-from app import models, config
+from app import config, models
 from app.services.db import DegreeDBService, GroupDBService, InstituteDBService, LessonCallDBService, PeriodDBService
 
 
