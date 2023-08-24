@@ -308,9 +308,15 @@ async def get_call_by_time(db: AsyncSession, time: datetime.time) -> LessonCall:
     return res.scalar()
 
 
-async def get_rooms_statuses(db: AsyncSession, campus_id: int, time: datetime.datetime) -> List[RoomStatusGet]:
-    rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
-    ids = [room.id for room in rooms]
+async def get_rooms_statuses(
+    db: AsyncSession, time: datetime.datetime, campus_id: Optional[int] = None, room_id: Optional[int] = None
+) -> List[RoomStatusGet]:
+    if campus_id:
+        rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
+        ids = [room.id for room in rooms]
+
+    if room_id:
+        ids = [room_id]
 
     res = await db.execute(
         select(Lesson).where(
@@ -336,6 +342,30 @@ async def get_rooms_statuses(db: AsyncSession, campus_id: int, time: datetime.da
         RoomStatusGet(id=_id, status="free" if _id not in [lesson.room_id for lesson in lessons] else "busy")
         for _id in ids
     ]
+
+
+async def get_rooms_status(db: AsyncSession, time: datetime.datetime, room_id: int) -> RoomStatusGet:
+    res = await db.execute(
+        select(Lesson).where(
+            and_(
+                Lesson.room_id == room_id,
+                Lesson.weekday == time.weekday() + 1,
+                Lesson.weeks.contains([utils.get_week(date=time)]),
+                Lesson.call_id
+                == select(LessonCall.id)
+                .where(
+                    and_(
+                        LessonCall.time_start <= time.time(),
+                        LessonCall.time_end > time.time(),
+                    )
+                )
+                .limit(1),
+            )
+        )
+    )
+
+    lessons = res.scalars().all()
+    return RoomStatusGet(id=room_id, status="free" if room_id not in [lesson.room_id for lesson in lessons] else "busy")
 
 
 async def get_all_rooms(db: AsyncSession) -> list[Room]:

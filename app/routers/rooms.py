@@ -34,7 +34,27 @@ async def get_statuses(
     campus_id: int = Query(..., description="Id кампуса"),
 ) -> List[RoomStatusGet]:
     date_time = date_time.replace(tzinfo=None)
-    return await schedule_crud.get_rooms_statuses(db, campus_id, date_time)
+    return await schedule_crud.get_rooms_statuses(db=db, time=date_time, campus_id=campus_id)
+
+
+@router.get(
+    "/rooms/statuses/{id}",
+    response_model=RoomStatusGet,
+    response_description="Статусы аудиторий получены и возвращены в ответе",
+    status_code=status.HTTP_200_OK,
+    description="Получить статусы аудиторий (свободна/занята) для указанного времени",
+    summary="Получение статусов аудиторий",
+)
+async def get_status_by_id(
+    db: AsyncSession = Depends(get_session),
+    date_time: datetime = Query(
+        datetime.now(),
+        description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
+    ),
+    id: int = Path(..., description="Id аудитории"),
+) -> RoomStatusGet:
+    date_time = date_time.replace(tzinfo=None)
+    return await schedule_crud.get_rooms_status(db=db, time=date_time, room_id=id)
 
 
 @router.get(
@@ -56,6 +76,22 @@ async def get_rooms_workload(
     for room_id in ids:
         workload.append(WorkloadGet(id=room_id, workload=await schedule_crud.get_room_workload(db, room_id)))
 
+    return workload
+
+
+@router.get(
+    "/rooms/workload",
+    status_code=status.HTTP_200_OK,
+    response_model=WorkloadGet,
+    description="Получить загруженность аудиторий",
+    summary="Получение загруженности аудиторий",
+)
+async def get_room_workload(
+    db: AsyncSession = Depends(get_session),
+    id: int = Path(..., description="Id аудитории"),
+) -> WorkloadGet:
+    room = (await db.execute(select(tables.Room).where(tables.Room.id == id))).scalar()
+    workload = WorkloadGet(id=room.id, workload=await schedule_crud.get_room_workload(db, room.id))
     return workload
 
 
