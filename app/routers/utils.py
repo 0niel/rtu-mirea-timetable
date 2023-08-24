@@ -76,11 +76,7 @@ async def get_system_info() -> models.VersionBase:
     description="Получить максимальное кол-во недель в семестре",
     summary="Получить максимальное кол-во недель в семестре",
 )
-async def get_max_week_count(
-    db: AsyncSession = Depends(get_session), secret_key: str = Query(..., description="Ключ доступа")
-) -> models.SettingsGet:
-    if secret_key != config.SECRET_KEY:
-        raise HTTPException(401, "Неверный ключ доступа")
+async def get_max_week_count(db: AsyncSession = Depends(get_session)) -> models.SettingsGet:
     return await InfoService.get_max_week(db=db)
 
 

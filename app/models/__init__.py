@@ -14,3 +14,4 @@ from app.models.settings import *
 from app.models.teacher import *
 from app.models.utils import *
 from app.models.version import *
+from app.models.workload import *

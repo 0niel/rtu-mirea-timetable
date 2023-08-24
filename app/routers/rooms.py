@@ -11,6 +11,7 @@ from app import models
 from app.config import config
 from app.database import tables
 from app.database.connection import get_session
+from app.models import RoomStatusGet, WorkloadGet
 from app.services.api import RoomService
 
 router = APIRouter(prefix=config.PREFIX)
@@ -18,6 +19,7 @@ router = APIRouter(prefix=config.PREFIX)
 
 @router.get(
     "/rooms/statuses",
+    response_model=List[RoomStatusGet],
     response_description="Статусы аудиторий получены и возвращены в ответе",
     status_code=status.HTTP_200_OK,
     description="Получить статусы аудиторий (свободна/занята) для указанного времени",
@@ -30,7 +32,7 @@ async def get_statuses(
         description="Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00",
     ),
     campus_id: int = Query(..., description="Id кампуса"),
-) -> Any:
+) -> List[RoomStatusGet]:
     date_time = date_time.replace(tzinfo=None)
     return await schedule_crud.get_rooms_statuses(db, campus_id, date_time)
 
@@ -38,25 +40,21 @@ async def get_statuses(
 @router.get(
     "/rooms/workload",
     status_code=status.HTTP_200_OK,
+    response_model=List[WorkloadGet],
     description="Получить загруженность аудиторий",
     summary="Получение загруженности аудиторий",
 )
 async def get_rooms_workload(
     db: AsyncSession = Depends(get_session),
     campus_id: int = Query(..., description="Id кампуса"),
-):
+) -> List[WorkloadGet]:
     workload = []
 
     rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
     ids = [room.id for room in rooms]
 
     for room_id in ids:
-        workload.append(
-            {
-                "id": room_id,
-                "workload": await schedule_crud.get_room_workload(db, room_id),
-            }
-        )
+        workload.append(WorkloadGet(id=room_id, workload=await schedule_crud.get_room_workload(db, room_id)))
 
     return workload
 

@@ -1,6 +1,6 @@
 import datetime
 from collections import Counter, defaultdict
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import and_, delete, func, select
 from sqlalchemy.dialects.postgresql import array
@@ -20,6 +20,7 @@ from app.database.tables import (
     Teacher,
     lessons_to_teachers,
 )
+from app.models import RoomStatusGet
 from app.services import utils
 
 
@@ -307,7 +308,7 @@ async def get_call_by_time(db: AsyncSession, time: datetime.time) -> LessonCall:
     return res.scalar()
 
 
-async def get_rooms_statuses(db: AsyncSession, campus_id: int, time: datetime.datetime) -> list[dict[str, str]]:
+async def get_rooms_statuses(db: AsyncSession, campus_id: int, time: datetime.datetime) -> List[RoomStatusGet]:
     rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
     ids = [room.id for room in rooms]
 
@@ -332,10 +333,7 @@ async def get_rooms_statuses(db: AsyncSession, campus_id: int, time: datetime.da
 
     lessons = res.scalars().all()
     return [
-        {
-            "id": _id,
-            "status": "free" if _id not in [lesson.room_id for lesson in lessons] else "busy",
-        }
+        RoomStatusGet(id=_id, status="free" if _id not in [lesson.room_id for lesson in lessons] else "busy")
         for _id in ids
     ]
 
