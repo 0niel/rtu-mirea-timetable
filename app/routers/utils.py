@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import aiofiles
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, Response, UploadFile
 from fastapi_cache import FastAPICache
@@ -31,21 +33,22 @@ async def parse_file(
     secret_key: str = Query(..., description="Ключ доступа"),
     schedule: UploadFile = File(..., description="Файл с расписанием"),
     institute: str = Query(..., description="Инстиут"),
-    degree: str = Query(..., description="Степень обучения"),
+    degree: int = Query(..., description="Степень обучения"),
 ) -> Response:
     if secret_key != config.SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
 
-    async with aiofiles.open("/files", 'wb') as out_file:
-        content = await schedule.read()
-        await out_file.write(content)
+    files_dir = f"{Path(__file__).parent.parent.parent}/files"
+    schedule_file_path = f"{files_dir}/{schedule.filename}"
+    async with aiofiles.open(schedule_file_path, 'wb+') as file:
+        await file.write(schedule.file.read())
 
     await FastAPICache.clear(namespace="groups")
 
     app.send_task(
         "worker.tasks.parse_file",
         kwargs={
-            "file_path": f"",
+            "file_path": schedule_file_path,
             "institute": institute,
             "degree": degree,
         },

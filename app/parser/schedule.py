@@ -20,12 +20,14 @@ from app.services.db import DegreeDBService, GroupDBService, InstituteDBService,
 class ScheduleParsingService:
     @classmethod
     async def parse_schedule(
-        cls, db: AsyncSession, from_file: bool = False, file_path: str = None, institute: str = None, degree: str = None
+        cls, db: AsyncSession, from_file: bool = False, file_path: str = None, institute: str = None, degree: int = None
     ) -> None:
         """Парсинг расписания используя пакет rtu_schedule_parser"""
 
         for schedules in (
-            cls._parse() if from_file else cls._parse_from_file(file_path=file_path, institute=institute, degree=degree)
+            cls._parse()
+            if not from_file
+            else cls._parse_from_file(file_path=file_path, institute=institute, degree=degree)
         ):
             for schedule in schedules:
                 try:
@@ -178,7 +180,7 @@ class ScheduleParsingService:
 
     @classmethod
     def _parse_from_file(
-        cls, file_path: str, institute: str, degree: str
+        cls, file_path: str, institute: str, degree: int
     ) -> Generator[List[Union[LessonsSchedule, ExamsSchedule]], None, None]:
         with ThreadPoolExecutor(max_workers=4) as executor:
             tasks = []
@@ -237,7 +239,7 @@ class ScheduleParsingService:
         return documents
 
     @classmethod
-    def _get_document_from_file(cls, file_path: str, institute: str, degree: str) -> list:
+    def _get_document_from_file(cls, file_path: str, institute: str, degree: int) -> list:
         documents = [
             (
                 file_path,

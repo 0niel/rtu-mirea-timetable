@@ -1,8 +1,17 @@
 include .env
 export
 
+## Run worker
+celery:
+	celery -A worker.tasks worker -B -E --concurrency=1
 
-# Migration
+
+## Run server
+run:
+	python runserver.py
+
+
+## Migration
 migrate:
 	docker compose exec backend alembic upgrade head
 

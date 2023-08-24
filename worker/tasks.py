@@ -19,9 +19,11 @@ def parse_schedule() -> None:
 
 
 @app.task
-def parse_file(file_path: str, institute: str, degree: str) -> None:
+def parse_file(file_path: str, institute: str, degree: int) -> None:
     """Обновление расписания"""
-    logger.debug("Запускаем задачу парсинга расписания из файла")
+    logger.debug(
+        "Запускаем задачу парсинга расписания из файла. Входные параметры: " f"{file_path=} {institute = } {degree = } "
+    )
 
     event_loop = asyncio.get_event_loop()
     event_loop.run_until_complete(
@@ -32,7 +34,7 @@ def parse_file(file_path: str, institute: str, degree: str) -> None:
 
 
 async def _sync_schedule(
-    from_file: bool = False, file_path: str = None, institute: str = None, degree: str = None
+    from_file: bool = False, file_path: str = None, institute: str = None, degree: int = None
 ) -> None:
     async with async_session() as db_session:
         logger.debug("Получена сессия БД")
