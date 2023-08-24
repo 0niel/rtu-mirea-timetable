@@ -80,7 +80,7 @@ async def get_rooms_workload(
 
 
 @router.get(
-    "/rooms/workload",
+    "/rooms/workload/{id}",
     status_code=status.HTTP_200_OK,
     response_model=WorkloadGet,
     description="Получить загруженность аудиторий",
