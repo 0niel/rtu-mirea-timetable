@@ -282,7 +282,7 @@ async def get_room_workload(db: AsyncSession, room_id: int):
     checked = defaultdict(set)
     workload = 0
     for lesson in lessons:
-        if call := next((c for c in calls if c.id == lesson.call_id), None):
+        if call := next((c for c in calls if c.id == lesson.call_id), None):  # noqa
             for week in lesson.weeks:
                 key = (lesson.weekday, lesson.call_id)
                 if week not in checked[key]:

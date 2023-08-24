@@ -1,3 +1,4 @@
+import aiofiles
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, Response, UploadFile
 from fastapi_cache import FastAPICache
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,6 +23,33 @@ async def parse_schedule(secret_key: str = Query(..., description="Ключ до
         raise HTTPException(401, "Неверный ключ доступа")
     await FastAPICache.clear(namespace="groups")
     app.send_task("worker.tasks.parse_schedule")
+    return Response(status_code=204)
+
+
+@router.post("/parse-file/", status_code=204)
+async def parse_file(
+    secret_key: str = Query(..., description="Ключ доступа"),
+    schedule: UploadFile = File(..., description="Файл с расписанием"),
+    institute: str = Query(..., description="Инстиут"),
+    degree: str = Query(..., description="Степень обучения"),
+) -> Response:
+    if secret_key != config.SECRET_KEY:
+        raise HTTPException(401, "Неверный ключ доступа")
+
+    async with aiofiles.open("/files", 'wb') as out_file:
+        content = await schedule.read()
+        await out_file.write(content)
+
+    await FastAPICache.clear(namespace="groups")
+
+    app.send_task(
+        "worker.tasks.parse_file",
+        kwargs={
+            "file_path": f"",
+            "institute": institute,
+            "degree": degree,
+        },
+    )
     return Response(status_code=204)
 
 

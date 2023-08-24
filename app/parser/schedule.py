@@ -19,10 +19,14 @@ from app.services.db import DegreeDBService, GroupDBService, InstituteDBService,
 
 class ScheduleParsingService:
     @classmethod
-    async def parse_schedule(cls, db: AsyncSession) -> None:
+    async def parse_schedule(
+        cls, db: AsyncSession, from_file: bool = False, file_path: str = None, institute: str = None, degree: str = None
+    ) -> None:
         """Парсинг расписания используя пакет rtu_schedule_parser"""
 
-        for schedules in cls._parse():
+        for schedules in (
+            cls._parse() if from_file else cls._parse_from_file(file_path=file_path, institute=institute, degree=degree)
+        ):
             for schedule in schedules:
                 try:
                     logger.info(f"Сохраняем расписание группы {schedule.group} в БД")
@@ -173,6 +177,22 @@ class ScheduleParsingService:
                     yield schedules
 
     @classmethod
+    def _parse_from_file(
+        cls, file_path: str, institute: str, degree: str
+    ) -> Generator[List[Union[LessonsSchedule, ExamsSchedule]], None, None]:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            tasks = []
+            for doc in cls._get_document_from_file(file_path=file_path, institute=institute, degree=degree):
+                task = executor.submit(cls._parse_document, doc)
+                tasks.append(task)
+
+            for future in as_completed(tasks):
+                if schedules := future.result():  # type: list[LessonsSchedule | ExamsSchedule]
+                    groups = {schedule.group for schedule in schedules}
+                    logger.info(f"Получено расписание документа. Группы: {groups}")
+                    yield schedules
+
+    @classmethod
     def _get_documents(cls) -> list:
         """Get documents for specified institute and degree"""
         docs_dir = f"{Path(__file__).parent.parent.parent}/docs"
@@ -214,6 +234,18 @@ class ScheduleParsingService:
             logger.warning("Функция скачивания расписания отключена")
         documents += cls._get_documents_by_json(docs_dir)
 
+        return documents
+
+    @classmethod
+    def _get_document_from_file(cls, file_path: str, institute: str, degree: str) -> list:
+        documents = [
+            (
+                file_path,
+                academic_calendar.get_period(datetime.datetime.now()),
+                Institute.get_by_short_name(institute),
+                Degree(degree),
+            )
+        ]
         return documents
 
     @classmethod
