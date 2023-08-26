@@ -337,7 +337,7 @@ async def get_rooms_statuses(
         )
     )
 
-    lessons = res.scalars().all()
+    lessons = res.scalars().unique().all()
     return [
         RoomStatusGet(id=_id, status="free" if _id not in [lesson.room_id for lesson in lessons] else "busy")
         for _id in ids
