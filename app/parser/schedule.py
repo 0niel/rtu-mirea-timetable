@@ -47,12 +47,10 @@ class ScheduleParsingService:
                                 semester=schedule.period.semester,
                             ),
                         )
-
                     await schedule_crud.clear_group_schedule(db, schedule.group, period.id)
                     degree = await DegreeDBService.get_degree_by_name(db, schedule.degree.name)
                     if not degree:
                         degree = await DegreeDBService.create(db, models.DegreeCreate(name=schedule.degree.name))
-
                     institute = await InstituteDBService.get_institute_by_name(db, schedule.institute.name)
                     if not institute:
                         institute = await InstituteDBService.create(
@@ -62,7 +60,6 @@ class ScheduleParsingService:
                                 short_name=schedule.institute.short_name,
                             ),
                         )
-
                     group = await GroupDBService.get_group_by_name(db, schedule.group, period.id)
                     if not group:
                         group = await GroupDBService.create(
@@ -145,7 +142,6 @@ class ScheduleParsingService:
                             ).id
                             for teacher in lesson.teachers
                         ]
-
                         await schedule_crud.get_or_create_lesson(
                             db,
                             models.LessonCreate(
@@ -162,7 +158,18 @@ class ScheduleParsingService:
                         )
                     logger.info(f"Сохранение группы {schedule.group} в БД завершено")
                 except Exception as e:
-                    logger.error(f"Неожиданная ошибка при сохранении группы {schedule.group} в БД. Ошибка {str(e)}")
+                    logger.error(
+                        f"Неожиданная ошибка при сохранении группы {schedule.group} в БД.\n\n"
+                        f"Параметры расписания:\n"
+                        f"Группа: {schedule.group}\n"
+                        f"Период: {schedule.period}\n"
+                        f"Институт: {schedule.institute}\n"
+                        f"Степень обучения: {schedule.degree}\n"
+                        f"Ссылка на файл: {schedule.document_url}\n\n\n"
+                        f"Расписание: {schedule.lessons}\n\n\n"
+                        f"Ошибка {str(e)}\n\n"
+                    )
+                    break
 
     @classmethod
     def _parse(cls) -> Generator[List[Union[LessonsSchedule, ExamsSchedule]], None, None]:
@@ -256,8 +263,8 @@ class ScheduleParsingService:
         try:
             parser = ExcelScheduleParser(doc[0], doc[1], doc[2], doc[3])
             return parser.parse(force=True).get_schedule()
-        except Exception:
-            logger.error(f"Парсинг завершился с ошибкой ({doc})")
+        except Exception as e:
+            logger.error(f"Парсинг документа {doc} завершился с ошибкой. Ошибка: {str(e)}")
 
     @classmethod
     def _get_documents_by_json(cls, docs_dir: str) -> list:
