@@ -369,7 +369,7 @@ async def get_rooms_status(db: AsyncSession, time: datetime.datetime, room_id: i
         )
     )
 
-    lessons = res.scalars().all()
+    lessons = res.scalars().unique()
     return RoomStatusGet(id=room_id, status="free" if room_id not in [lesson.room_id for lesson in lessons] else "busy")
 
 
