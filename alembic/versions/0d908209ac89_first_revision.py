@@ -123,12 +123,15 @@ def upgrade() -> None:
     op.create_index(op.f('ix_schedule_lesson_weekday'), 'schedule_lesson', ['weekday'], unique=False)
     op.create_index(op.f('ix_schedule_lesson_weeks'), 'schedule_lesson', ['weeks'], unique=False)
     op.create_table('schedule_lessons_to_teachers',
+    sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('lesson_id', sa.BigInteger(), nullable=False),
     sa.Column('teacher_id', sa.BigInteger(), nullable=False),
     sa.ForeignKeyConstraint(['lesson_id'], ['schedule_lesson.id'], ),
     sa.ForeignKeyConstraint(['teacher_id'], ['schedule_teacher.id'], ),
-    sa.PrimaryKeyConstraint('lesson_id', 'teacher_id')
+    sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_schedule_lessons_to_teachers_lesson_id'), 'schedule_lessons_to_teachers', ['lesson_id'], unique=False)
+    op.create_index(op.f('ix_schedule_lessons_to_teachers_teacher_id'), 'schedule_lessons_to_teachers', ['teacher_id'], unique=False)
     # ### end Alembic commands ###
 
 
