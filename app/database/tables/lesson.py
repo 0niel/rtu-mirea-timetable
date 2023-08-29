@@ -7,8 +7,9 @@ from app.database.connection import Base
 lessons_to_teachers = db.Table(
     "schedule_lessons_to_teachers",
     Base.metadata,
-    db.Column("lesson_id", db.BigInteger, db.ForeignKey("schedule_lesson.id"), primary_key=True),
-    db.Column("teacher_id", db.BigInteger, db.ForeignKey("schedule_teacher.id"), primary_key=True),
+    db.Column("id", db.BigInteger, primary_key=True),
+    db.Column("lesson_id", db.BigInteger, db.ForeignKey("schedule_lesson.id"), index=True),
+    db.Column("teacher_id", db.BigInteger, db.ForeignKey("schedule_teacher.id"), index=True),
 )
 
 

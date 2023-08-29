@@ -137,11 +137,7 @@ async def get_or_create_lesson(db: AsyncSession, cmd: models.LessonCreate):
         await db.flush()
 
         for teacher_id in cmd.teachers_id:
-            lessons_to_teachers_relationship = (await db.execute(
-                select(lessons_to_teachers).where(lessons_to_teachers.columns.lesson_id == lesson.id,
-                                                  lessons_to_teachers.columns.teacher_id == teacher_id))).scalars()
-            if not lessons_to_teachers_relationship:
-                await db.execute(lessons_to_teachers.insert().values(lesson_id=lesson.id, teacher_id=teacher_id))
+            await db.execute(lessons_to_teachers.insert().values(lesson_id=lesson.id, teacher_id=teacher_id))
         await db.commit()
         await db.refresh(lesson)
 
