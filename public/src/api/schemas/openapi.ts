@@ -7,110 +7,272 @@
 export interface paths {
   "/api/campuses": {
     /**
-     * Получение всех кампусов РТУ МИРЭА 
+     * Получение всех кампусов РТУ МИРЭА
      * @description Получить все кампусы РТУ МИРЭА
      */
     get: operations["get_campuses_api_campuses_get"];
   };
-  "/api/campuses/{campus_id}/rooms": {
+  "/api/campuses/{id}": {
     /**
-     * Получение всех аудитории по кампусу 
+     * Получение кампуса по id
+     * @description Получить кампус по id и вернуть его
+     */
+    get: operations["get_campus_api_campuses__id__get"];
+  };
+  "/api/campuses/{id}/rooms": {
+    /**
+     * Получение всех аудитории по кампусу
      * @description Получить все аудитории по кампусу
      */
-    get: operations["get_rooms_api_campuses__campus_id__rooms_get"];
-  };
-  "/api/": {
-    /** Groups Html */
-    get: operations["groups_html_api__get"];
-  };
-  "/api/group-schedule/{name}": {
-    /** Group Schedule Html */
-    get: operations["group_schedule_html_api_group_schedule__name__get"];
+    get: operations["get_rooms_api_campuses__id__rooms_get"];
   };
   "/api/groups": {
     /**
-     * Получение всех учебных групп 
+     * Получение всех учебных групп
      * @description Получить все учебные группы
      */
-    get: operations["get_api_groups_get"];
+    get: operations["get_groups_api_groups_get"];
   };
-  "/api/groups/{name}": {
+  "/api/groups/{id}": {
     /**
-     * Get Group Schedule 
+     * Получение группы по id
+     * @description Получить группу по id и вернуть её
+     */
+    get: operations["get_group_api_groups__id__get"];
+  };
+  "/api/groups/name/{name}": {
+    /**
+     * Получение группы и её расписания по названию
      * @description Получить группу и её расписание по названию
      */
-    get: operations["get_group_schedule_api_groups__name__get"];
+    get: operations["get_group_schedule_api_groups_name__name__get"];
   };
-  "/api/teachears/search/{name}": {
+  "/api/lessons": {
     /**
-     * Поиск преподавателя по имени 
-     * @description Поиск преподавателя по имени
+     * Получение всех занятий РТУ МИРЭА
+     * @description Получить все занятия РТУ МИРЭА
      */
-    get: operations["search_teacher_by_name_api_teachears_search__name__get"];
+    get: operations["get_lessons_api_lessons_get"];
   };
-  "/api/lessons/{room_id}": {
+  "/api/lessons/{id}": {
     /**
-     * Получение расписания аудитории 
-     * @description Получить расписание аудитории
+     * Получение занятия по id
+     * @description Получить занятие по id и вернуть его
      */
-    get: operations["get_room_lessons_api_lessons__room_id__get"];
+    get: operations["get_lesson_api_lessons__id__get"];
   };
-  "/api/lessons-by-date/{room_id}/{date}": {
+  "/api/lessons/rooms/{id}": {
     /**
-     * Получение расписания аудитории на указанную дату 
-     * @description Получить расписание аудитории на указанную дату
+     * Получение всех занятий аудитории по id
+     * @description Получить все занятия аудитории по id и вернуть их
      */
-    get: operations["get_rooms_lesson_by_room_and_date_api_lessons_by_date__room_id___date__get"];
+    get: operations["get_lessons_by_room_api_lessons_rooms__id__get"];
   };
-  "/api/lessons-by-week/{room_id}/{week}": {
+  "/api/lessons/calls": {
     /**
-     * Получение расписания аудитории на указанную неделю 
-     * @description Получить расписание аудитории на указанную неделю
+     * Получение списка звонков
+     * @description Получить список звонков и вернуть его
      */
-    get: operations["get_rooms_lesson_by_room_and_week_api_lessons_by_week__room_id___week__get"];
+    get: operations["get_lessons_calls_api_lessons_calls_get"];
   };
-  "/api/search/{name}": {
+  "/api/lessons/calls/{id}": {
     /**
-     * Поиск аудитории 
-     * @description Поиск аудитории по названию аудитории (по подстроке)
+     * Получение звонка по id
+     * @description Получить звонок по id и вернуть его
      */
-    get: operations["search_rooms_api_search__name__get"];
+    get: operations["get_lessons_call_api_lessons_calls__id__get"];
   };
-  "/api/workload/{room_id}": {
+  "/api/lessons/types": {
     /**
-     * Получение загруженности аудитории 
-     * @description Получить загруженность аудитории
+     * Получение всех типов занятий
+     * @description Получить все типы занятий и вернуть их
      */
-    get: operations["get_workload_api_workload__room_id__get"];
+    get: operations["get_lessons_types_api_lessons_types_get"];
   };
-  "/api/statuses/": {
+  "/api/lessons/types/{id}": {
     /**
-     * Получение статусов аудиторий 
+     * Получение типа занятия по id
+     * @description Получить тип занятия по id и вернуть его
+     */
+    get: operations["get_lessons_type_api_lessons_types__id__get"];
+  };
+  "/api/teachers": {
+    /**
+     * Получение всех преподавателя РТУ МИРЭА
+     * @description Получить всех преподавателей РТУ МИРЭА
+     */
+    get: operations["get_teachers_api_teachers_get"];
+  };
+  "/api/teachers/{id}": {
+    /**
+     * Получение преподавателя по id
+     * @description Получить преподавателя по id и вернуть его
+     */
+    get: operations["get_teacher_api_teachers__id__get"];
+  };
+  "/api/teachers/search/{name}": {
+    /**
+     * Поиск преподавателей по имени
+     * @description Поиск преподавателей по имени
+     */
+    get: operations["search_teacher_by_name_api_teachers_search__name__get"];
+  };
+  "/api/rooms/statuses": {
+    /**
+     * Получение статусов аудиторий
      * @description Получить статусы аудиторий (свободна/занята) для указанного времени
      */
-    get: operations["get_statuses_api_statuses__get"];
+    get: operations["get_statuses_api_rooms_statuses_get"];
   };
-  "/api/workload/all/{campus_substr}": {
+  "/api/rooms/statuses/{id}": {
     /**
-     * Получение загруженности всех аудиторий по корпусу 
-     * @description Получить загруженность всех аудиторий по корпусу (подстрока)
+     * Получение статусов аудиторий
+     * @description Получить статусы аудиторий (свободна/занята) для указанного времени
      */
-    get: operations["get_all_workload_api_workload_all__campus_substr__get"];
+    get: operations["get_status_by_id_api_rooms_statuses__id__get"];
   };
-  "/api/statuses/all/{campus_substr}": {
+  "/api/rooms/workload": {
     /**
-     * Получение статусов всех аудиторий по корпусу 
-     * @description Получить статусы всех аудиторий по корпусу (подстрока)
+     * Получение загруженности аудиторий
+     * @description Получить загруженность аудиторий
      */
-    get: operations["get_all_statuses_api_statuses_all__campus_substr__get"];
+    get: operations["get_rooms_workload_api_rooms_workload_get"];
+  };
+  "/api/rooms/workload/{id}": {
+    /**
+     * Получение загруженности аудиторий
+     * @description Получить загруженность аудиторий
+     */
+    get: operations["get_room_workload_api_rooms_workload__id__get"];
+  };
+  "/api/rooms": {
+    /**
+     * Получение всех аудиторий РТУ МИРЭА
+     * @description Получить все аудитории РТУ МИРЭА
+     */
+    get: operations["get_rooms_api_rooms_get"];
+  };
+  "/api/rooms/{id}": {
+    /**
+     * Получение аудитории по id
+     * @description Получить аудиторию по id и вернуть его
+     */
+    get: operations["get_room_api_rooms__id__get"];
+  };
+  "/api/rooms/search/{name}": {
+    /**
+     * Поиск аудитории
+     * @description Поиск аудитории по названию аудитории (по подстроке)
+     */
+    get: operations["search_rooms_api_rooms_search__name__get"];
+  };
+  "/api/rooms/info/{id}": {
+    /**
+     * Получение подробной информации об аудитории
+     * @description Получить подробную информацию об аудитории
+     */
+    get: operations["get_info_api_rooms_info__id__get"];
+  };
+  "/api/institutes": {
+    /**
+     * Получение всех институтов РТУ МИРЭА
+     * @description Получить все институты РТУ МИРЭА
+     */
+    get: operations["get_institutes_api_institutes_get"];
+  };
+  "/api/institutes/{id}": {
+    /**
+     * Получение института по id
+     * @description Получить институт по id и вернуть его
+     */
+    get: operations["get_institute_api_institutes__id__get"];
+  };
+  "/api/disciplines": {
+    /**
+     * Получение всех дисциплин РТУ МИРЭА
+     * @description Получить все дисциплины РТУ МИРЭА
+     */
+    get: operations["get_disciplines_api_disciplines_get"];
+  };
+  "/api/disciplines/{id}": {
+    /**
+     * Получение дисциплины по id
+     * @description Получить дисциплину по id и вернуть ее
+     */
+    get: operations["get_discipline_api_disciplines__id__get"];
+  };
+  "/api/disciplines/search/{name}": {
+    /**
+     * Получение дисциплины по name
+     * @description Получить дисциплину по name и вернуть ее
+     */
+    get: operations["get_discipline_by_name_api_disciplines_search__name__get"];
+  };
+  "/api/periods": {
+    /**
+     * Получение всех периодов РТУ МИРЭА
+     * @description Получить все периоды РТУ МИРЭА
+     */
+    get: operations["get_periods_api_periods_get"];
+  };
+  "/api/periods/{id}": {
+    /**
+     * Получение периода по id
+     * @description Получить период по id и вернуть его
+     */
+    get: operations["get_period_api_periods__id__get"];
+  };
+  "/api/degrees": {
+    /**
+     * Получение всех степеней РТУ МИРЭА
+     * @description Получить все степени РТУ МИРЭА
+     */
+    get: operations["get_degrees_api_degrees_get"];
+  };
+  "/api/degrees/{id}": {
+    /**
+     * Получение степени по id
+     * @description Получить степень по id и вернуть его
+     */
+    get: operations["get_degree_api_degrees__id__get"];
   };
   "/api/parse-schedule/": {
     /** Parse Schedule */
     post: operations["parse_schedule_api_parse_schedule__post"];
   };
+  "/api/parse-file/": {
+    /** Parse File */
+    post: operations["parse_file_api_parse_file__post"];
+  };
+  "/api/versions": {
+    /**
+     * Получение системной информации
+     * @description Получить системную информацию
+     */
+    get: operations["get_system_info_api_versions_get"];
+  };
+  "/api/max-week": {
+    /**
+     * Получить максимальное кол-во недель в семестре
+     * @description Получить максимальное кол-во недель в семестре
+     */
+    get: operations["get_max_week_count_api_max_week_get"];
+    /**
+     * Установить максимальное кол-во недель в семестре
+     * @description Установить максимальное кол-во недель в семестре
+     */
+    put: operations["update_max_week_count_api_max_week_put"];
+  };
+  "/api/current-week": {
+    /**
+     * Получить текущую неделю
+     * @description Получить текущую неделю
+     */
+    get: operations["get_current_week_api_current_week_get"];
+  };
   "/api/lks/{group_name}": {
     /**
-     * Get Lks Schedule 
+     * Get Lks Schedule
      * @description Получить расписание в формате ЛКс
      */
     get: operations["get_lks_schedule_api_lks__group_name__get"];
@@ -121,6 +283,15 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    /** Body_parse_file_api_parse_file__post */
+    Body_parse_file_api_parse_file__post: {
+      /**
+       * Schedule
+       * Format: binary
+       * @description Файл с расписанием
+       */
+      schedule: string;
+    };
     /** Campus */
     Campus: {
       /** Name */
@@ -129,6 +300,11 @@ export interface components {
       short_name: string;
       /** Id */
       id: number;
+    };
+    /** CurrentWeek */
+    CurrentWeek: {
+      /** Week */
+      week: number;
     };
     /** Degree */
     Degree: {
@@ -154,26 +330,33 @@ export interface components {
       institute: components["schemas"]["Institute"];
       degree: components["schemas"]["Degree"];
       /** Lessons */
-      lessons: (components["schemas"]["Lesson"])[];
+      lessons: components["schemas"]["Lesson"][];
     };
     /** GroupList */
     GroupList: {
       institute: components["schemas"]["Institute"];
       degree: components["schemas"]["Degree"];
       /** Groups */
-      groups: (string)[];
+      groups: string[];
+    };
+    /** GroupTiny */
+    GroupTiny: {
+      /** Id */
+      id: number;
+      /** Name */
+      name: string;
     };
     /** Groups */
     Groups: {
       /** Total */
       total: number;
       /** Result */
-      result: (components["schemas"]["GroupList"])[];
+      result: components["schemas"]["GroupList"][];
     };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
-      detail?: (components["schemas"]["ValidationError"])[];
+      detail?: components["schemas"]["ValidationError"][];
     };
     /** Institute */
     Institute: {
@@ -191,7 +374,7 @@ export interface components {
       lesson_type?: components["schemas"]["LessonType"];
       discipline: components["schemas"]["Discipline"];
       /** Teachers */
-      teachers: (components["schemas"]["Teacher"])[];
+      teachers: components["schemas"]["TeacherGroup"][];
       room?: components["schemas"]["Room"];
       calls: components["schemas"]["LessonCall"];
       /** Weekday */
@@ -199,19 +382,20 @@ export interface components {
       /** Subgroup */
       subgroup?: number;
       /** Weeks */
-      weeks: (number)[];
+      weeks: number[];
+      group: components["schemas"]["GroupTiny"];
     };
     /** LessonCall */
     LessonCall: {
       /** Num */
       num: number;
       /**
-       * Time Start 
+       * Time Start
        * Format: time
        */
       time_start: string;
       /**
-       * Time End 
+       * Time End
        * Format: time
        */
       time_end: string;
@@ -229,7 +413,7 @@ export interface components {
     LksDay: {
       /** Days */
       DAYS: {
-        [key: string]: components["schemas"]["LksLessons"] | undefined;
+        [key: string]: components["schemas"]["LksLessons"];
       };
     };
     /** LksLesson */
@@ -249,7 +433,7 @@ export interface components {
     LksLessons: {
       /** Lessons */
       LESSONS: {
-        [key: string]: (components["schemas"]["LksLesson"])[] | undefined;
+        [key: string]: components["schemas"]["LksLesson"][];
       };
     };
     /** LksSchedule */
@@ -260,13 +444,8 @@ export interface components {
     LksWeeks: {
       /** Weeks */
       WEEKS: {
-        [key: string]: components["schemas"]["LksDay"] | undefined;
+        [key: string]: components["schemas"]["LksDay"];
       };
-    };
-    /** Msg */
-    Msg: {
-      /** Msg */
-      msg: string;
     };
     /** Period */
     Period: {
@@ -289,6 +468,33 @@ export interface components {
       id: number;
       campus?: components["schemas"]["Campus"];
     };
+    /** RoomInfo */
+    RoomInfo: {
+      room: components["schemas"]["Room"];
+      /** Purpose */
+      purpose: string;
+      /** Workload */
+      workload: number;
+    };
+    /** RoomStatusGet */
+    RoomStatusGet: {
+      /** Id */
+      id: number;
+      /** Status */
+      status: string;
+    };
+    /** SettingsCreate */
+    SettingsCreate: {
+      /** Max Week */
+      max_week: number;
+    };
+    /** SettingsGet */
+    SettingsGet: {
+      /** Max Week */
+      max_week: number;
+      /** Id */
+      id: number;
+    };
     /** Teacher */
     Teacher: {
       /** Name */
@@ -296,13 +502,20 @@ export interface components {
       /** Id */
       id: number;
       /**
-       * Lessons 
+       * Lessons
        * @default []
        */
-      lessons?: (components["schemas"]["TeacherLesson"])[];
+      lessons?: components["schemas"]["TeacherLesson"][];
+    };
+    /** TeacherGroup */
+    TeacherGroup: {
+      /** Id */
+      id: number;
+      /** Name */
+      name: string;
     };
     /**
-     * TeacherLesson 
+     * TeacherLesson
      * @description For Teacher model
      */
     TeacherLesson: {
@@ -317,14 +530,8 @@ export interface components {
       /** Subgroup */
       subgroup?: number;
       /** Weeks */
-      weeks: (number)[];
-
-      group: {
-        /** Id */
-        id: number;
-        /** Name */
-        name: string;
-      }
+      weeks: number[];
+      group: components["schemas"]["TeacherGroup"];
     };
     /** ValidationError */
     ValidationError: {
@@ -335,6 +542,20 @@ export interface components {
       /** Error Type */
       type: string;
     };
+    /** VersionBase */
+    VersionBase: {
+      /** Rtu Schedule Parser */
+      rtu_schedule_parser: string;
+      /** Rtu Mirea Timetable */
+      rtu_mirea_timetable: string;
+    };
+    /** WorkloadGet */
+    WorkloadGet: {
+      /** Id */
+      id: number;
+      /** Workload */
+      workload: number;
+    };
   };
   responses: never;
   parameters: never;
@@ -343,40 +564,56 @@ export interface components {
   pathItems: never;
 }
 
+export type $defs = Record<string, never>;
+
 export type external = Record<string, never>;
 
 export interface operations {
 
+  /**
+   * Получение всех кампусов РТУ МИРЭА
+   * @description Получить все кампусы РТУ МИРЭА
+   */
   get_campuses_api_campuses_get: {
-    /**
-     * Получение всех кампусов РТУ МИРЭА 
-     * @description Получить все кампусы РТУ МИРЭА
-     */
+    parameters: {
+      query?: {
+        /** @description Id кампусов */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
     responses: {
-      /** @description Успешный возврат списка кампусов */
+      /** @description Список кампусов успешно получен и возвращен в ответе */
       200: {
         content: {
-          "application/json": (components["schemas"]["Campus"])[];
+          "application/json": components["schemas"]["Campus"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
   };
-  get_rooms_api_campuses__campus_id__rooms_get: {
-    /**
-     * Получение всех аудитории по кампусу 
-     * @description Получить все аудитории по кампусу
-     */
+  /**
+   * Получение кампуса по id
+   * @description Получить кампус по id и вернуть его
+   */
+  get_campus_api_campuses__id__get: {
     parameters: {
+      path: {
         /** @description Id кампуса */
-      path: {
-        campus_id: number;
+        id: number;
       };
     };
     responses: {
-      /** @description Успешный возврат списка аудиторий указанного кампуса */
+      /** @description Кампус успешно получен и возвращен в ответе */
       200: {
         content: {
-          "application/json": (components["schemas"]["Room"])[];
+          "application/json": components["schemas"]["Campus"];
         };
       };
       /** @description Validation Error */
@@ -387,30 +624,22 @@ export interface operations {
       };
     };
   };
-  groups_html_api__get: {
-    /** Groups Html */
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "text/html": string;
-        };
-      };
-    };
-  };
-  group_schedule_html_api_group_schedule__name__get: {
-    /** Group Schedule Html */
+  /**
+   * Получение всех аудитории по кампусу
+   * @description Получить все аудитории по кампусу
+   */
+  get_rooms_api_campuses__id__rooms_get: {
     parameters: {
-        /** @description Имя группы */
       path: {
-        name: string;
+        /** @description Id кампуса */
+        id: number;
       };
     };
     responses: {
-      /** @description Successful Response */
+      /** @description Список аудиторий указанного кампуса успешно получен и возвращен в ответе */
       200: {
         content: {
-          "text/html": string;
+          "application/json": components["schemas"]["Room"][];
         };
       };
       /** @description Validation Error */
@@ -421,11 +650,19 @@ export interface operations {
       };
     };
   };
-  get_api_groups_get: {
-    /**
-     * Получение всех учебных групп 
-     * @description Получить все учебные группы
-     */
+  /**
+   * Получение всех учебных групп
+   * @description Получить все учебные группы
+   */
+  get_groups_api_groups_get: {
+    parameters: {
+      query?: {
+        /** @description Id групп */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
     responses: {
       /** @description Успешный возврат списка групп */
       200: {
@@ -433,21 +670,27 @@ export interface operations {
           "application/json": components["schemas"]["Groups"];
         };
       };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
   };
-  get_group_schedule_api_groups__name__get: {
-    /**
-     * Get Group Schedule 
-     * @description Получить группу и её расписание по названию
-     */
+  /**
+   * Получение группы по id
+   * @description Получить группу по id и вернуть её
+   */
+  get_group_api_groups__id__get: {
     parameters: {
-        /** @description Имя группы */
       path: {
-        name: string;
+        /** @description Id института */
+        id: number;
       };
     };
     responses: {
-      /** @description Successful Response */
+      /** @description Группа успешно получена и возвращена в ответе */
       200: {
         content: {
           "application/json": components["schemas"]["Group"];
@@ -461,21 +704,22 @@ export interface operations {
       };
     };
   };
-  search_teacher_by_name_api_teachears_search__name__get: {
-    /**
-     * Поиск преподавателя по имени 
-     * @description Поиск преподавателя по имени
-     */
+  /**
+   * Получение группы и её расписания по названию
+   * @description Получить группу и её расписание по названию
+   */
+  get_group_schedule_api_groups_name__name__get: {
     parameters: {
       path: {
+        /** @description Имя группы */
         name: string;
       };
     };
     responses: {
-      /** @description Successful Response */
+      /** @description Группа успешно получена и возвращена в ответе */
       200: {
         content: {
-          "application/json": (components["schemas"]["Teacher"])[];
+          "application/json": components["schemas"]["Group"];
         };
       };
       /** @description Validation Error */
@@ -486,205 +730,24 @@ export interface operations {
       };
     };
   };
-  get_room_lessons_api_lessons__room_id__get: {
-    /**
-     * Получение расписания аудитории 
-     * @description Получить расписание аудитории
-     */
+  /**
+   * Получение всех занятий РТУ МИРЭА
+   * @description Получить все занятия РТУ МИРЭА
+   */
+  get_lessons_api_lessons_get: {
     parameters: {
-      path: {
-        room_id: number;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": (components["schemas"]["Lesson"])[];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_rooms_lesson_by_room_and_date_api_lessons_by_date__room_id___date__get: {
-    /**
-     * Получение расписания аудитории на указанную дату 
-     * @description Получить расписание аудитории на указанную дату
-     */
-    parameters: {
-      path: {
-        room_id: number;
-        date: string;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": (components["schemas"]["Lesson"])[];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_rooms_lesson_by_room_and_week_api_lessons_by_week__room_id___week__get: {
-    /**
-     * Получение расписания аудитории на указанную неделю 
-     * @description Получить расписание аудитории на указанную неделю
-     */
-    parameters: {
-      path: {
-        room_id: number;
-        week: number;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": (components["schemas"]["Lesson"])[];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  search_rooms_api_search__name__get: {
-    /**
-     * Поиск аудитории 
-     * @description Поиск аудитории по названию аудитории (по подстроке)
-     */
-    parameters: {
-      path: {
-        name: string;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": (components["schemas"]["Room"])[];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_workload_api_workload__room_id__get: {
-    /**
-     * Получение загруженности аудитории 
-     * @description Получить загруженность аудитории
-     */
-    parameters: {
-      path: {
-        room_id: number;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": components["schemas"]["Msg"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_statuses_api_statuses__get: {
-    /**
-     * Получение статусов аудиторий 
-     * @description Получить статусы аудиторий (свободна/занята) для указанного времени
-     */
-    parameters: {
-        /** @description Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00 */
-        /** @description Список аудиторий. Пример: ['А-101', 'А-102'] */
-      query: {
-        date_time?: string;
-        rooms: (string)[];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": Record<string, never>;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_all_workload_api_workload_all__campus_substr__get: {
-    /**
-     * Получение загруженности всех аудиторий по корпусу 
-     * @description Получить загруженность всех аудиторий по корпусу (подстрока)
-     */
-    parameters: {
-      path: {
-        campus_substr: string;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": Record<string, never>;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_all_statuses_api_statuses_all__campus_substr__get: {
-    /**
-     * Получение статусов всех аудиторий по корпусу 
-     * @description Получить статусы всех аудиторий по корпусу (подстрока)
-     */
-    parameters: {
-        /** @description Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00 */
       query?: {
-        date_time?: string;
-      };
-      path: {
-        campus_substr: string;
+        /** @description Id занятий */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
       };
     };
     responses: {
-      /** @description Successful Response */
+      /** @description Список занятий успешно получен и возвращен в ответе */
       200: {
         content: {
-          "application/json": Record<string, never>;
+          "application/json": components["schemas"]["Lesson"][];
         };
       };
       /** @description Validation Error */
@@ -695,19 +758,812 @@ export interface operations {
       };
     };
   };
-  parse_schedule_api_parse_schedule__post: {
-    /** Parse Schedule */
+  /**
+   * Получение занятия по id
+   * @description Получить занятие по id и вернуть его
+   */
+  get_lesson_api_lessons__id__get: {
     parameters: {
-        /** @description Ключ доступа */
+      path: {
+        /** @description Id занятия */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Занятие успешно получено и возвращено в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Lesson"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех занятий аудитории по id
+   * @description Получить все занятия аудитории по id и вернуть их
+   */
+  get_lessons_by_room_api_lessons_rooms__id__get: {
+    parameters: {
+      query?: {
+        /** @description Номер недели */
+        week?: number;
+        /** @description Дата в формате: YYYY-MM-DD */
+        date?: string;
+      };
+      path: {
+        /** @description Id аудитории */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Cписок занятий аудиторий успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Lesson"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение списка звонков
+   * @description Получить список звонков и вернуть его
+   */
+  get_lessons_calls_api_lessons_calls_get: {
+    parameters: {
+      query?: {
+        /** @description Id звонков */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Cписок звонков успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["LessonCall"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение звонка по id
+   * @description Получить звонок по id и вернуть его
+   */
+  get_lessons_call_api_lessons_calls__id__get: {
+    parameters: {
+      path: {
+        /** @description Id звонка */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Тип занятия успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["LessonCall"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех типов занятий
+   * @description Получить все типы занятий и вернуть их
+   */
+  get_lessons_types_api_lessons_types_get: {
+    parameters: {
+      query?: {
+        /** @description Id типов занятий */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Cписок типов занятий успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["LessonType"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение типа занятия по id
+   * @description Получить тип занятия по id и вернуть его
+   */
+  get_lessons_type_api_lessons_types__id__get: {
+    parameters: {
+      path: {
+        /** @description Id типа занятия */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Тип занятия успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["LessonType"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех преподавателя РТУ МИРЭА
+   * @description Получить всех преподавателей РТУ МИРЭА
+   */
+  get_teachers_api_teachers_get: {
+    parameters: {
+      query?: {
+        /** @description Id преподавателей */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Список преподавателей успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Teacher"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение преподавателя по id
+   * @description Получить преподавателя по id и вернуть его
+   */
+  get_teacher_api_teachers__id__get: {
+    parameters: {
+      path: {
+        /** @description Id преподавателя */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Преподаватель успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Teacher"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Поиск преподавателей по имени
+   * @description Поиск преподавателей по имени
+   */
+  search_teacher_by_name_api_teachers_search__name__get: {
+    parameters: {
+      path: {
+        /** @description Имя преподавателя */
+        name: string;
+      };
+    };
+    responses: {
+      /** @description Преподаватели успешно получены и возвращены в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Teacher"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение статусов аудиторий
+   * @description Получить статусы аудиторий (свободна/занята) для указанного времени
+   */
+  get_statuses_api_rooms_statuses_get: {
+    parameters: {
       query: {
+        /** @description Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00 */
+        date_time?: string;
+        /** @description Id кампуса */
+        campus_id: number;
+      };
+    };
+    responses: {
+      /** @description Статусы аудиторий получены и возвращены в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["RoomStatusGet"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение статусов аудиторий
+   * @description Получить статусы аудиторий (свободна/занята) для указанного времени
+   */
+  get_status_by_id_api_rooms_statuses__id__get: {
+    parameters: {
+      query?: {
+        /** @description Дата и время в ISO формате. Пример: 2021-09-01T00:00:00+03:00 */
+        date_time?: string;
+      };
+      path: {
+        /** @description Id аудитории */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Статусы аудиторий получены и возвращены в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["RoomStatusGet"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение загруженности аудиторий
+   * @description Получить загруженность аудиторий
+   */
+  get_rooms_workload_api_rooms_workload_get: {
+    parameters: {
+      query: {
+        /** @description Id кампуса */
+        campus_id: number;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkloadGet"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение загруженности аудиторий
+   * @description Получить загруженность аудиторий
+   */
+  get_room_workload_api_rooms_workload__id__get: {
+    parameters: {
+      path: {
+        /** @description Id аудитории */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkloadGet"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех аудиторий РТУ МИРЭА
+   * @description Получить все аудитории РТУ МИРЭА
+   */
+  get_rooms_api_rooms_get: {
+    parameters: {
+      query?: {
+        /** @description Id аудиторий */
+        ids?: number[];
+        /** @description Id кампуса */
+        campus_id?: number;
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Список аудиторий успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Room"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение аудитории по id
+   * @description Получить аудиторию по id и вернуть его
+   */
+  get_room_api_rooms__id__get: {
+    parameters: {
+      path: {
+        /** @description Id аудитории */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Аудитория успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Room"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Поиск аудитории
+   * @description Поиск аудитории по названию аудитории (по подстроке)
+   */
+  search_rooms_api_rooms_search__name__get: {
+    parameters: {
+      path: {
+        /** @description Номер аудитории */
+        name: string;
+      };
+    };
+    responses: {
+      /** @description Аудитория найдена и возвращена в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Room"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение подробной информации об аудитории
+   * @description Получить подробную информацию об аудитории
+   */
+  get_info_api_rooms_info__id__get: {
+    parameters: {
+      path: {
+        /** @description Id аудитории */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Подробная информация об аудитории получена и возвращена в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["RoomInfo"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех институтов РТУ МИРЭА
+   * @description Получить все институты РТУ МИРЭА
+   */
+  get_institutes_api_institutes_get: {
+    parameters: {
+      query?: {
+        /** @description Id институтов */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Список институтов успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Institute"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение института по id
+   * @description Получить институт по id и вернуть его
+   */
+  get_institute_api_institutes__id__get: {
+    parameters: {
+      path: {
+        /** @description Id института */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Институт успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Institute"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех дисциплин РТУ МИРЭА
+   * @description Получить все дисциплины РТУ МИРЭА
+   */
+  get_disciplines_api_disciplines_get: {
+    parameters: {
+      query?: {
+        /** @description Id дисциплин */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Список дисциплин успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Discipline"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение дисциплины по id
+   * @description Получить дисциплину по id и вернуть ее
+   */
+  get_discipline_api_disciplines__id__get: {
+    parameters: {
+      path: {
+        /** @description Id дисциплины */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Дисциплина успешно получена и возвращена в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Discipline"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение дисциплины по name
+   * @description Получить дисциплину по name и вернуть ее
+   */
+  get_discipline_by_name_api_disciplines_search__name__get: {
+    parameters: {
+      path: {
+        /** @description Имя дисциплины */
+        name: string;
+      };
+    };
+    responses: {
+      /** @description Дисциплина успешно получена и возвращена в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Discipline"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех периодов РТУ МИРЭА
+   * @description Получить все периоды РТУ МИРЭА
+   */
+  get_periods_api_periods_get: {
+    parameters: {
+      query?: {
+        /** @description Id периодов */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Список периодов успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Period"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение периода по id
+   * @description Получить период по id и вернуть его
+   */
+  get_period_api_periods__id__get: {
+    parameters: {
+      path: {
+        /** @description Id периода */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Период успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Period"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение всех степеней РТУ МИРЭА
+   * @description Получить все степени РТУ МИРЭА
+   */
+  get_degrees_api_degrees_get: {
+    parameters: {
+      query?: {
+        /** @description Id степеней */
+        ids?: number[];
+        limit?: number;
+        offset?: number;
+      };
+    };
+    responses: {
+      /** @description Список степеней успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Degree"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение степени по id
+   * @description Получить степень по id и вернуть его
+   */
+  get_degree_api_degrees__id__get: {
+    parameters: {
+      path: {
+        /** @description Id степени */
+        id: number;
+      };
+    };
+    responses: {
+      /** @description Степень успешно получен и возвращен в ответе */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Degree"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /** Parse Schedule */
+  parse_schedule_api_parse_schedule__post: {
+    parameters: {
+      query: {
+        /** @description Ключ доступа */
         secret_key: string;
       };
     };
     responses: {
       /** @description Successful Response */
-      201: {
+      204: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
         content: {
-          "application/json": components["schemas"]["Msg"];
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /** Parse File */
+  parse_file_api_parse_file__post: {
+    parameters: {
+      query: {
+        /** @description Ключ доступа */
+        secret_key: string;
+        /** @description Инстиут */
+        institute: string;
+        /** @description Степень обучения */
+        degree: number;
+      };
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_parse_file_api_parse_file__post"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Получение системной информации
+   * @description Получить системную информацию
+   */
+  get_system_info_api_versions_get: {
+    responses: {
+      /** @description Системная информация успешно получена */
+      200: {
+        content: {
+          "application/json": components["schemas"]["VersionBase"];
+        };
+      };
+    };
+  };
+  /**
+   * Получить максимальное кол-во недель в семестре
+   * @description Получить максимальное кол-во недель в семестре
+   */
+  get_max_week_count_api_max_week_get: {
+    responses: {
+      /** @description Максимальное кол-во недель получено */
+      200: {
+        content: {
+          "application/json": components["schemas"]["SettingsGet"];
+        };
+      };
+    };
+  };
+  /**
+   * Установить максимальное кол-во недель в семестре
+   * @description Установить максимальное кол-во недель в семестре
+   */
+  update_max_week_count_api_max_week_put: {
+    parameters: {
+      query: {
+        /** @description Ключ доступа */
+        secret_key: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SettingsCreate"];
+      };
+    };
+    responses: {
+      /** @description Максимальное кол-во недель установлено и возвращено */
+      200: {
+        content: {
+          "application/json": components["schemas"]["SettingsGet"];
         };
       };
       /** @description Validation Error */
@@ -718,11 +1574,25 @@ export interface operations {
       };
     };
   };
+  /**
+   * Получить текущую неделю
+   * @description Получить текущую неделю
+   */
+  get_current_week_api_current_week_get: {
+    responses: {
+      /** @description Текущая неделя успешно получена */
+      200: {
+        content: {
+          "application/json": components["schemas"]["CurrentWeek"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Lks Schedule
+   * @description Получить расписание в формате ЛКс
+   */
   get_lks_schedule_api_lks__group_name__get: {
-    /**
-     * Get Lks Schedule 
-     * @description Получить расписание в формате ЛКс
-     */
     parameters: {
       path: {
         group_name: string;

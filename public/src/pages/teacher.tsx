@@ -93,7 +93,7 @@ const generateDays = (
 
 const searchTeacherSchedule = async (name: string) => {
   axios.defaults.baseURL = "https://timetable.mirea.ru";
-  const url = "/api/teacher/search/{name}";
+  const url = "/api/teachers/search/{name}";
 
   const response = await axios.get(url.replace("{name}", name));
 

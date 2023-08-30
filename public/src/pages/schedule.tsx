@@ -23,7 +23,7 @@ import { Calendar } from "../components/Calendar";
 import { CalendarHeader } from "../components/CalendarHeader";
 
 const getSchedule = async (group: string) => {
-  const url = "/api/group/name/{name}";
+  const url = "/api/groups/name/{name}";
 
   const response = await axios.get(url.replace("{name}", group));
 
@@ -170,7 +170,7 @@ const Schedule: NextPage = () => {
                     year: "numeric",
                   })}
                 </time>
-                <time dateTime="2022-01-22" className="hidden sm:inline">
+                <time dateTime="2023-09-01" className="hidden sm:inline">
                   {selectedDate.toLocaleDateString("ru-RU", {
                     month: "long",
                     day: "numeric",

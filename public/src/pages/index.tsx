@@ -23,14 +23,14 @@ const Home: NextPage = () => {
           </p>
           <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
             <Link
-              href="/schedule?group=ИКБО-30-20"
+              href="/schedule?group=ИКБО-10-23"
               className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
             >
               <h3 className="text-2xl font-bold">
                 Поиск расписания по группе &rarr;
               </h3>
               <p className="mt-4 text-xl">
-                Введите название группы, например: ИКБО-30-20
+                Введите название группы, например: ИКБО-10-23
               </p>
             </Link>
 

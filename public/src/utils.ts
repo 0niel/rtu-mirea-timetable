@@ -13,7 +13,7 @@ export function getWeek(date: Date) {
 
 export function getWeekByDate(date: Date) {
     // 9 февраля 2023 года
-    const start_date = new Date(2023, 1, 9);
+    const start_date = new Date(2023, 9, 1);
     const now = date;
 
     if (now < start_date) {
