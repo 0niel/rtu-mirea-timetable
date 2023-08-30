@@ -9,11 +9,11 @@ from app.config import config
 from app.database.connection import get_session
 from app.services.api import TeacherService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
-    "/teacher",
+    "/teachers",
     response_model=list[models.Teacher],
     response_description="Список преподавателей успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -30,7 +30,7 @@ async def get_teachers(
 
 
 @router.get(
-    "/teacher/{id}",
+    "/teachers/{id}",
     response_model=models.Teacher,
     response_description="Преподаватель успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -45,7 +45,7 @@ async def get_teacher(
 
 
 @router.get(
-    "/teacher/search/{name}",
+    "/teachers/search/{name}",
     response_model=list[models.Teacher],
     response_description="Преподаватели успешно получены и возвращены в ответе",
     status_code=status.HTTP_200_OK,

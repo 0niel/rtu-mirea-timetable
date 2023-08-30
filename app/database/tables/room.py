@@ -8,7 +8,7 @@ class Room(Base):
     __tablename__ = "schedule_room"
 
     id = db.Column(db.BigInteger, primary_key=True)
-    name = db.Column(db.String(256), nullable=False)
+    name = db.Column(db.String(256), nullable=False, index=True)
     campus_id = db.Column(db.BigInteger, db.ForeignKey("schedule_campus.id"), nullable=True)
     lessons = relationship(
         "Lesson",

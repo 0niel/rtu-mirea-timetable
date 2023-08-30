@@ -20,7 +20,6 @@ from app.routers.teachers import router as teachers_router
 from app.routers.utils import router as utils_router
 
 tags_metadata = [
-    {"name": "client", "description": "Frontend"},
     {"name": "campuses", "description": "Работа с кампусами"},
     {"name": "groups", "description": "Работа с группами"},
     {"name": "lessons", "description": "Работа с занятиями"},
@@ -37,9 +36,9 @@ tags_metadata = [
 app = FastAPI(
     debug=config.DEBUG,
     openapi_tags=tags_metadata,
-    openapi_url=f"{config.BACKEND_PREFIX}/openapi.json",
-    title=config.BACKEND_TTILE,
-    description=config.BACKEND_DESCRIPTION,
+    openapi_url=f"{config.PREFIX}/openapi.json",
+    title=config.TITLE,
+    description=config.DESCRIPTION,
 )
 
 app.middleware("http")(catch_unhandled_exceptions)
@@ -51,7 +50,7 @@ async def startup():
 
 
 if not config.SENTRY_DISABLE_LOGGING:
-    sentry_sdk.init(dsn=config.SENTRY_DSN, request_bodies="always", attach_stacktrace=True)
+    sentry_sdk.init(dsn=config.SENTRY_DSN, attach_stacktrace=True)
 app.add_middleware(SentryAsgiMiddleware)
 add_exception_handlers(app)
 
@@ -64,7 +63,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.include_router(client_router, tags=["client"])
 app.include_router(campuses_router, tags=["campuses"])
 app.include_router(groups_router, tags=["groups"])
 app.include_router(lessons_router, tags=["lessons"])

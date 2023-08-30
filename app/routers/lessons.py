@@ -9,11 +9,11 @@ from app.config import config
 from app.database.connection import get_session
 from app.services.api import LessonCallService, LessonService, LessonTypeService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
-    "/schedule",
+    "/lessons",
     response_model=list[models.Lesson],
     response_description="Список занятий успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -30,7 +30,7 @@ async def get_lessons(
 
 
 @router.get(
-    "/schedule/id/{id}",
+    "/lessons/{id}",
     response_model=models.Lesson,
     response_description="Занятие успешно получено и возвращено в ответе",
     status_code=status.HTTP_200_OK,
@@ -45,7 +45,7 @@ async def get_lesson(
 
 
 @router.get(
-    "/schedule/room/{id}",
+    "/lessons/rooms/{id}",
     response_model=list[models.Lesson],
     response_description="Cписок занятий аудиторий успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -62,7 +62,7 @@ async def get_lessons_by_room(
 
 
 @router.get(
-    "/schedule/call",
+    "/lessons/calls",
     response_model=list[models.LessonCall],
     response_description="Cписок звонков успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -79,7 +79,7 @@ async def get_lessons_calls(
 
 
 @router.get(
-    "/schedule/call/{id}",
+    "/lessons/calls/{id}",
     response_model=models.LessonCall,
     response_description="Тип занятия успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -94,7 +94,7 @@ async def get_lessons_call(
 
 
 @router.get(
-    "/schedule/type",
+    "/lessons/types",
     response_model=list[models.LessonType],
     response_description="Cписок типов занятий успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -111,7 +111,7 @@ async def get_lessons_types(
 
 
 @router.get(
-    "/schedule/type/{id}",
+    "/lessons/types/{id}",
     response_model=models.LessonType,
     response_description="Тип занятия успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,

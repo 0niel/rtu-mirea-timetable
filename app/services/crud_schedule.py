@@ -1,12 +1,14 @@
 import datetime
-from collections import Counter
-from typing import Optional
+from collections import Counter, defaultdict
+from typing import List, Optional
 
 from sqlalchemy import and_, delete, func, select
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app import models
+from app.database import tables
 from app.database.tables import (
     Group,
     Lesson,
@@ -18,6 +20,7 @@ from app.database.tables import (
     Teacher,
     lessons_to_teachers,
 )
+from app.models import RoomStatusGet
 from app.services import utils
 
 
@@ -58,18 +61,6 @@ async def get_or_create_room(db: AsyncSession, cmd: models.RoomCreate):
     return room
 
 
-async def get_or_create_discipline(db: AsyncSession, cmd: models.DisciplineCreate):
-    # migrated to api v2
-    res = await db.execute(select(ScheduleDiscipline).where(ScheduleDiscipline.name == cmd.name).limit(1))
-    discipline = res.scalar()
-    if not discipline:
-        discipline = ScheduleDiscipline(**cmd.dict())
-        db.add(discipline)
-        await db.commit()
-        await db.refresh(discipline)
-    return discipline
-
-
 async def get_or_create_teacher(db: AsyncSession, cmd: models.TeacherCreate):
     # migrated to api v2
     res = await db.execute(select(Teacher).where(Teacher.name == cmd.name).limit(1))
@@ -104,34 +95,47 @@ async def get_or_create_lesson_call(db: AsyncSession, cmd: models.LessonCallCrea
     return lesson_call
 
 
+async def get_or_create_discipline(db: AsyncSession, cmd: models.DisciplineCreate):
+    # migrated to api v2
+    res = await db.execute(select(ScheduleDiscipline).where(ScheduleDiscipline.name == cmd.name).limit(1))
+    discipline = res.scalar()
+    if not discipline:
+        discipline = ScheduleDiscipline(**cmd.dict())
+        db.add(discipline)
+        await db.commit()
+        await db.refresh(discipline)
+    return discipline
+
+
 async def get_or_create_lesson(db: AsyncSession, cmd: models.LessonCreate):
     # migrated to api v2
     res = await db.execute(
         select(Lesson)
-        .join(lessons_to_teachers)
+        .join(Lesson.teachers)
         .where(
             and_(
-                lessons_to_teachers.c.teacher_id.in_(cmd.teachers_id),
+                Lesson.discipline_id == cmd.discipline_id,
                 Lesson.lesson_type_id == cmd.lesson_type_id,
                 Lesson.group_id == cmd.group_id,
-                Lesson.discipline_id == cmd.discipline_id,
                 Lesson.room_id == cmd.room_id,
                 Lesson.weeks == array(cmd.weeks),
                 Lesson.call_id == cmd.call_id,
                 Lesson.subgroup == cmd.subgroup,
+                Lesson.teachers.any(Teacher.id.in_(cmd.teachers_id)),
             )
         )
+        .options(joinedload(Lesson.teachers))
         .limit(1)
     )
     lesson = res.scalar()
     if not lesson:
-        lesson = Lesson(**cmd.dict(exclude={"teachers_id", "weeks"}))
+        lesson = Lesson(**cmd.dict(exclude={"weeks", "teachers_id"}))
 
-        # insert list of weeks to lesson (postgres array)
         lesson.weeks = array(cmd.weeks)
 
         db.add(lesson)
         await db.flush()
+
         for teacher_id in cmd.teachers_id:
             await db.execute(lessons_to_teachers.insert().values(lesson_id=lesson.id, teacher_id=teacher_id))
         await db.commit()
@@ -176,7 +180,6 @@ async def clear_group_schedule(db: AsyncSession, group_name: str, period_id: int
 
 
 async def delete_lesson(db: AsyncSession, cmd: models.LessonDelete):
-
     await db.execute(
         select(Lesson)
         .where(
@@ -197,7 +200,6 @@ async def delete_lesson(db: AsyncSession, cmd: models.LessonDelete):
 
 
 async def get_lessons_by_teacher(db: AsyncSession, teacher_id: int):
-
     res = await db.execute(
         select(Lesson).join(lessons_to_teachers).where(lessons_to_teachers.c.teacher_id == teacher_id)
     )
@@ -211,6 +213,10 @@ async def get_lessons_by_room(db: AsyncSession, room_id: int):
 
 
 async def search_room(db: AsyncSession, name: str) -> list[Room]:
+    # TODO: Refactor to better search
+    name = name.replace(".", "")
+    name = name.replace(" ", "")
+    name = name.replace("/", "")
     res = await db.execute(select(Room).where(func.lower(Room.name).contains(name.lower())))
     return res.scalars().all()
 
@@ -275,26 +281,17 @@ async def get_room_workload(db: AsyncSession, room_id: int):
     res = await db.execute(select(LessonCall))
     calls = res.scalars().unique()
 
-    checked = []
+    checked = defaultdict(set)
     workload = 0
     for lesson in lessons:
-        for week in lesson.weeks:
-            for call in calls:
-                # у одной аудитории может быть несколько групп в одно и то же время
-                # (например, лекции и лабораторные)
-                if (
-                    call.id == lesson.call_id
-                    and (
-                        lesson.weekday,
-                        lesson.call_id,
-                        week,
-                    )
-                    not in checked
-                ):
+        if call := next((c for c in calls if c.id == lesson.call_id), None):  # noqa
+            for week in lesson.weeks:
+                key = (lesson.weekday, lesson.call_id)
+                if week not in checked[key]:
                     workload += 1
-                    checked.append((lesson.weekday, lesson.call_id, week))
+                    checked[key].add(week)
 
-    workload = workload / (6 * 6 * 16) * 100
+    workload = workload / (6 * 6 * 17) * 100  # 6 дней * 6 пар * 17 недель
     return round(workload, 2)
 
 
@@ -312,20 +309,20 @@ async def get_call_by_time(db: AsyncSession, time: datetime.time) -> LessonCall:
     return res.scalar()
 
 
-async def get_rooms_statuses(db: AsyncSession, rooms: list[str], time: datetime.datetime) -> list[dict[str, str]]:
-    rooms_res = []
+async def get_rooms_statuses(
+    db: AsyncSession, time: datetime.datetime, campus_id: Optional[int] = None, room_id: Optional[int] = None
+) -> List[RoomStatusGet]:
+    if campus_id:
+        rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
+        ids = [room.id for room in rooms]
 
-    for room in rooms:
-        found = await search_room(db, room)
-
-        # extend by found rooms
-        rooms_res.extend(found)
-    rooms = rooms_res
+    if room_id:
+        ids = [room_id]
 
     res = await db.execute(
         select(Lesson).where(
             and_(
-                Lesson.room_id.in_([room.id for room in rooms]),
+                Lesson.room_id.in_(ids),
                 Lesson.weekday == time.weekday() + 1,
                 Lesson.weeks.contains([utils.get_week(date=time)]),
                 Lesson.call_id
@@ -341,14 +338,35 @@ async def get_rooms_statuses(db: AsyncSession, rooms: list[str], time: datetime.
         )
     )
 
-    lessons = res.scalars().all()
+    lessons = res.scalars().unique().all()
     return [
-        {
-            "name": room.name,
-            "status": "free" if room.id not in [lesson.room_id for lesson in lessons] else "busy",
-        }
-        for room in rooms
+        RoomStatusGet(id=_id, status="free" if _id not in [lesson.room_id for lesson in lessons] else "busy")
+        for _id in ids
     ]
+
+
+async def get_rooms_status(db: AsyncSession, time: datetime.datetime, room_id: int) -> RoomStatusGet:
+    res = await db.execute(
+        select(Lesson).where(
+            and_(
+                Lesson.room_id == room_id,
+                Lesson.weekday == time.weekday() + 1,
+                Lesson.weeks.contains([utils.get_week(date=time)]),
+                Lesson.call_id
+                == select(LessonCall.id)
+                .where(
+                    and_(
+                        LessonCall.time_start <= time.time(),
+                        LessonCall.time_end > time.time(),
+                    )
+                )
+                .limit(1),
+            )
+        )
+    )
+
+    lessons = res.scalars().unique()
+    return RoomStatusGet(id=room_id, status="free" if room_id not in [lesson.room_id for lesson in lessons] else "busy")
 
 
 async def get_all_rooms(db: AsyncSession) -> list[Room]:

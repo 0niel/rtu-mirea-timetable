@@ -25,7 +25,7 @@ class RoomDBService:
 
     @classmethod
     async def get_rooms(
-        cls, db: AsyncSession, rooms_ids: Optional[List[int]], limit: int, offset: int
+        cls, db: AsyncSession, rooms_ids: Optional[List[int]], campus_id: Optional[int], limit: int, offset: int
     ) -> List[tables.Room]:
         """Получение списка всех аудиторий"""
 
@@ -34,9 +34,10 @@ class RoomDBService:
         if rooms_ids:
             query = query.where(tables.Room.id.in_(rooms_ids))
 
-        rooms = (await db.execute(query.limit(limit).offset(cast(offset, BigInteger)))).scalars()
+        if campus_id:
+            query = query.where(tables.Room.campus_id == campus_id)
 
-        return rooms
+        return (await db.execute(query.limit(limit).offset(cast(offset, BigInteger)))).scalars()
 
     @classmethod
     async def get_room(cls, db: AsyncSession, id_: int) -> tables.Room:

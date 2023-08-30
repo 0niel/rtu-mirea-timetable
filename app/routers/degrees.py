@@ -9,11 +9,11 @@ from app.config import config
 from app.database.connection import get_session
 from app.services.api import DegreeService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
-    "/degree",
+    "/degrees",
     response_model=list[models.Degree],
     response_description="Список степеней успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -30,7 +30,7 @@ async def get_degrees(
 
 
 @router.get(
-    "/degree/{id}",
+    "/degrees/{id}",
     response_model=models.Degree,
     response_description="Степень успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,

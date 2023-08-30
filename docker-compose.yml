@@ -1,40 +1,13 @@
 version: "3.9"
 
 services:
-  proxy:
-    image: jwilder/nginx-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - conf:/etc/nginx/conf.d
-      - vhost:/etc/nginx/vhost.d
-      - dhparam:/etc/nginx/dhparam
-      - certs:/etc/nginx/certs:ro
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /usr/share/nginx/html
-      - acme:/etc/acme.sh
-    networks:
-      - proxy
-    restart: always
-
-  letsencrypt:
-    image: nginxproxy/acme-companion:latest
-    volumes_from:
-      - proxy
-    volumes:
-      - certs:/etc/nginx/certs:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - acme:/etc/acme.sh
-    restart: always
-
   db:
     image: postgres:latest
     volumes:
       - app-db-data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
     networks:
       - default
     ports:
@@ -60,7 +33,6 @@ services:
 #        VIRTUAL_PORT: '3000'
 
   backend:
-#    image: ${BACKEND_IMAGE}
     build:
       context: .
       dockerfile: Dockerfile
@@ -73,42 +45,14 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
-      - ./docs:/app/docs # schedule docs
+      - ./docs:/app/app/parser/docs # schedule docs
     networks:
-      - proxy
       - default
     environment:
-        DEBUG: ${DEBUG}
-
-        BACKEND_TTILE: ${BACKEND_TTILE}
-        BACKEND_DESCRIPTION: ${BACKEND_DESCRIPTION}
-        BACKEND_PREFIX: ${BACKEND_PREFIX}
-
-        BACKEND_HOST: ${BACKEND_HOST}
-        BACKEND_PORT: ${BACKEND_PORT}
-        BACKEND_RELOAD: ${BACKEND_RELOAD}
-
-        BACKEND_PARSER_SECRET_KEY: ${BACKEND_PARSER_SECRET_KEY}
-        BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE: ${BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE}
-
-        POSTGRES_SERVER: ${POSTGRES_SERVER}
-        POSTGRES_USER: ${POSTGRES_USER}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        POSTGRES_DB: ${POSTGRES_DB}
-
-        BROKER_HOST: ${BROKER_HOST}
-        BROKER_PORT: ${BROKER_PORT}
-        BROKER_USER: ${BROKER_USER}
-        BROKER_PASS: ${BROKER_PASS}
-        BROKER_URL: ${BROKER_URL}
-
-        SENTRY_DSN: ${SENTRY_DSN}
-        SENTRY_DISABLE_LOGGING: ${SENTRY_DISABLE_LOGGING}
-
-        VIRTUAL_HOST: ${DOMAIN}
-        VIRTUAL_PATH: "/api"
-        LETSENCRYPT_HOST: ${DOMAIN}
-        VIRTUAL_PORT: ${BACKEND_PORT}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_DATABASE: ${DB_DATABASE}
+        DB_HOST: ${DB_HOST}
 
   broker:
     image: rabbitmq:3-management
@@ -129,39 +73,13 @@ services:
       retries: 5
 
   worker:
-#    image: ${WORKER_IMAGE}
     build:
       context: .
       dockerfile: ./worker/Dockerfile
     environment:
-        LOG_LEVEL: INFO
-        C_FORCE_ROOT: true
-        DEBUG: ${DEBUG}
-
-        BACKEND_TTILE: ${BACKEND_TTILE}
-        BACKEND_DESCRIPTION: ${BACKEND_DESCRIPTION}
-        BACKEND_PREFIX: ${BACKEND_PREFIX}
-
-        BACKEND_HOST: ${BACKEND_HOST}
-        BACKEND_PORT: ${BACKEND_PORT}
-        BACKEND_RELOAD: ${BACKEND_RELOAD}
-
-        BACKEND_PARSER_SECRET_KEY: ${BACKEND_PARSER_SECRET_KEY}
-        BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE: ${BACKEND_DISABLE_MANUAL_SCHEDULE_UPDATE}
-
-        POSTGRES_SERVER: ${POSTGRES_SERVER}
-        POSTGRES_USER: ${POSTGRES_USER}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        POSTGRES_DB: ${POSTGRES_DB}
-
-        BROKER_HOST: ${BROKER_HOST}
-        BROKER_PORT: ${BROKER_PORT}
-        BROKER_USER: ${BROKER_USER}
-        BROKER_PASS: ${BROKER_PASS}
         BROKER_URL: ${BROKER_URL}
-
-        SENTRY_DSN: ${SENTRY_DSN}
-        SENTRY_DISABLE_LOGGING: ${SENTRY_DISABLE_LOGGING}
+        LOG_LEVEL: DEBUG
+        C_FORCE_ROOT: true
     depends_on:
       broker:
         condition: service_healthy
@@ -171,15 +89,4 @@ services:
 
 volumes:
   app-db-data:
-  pgadmin-data:
   broker:
-  conf:
-  vhost:
-  dhparam:
-  certs:
-  acme:
-
-networks:
-  proxy:
-    external:
-      true

@@ -22,3 +22,8 @@ class RoomInfo(BaseModel):
     room: Room
     purpose: str
     workload: float
+
+
+class RoomStatusGet(BaseModel):
+    id: PositiveInt
+    status: str

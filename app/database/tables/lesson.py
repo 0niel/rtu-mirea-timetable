@@ -7,8 +7,9 @@ from app.database.connection import Base
 lessons_to_teachers = db.Table(
     "schedule_lessons_to_teachers",
     Base.metadata,
-    db.Column("lesson_id", db.BigInteger, db.ForeignKey("schedule_lesson.id")),
-    db.Column("teacher_id", db.BigInteger, db.ForeignKey("schedule_teacher.id")),
+    db.Column("id", db.BigInteger, primary_key=True),
+    db.Column("lesson_id", db.BigInteger, db.ForeignKey("schedule_lesson.id"), index=True),
+    db.Column("teacher_id", db.BigInteger, db.ForeignKey("schedule_teacher.id"), index=True),
 )
 
 
@@ -16,12 +17,12 @@ class Lesson(Base):
     __tablename__ = "schedule_lesson"
 
     id = db.Column(db.BigInteger, primary_key=True)
-    group_id = db.Column(db.BigInteger, db.ForeignKey("schedule_group.id"))
-    call_id = db.Column(db.BigInteger, db.ForeignKey("schedule_lesson_call.id"), nullable=False)
-    discipline_id = db.Column(db.BigInteger, db.ForeignKey("schedule_discipline.id"), nullable=False)
-    weekday = db.Column(db.Integer, nullable=False)
-    room_id = db.Column(db.BigInteger, db.ForeignKey("schedule_room.id"), nullable=True)
-    lesson_type_id = db.Column(db.BigInteger, db.ForeignKey("schedule_lesson_type.id"), nullable=True)
+    group_id = db.Column(db.BigInteger, db.ForeignKey("schedule_group.id"), nullable=False, index=True)
+    call_id = db.Column(db.BigInteger, db.ForeignKey("schedule_lesson_call.id"), nullable=False, index=True)
+    discipline_id = db.Column(db.BigInteger, db.ForeignKey("schedule_discipline.id"), nullable=False, index=True)
+    weekday = db.Column(db.Integer, nullable=False, index=True)
+    room_id = db.Column(db.BigInteger, db.ForeignKey("schedule_room.id"), nullable=True, index=True)
+    lesson_type_id = db.Column(db.BigInteger, db.ForeignKey("schedule_lesson_type.id"), nullable=True, index=True)
     teachers = relationship(
         "Teacher",
         secondary="schedule_lessons_to_teachers",
@@ -29,7 +30,7 @@ class Lesson(Base):
         lazy="joined",
     )
     subgroup = db.Column(db.Integer, nullable=True)
-    weeks = db.Column(pg.ARRAY(db.Integer, dimensions=1))
+    weeks = db.Column(pg.ARRAY(db.Integer, dimensions=1), nullable=False, index=True)
     calls = relationship(
         "LessonCall",
         cascade="delete",

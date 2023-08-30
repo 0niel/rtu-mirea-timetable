@@ -9,11 +9,11 @@ from app.config import config
 from app.database.connection import get_session
 from app.services.api import InstituteService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
-    "/institute",
+    "/institutes",
     response_model=list[models.Institute],
     response_description="Список институтов успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -30,7 +30,7 @@ async def get_institutes(
 
 
 @router.get(
-    "/institute/{id}",
+    "/institutes/{id}",
     response_model=models.Institute,
     response_description="Институт успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,

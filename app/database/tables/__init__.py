@@ -8,4 +8,5 @@ from app.database.tables.lesson_call import LessonCall
 from app.database.tables.lesson_type import LessonType
 from app.database.tables.period import SchedulePeriod
 from app.database.tables.room import Room
+from app.database.tables.settings import Settings
 from app.database.tables.teacher import Teacher

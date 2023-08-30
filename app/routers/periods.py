@@ -9,11 +9,11 @@ from app.config import config
 from app.database.connection import get_session
 from app.services.api import PeriodService
 
-router = APIRouter(prefix=config.BACKEND_PREFIX)
+router = APIRouter(prefix=config.PREFIX)
 
 
 @router.get(
-    "/period",
+    "/periods",
     response_model=list[models.Period],
     response_description="Список периодов успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
@@ -30,7 +30,7 @@ async def get_periods(
 
 
 @router.get(
-    "/period/{id}",
+    "/periods/{id}",
     response_model=models.Period,
     response_description="Период успешно получен и возвращен в ответе",
     status_code=status.HTTP_200_OK,
