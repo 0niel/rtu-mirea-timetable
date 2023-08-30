@@ -6,43 +6,36 @@ on:
       - main
 
 jobs:
-  check-backend:
+  check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
       - name: Setup Python 3.9
         uses: actions/setup-python@v4
-        id: poetry-cache
         with:
           python-version: '3.9'
-          cache: 'poetry'
-      - if: steps.poetry-cache.outputs.cache-hit != 'true'
-        name: Install dependencies
-        run: poetry install
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
       - name: Check codestyle
         run: |
-          poetry run flake8 app tests
-          poetry run black --diff --check app tests
-          poetry run isort --check-only app tests
-#  test-backend:
+          flake8 --config .flake8 app tests worker
+          black --config pyproject.toml --diff --check app tests worker
+          isort --check-only app tests worker
+#  test:
 #    runs-on: ubuntu-latest
-#    needs: [check-backend]
+#    needs: [check]
 #    steps:
 #      - name: Checkout
 #        uses: actions/checkout@v3
-#      - name: Install poetry
-#        run: pipx install poetry
 #      - name: Setup Python 3.9
 #        uses: actions/setup-python@v4
-#        id: poetry-cache
 #        with:
 #          python-version: '3.9'
-#          cache: 'poetry'
-#      - if: steps.poetry-cache.outputs.cache-hit != 'true'
-#        name: Install dependencies
-#        run: poetry install
+#          cache: 'pip'
+#      - name: Install dependencies
+#        run: pip install -r requirements.txt
 #      - name: Test backend
-#        run: poetry run pytest --asyncio-mode=strict -v
+#        run: |
+#          python -m pytest --asyncio-mode=strict -v
