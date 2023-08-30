@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:v2.9
     command:
       - --accesslog=true
       - --log.level=INFO
@@ -25,13 +25,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/letsencrypt:/letsencrypt
     depends_on:
-      - app
+      - backend
     networks:
       - gateway
       - application
 
   db:
-    image: postgres:latest
+    image: postgres:15.4
     volumes:
       - app-db-data:/var/lib/postgresql/data/
     environment:
@@ -39,42 +39,40 @@ services:
       POSTGRES_DB: ${DB_DATABASE}
     networks:
       - default
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
-#  frontend:
-#    image: ${FRONTEND_IMAGE}
-#    networks:
-#      - application
-#      - default
-#    labels:
-#      - traefik.enable=true
-#      - traefik.constraint-label-stack=timetable
-#      - traefik.docker.network=application
-#      - traefik.http.services.timetable_frontend.loadbalancer.server.port=3000
-#      #http
-#      - traefik.http.routers.timetable_frontend_http.entrypoints=timetable_web
-#      - traefik.http.routers.timetable_frontend_http.rule=Host(`${DOMAIN}`)
-#      - traefik.http.routers.timetable_frontend_http.service=timetable_frontend
-#      - traefik.http.routers.timetable_frontend_http.middlewares=timetable_frontend_redirect_https
-#      # https
-#      - traefik.http.middlewares.timetable_frontend_redirect_https.redirectscheme.scheme=https
-#      - traefik.http.middlewares.timetable_frontend_redirect_https.redirectscheme.permanent=true
-#      - traefik.http.routers.timetable_frontend_https.entrypoints=timetable_websecure
-#      - traefik.http.routers.timetable_frontend_https.rule=Host(`${DOMAIN}`)
-#      - traefik.http.routers.timetable_frontend_https.service=timetable_frontend
-#      - traefik.http.routers.timetable_frontend_https.tls=true
-#      - traefik.http.routers.timetable_frontend_https.tls.certresolver=${CERT_RESOLVER}
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    networks:
+      - application
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.constraint-label-stack=timetable
+      - traefik.docker.network=application
+      - traefik.http.services.timetable_frontend.loadbalancer.server.port=3000
+      #http
+      - traefik.http.routers.timetable_frontend_http.entrypoints=timetable_web
+      - traefik.http.routers.timetable_frontend_http.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.timetable_frontend_http.service=timetable_frontend
+      - traefik.http.routers.timetable_frontend_http.middlewares=timetable_frontend_redirect_https
+      # https
+      - traefik.http.middlewares.timetable_frontend_redirect_https.redirectscheme.scheme=https
+      - traefik.http.middlewares.timetable_frontend_redirect_https.redirectscheme.permanent=true
+      - traefik.http.routers.timetable_frontend_https.entrypoints=timetable_websecure
+      - traefik.http.routers.timetable_frontend_https.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.timetable_frontend_https.service=timetable_frontend
+      - traefik.http.routers.timetable_frontend_https.tls=true
+      - traefik.http.routers.timetable_frontend_https.tls.certresolver=${CERT_RESOLVER}
 
   backend:
     image: ${BACKEND_IMAGE}
-    ports:
-      - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -98,14 +96,14 @@ services:
       - traefik.http.services.timetable.loadbalancer.server.port=80
       #http
       - traefik.http.routers.timetable_http.entrypoints=timetable_web
-      - traefik.http.routers.timetable_http.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.timetable_http.rule=(Host(`${DOMAIN}`) && PathPrefix(`/api`)) || (Host(`${DOMAIN}`) && PathPrefix(`/docs`))
       - traefik.http.routers.timetable_http.service=timetable
       - traefik.http.routers.timetable_http.middlewares=timetable_redirect_https
       # https
       - traefik.http.middlewares.timetable_redirect_https.redirectscheme.scheme=https
       - traefik.http.middlewares.timetable_redirect_https.redirectscheme.permanent=true
       - traefik.http.routers.timetable_https.entrypoints=timetable_websecure
-      - traefik.http.routers.timetable_https.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.timetable_https.rule=(Host(`${DOMAIN}`) && PathPrefix(`/api`)) || (Host(`${DOMAIN}`) && PathPrefix(`/docs`))
       - traefik.http.routers.timetable_https.service=timetable
       - traefik.http.routers.timetable_https.tls=true
       - traefik.http.routers.timetable_https.tls.certresolver=${CERT_RESOLVER}
@@ -117,9 +115,8 @@ services:
       RABBITMQ_DEFAULT_PASS: ${BROKER_PASS}
     volumes:
       - broker:/var/lib/rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    expose:
+      - "5672"
     networks:
       - default
     healthcheck:
@@ -129,7 +126,11 @@ services:
       retries: 5
 
   worker:
-    image: ${WORKER_IMAGE}
+    build:
+      context: .
+      dockerfile: ./worker/Dockerfile
+    volumes:
+      - ./files:/app/files
     environment:
       BROKER_URL: ${BROKER_URL}
       LOG_LEVEL: DEBUG
