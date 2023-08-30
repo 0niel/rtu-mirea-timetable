@@ -59,14 +59,14 @@ services:
       - traefik.http.services.timetable_frontend.loadbalancer.server.port=3000
       #http
       - traefik.http.routers.timetable_frontend_http.entrypoints=timetable_web
-      - traefik.http.routers.timetable_frontend_http.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.timetable_frontend_http.rule=Host(`${DOMAIN}`) && PathPrefix(`/ui`)
       - traefik.http.routers.timetable_frontend_http.service=timetable_frontend
       - traefik.http.routers.timetable_frontend_http.middlewares=timetable_frontend_redirect_https
       # https
       - traefik.http.middlewares.timetable_frontend_redirect_https.redirectscheme.scheme=https
       - traefik.http.middlewares.timetable_frontend_redirect_https.redirectscheme.permanent=true
       - traefik.http.routers.timetable_frontend_https.entrypoints=timetable_websecure
-      - traefik.http.routers.timetable_frontend_https.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.timetable_frontend_https.rule=Host(`${DOMAIN}`) && PathPrefix(`/ui`)
       - traefik.http.routers.timetable_frontend_https.service=timetable_frontend
       - traefik.http.routers.timetable_frontend_https.tls=true
       - traefik.http.routers.timetable_frontend_https.tls.certresolver=${CERT_RESOLVER}
@@ -126,9 +126,7 @@ services:
       retries: 5
 
   worker:
-    build:
-      context: .
-      dockerfile: ./worker/Dockerfile
+    image: ${WORKER_IMAGE}
     volumes:
       - ./files:/app/files
     environment:
