@@ -2,10 +2,10 @@ import datetime
 from collections import Counter, defaultdict
 from typing import List, Optional
 
-from sqlalchemy import and_, delete, func, select
+from sqlalchemy import and_, delete, distinct, func, join, lateral, select
 from sqlalchemy.dialects.postgresql import array
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import aliased, joinedload
 
 from app import models
 from app.database import tables
@@ -272,27 +272,26 @@ async def get_lessons_by_room_and_week(db: AsyncSession, room_id: int, week: int
     return res.scalars().all()
 
 
-async def get_room_workload(db: AsyncSession, room_id: int):
-    # get all lesson for room
-    res = await db.execute(select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id))
-    lessons = res.scalars().unique()
+from collections import defaultdict
 
-    # get all calls
-    res = await db.execute(select(LessonCall))
-    calls = res.scalars().unique()
+from sqlalchemy import distinct, func
+
+
+async def get_room_workload(db: AsyncSession, room_id: int):
+    res = await db.execute(select(Lesson).where(Lesson.room_id == room_id).order_by(Lesson.weekday, Lesson.call_id))
+    lessons = res.scalars().unique().all()
 
     checked = defaultdict(set)
     workload = 0
     for lesson in lessons:
-        if call := next((c for c in calls if c.id == lesson.call_id), None):  # noqa
-            for week in lesson.weeks:
-                key = (lesson.weekday, lesson.call_id)
-                if week not in checked[key]:
-                    workload += 1
-                    checked[key].add(week)
+        for week in lesson.weeks:
+            unique_key = (lesson.weekday, lesson.call_id)
+            if unique_key not in checked[week]:
+                workload += 1
+                checked[week].add(unique_key)
 
-    workload = workload / (6 * 6 * 17) * 100  # 6 дней * 6 пар * 17 недель
-    return round(workload, 2)
+    workload_percentage = (workload / (6 * 6 * 17)) * 100  # 6 дней * 6 пар * 17 недель
+    return round(workload_percentage, 2)
 
 
 async def get_call_by_time(db: AsyncSession, time: datetime.time) -> LessonCall:

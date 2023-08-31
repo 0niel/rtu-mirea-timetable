@@ -68,13 +68,14 @@ async def get_rooms_workload(
     db: AsyncSession = Depends(get_session),
     campus_id: int = Query(..., description="Id кампуса"),
 ) -> List[WorkloadGet]:
+    sttm = select(tables.Room).where(tables.Room.campus_id == campus_id)
+
+    rows = await db.stream(sttm)
+
     workload = []
-
-    rooms = (await db.execute(select(tables.Room).where(tables.Room.campus_id == campus_id))).scalars()
-    ids = [room.id for room in rooms]
-
-    for room_id in ids:
-        workload.append(WorkloadGet(id=room_id, workload=await schedule_crud.get_room_workload(db, room_id)))
+    async for row in rows:
+        for room in row:
+            workload.append(WorkloadGet(id=room.id, workload=await schedule_crud.get_room_workload(db, room.id)))
 
     return workload
 
@@ -91,8 +92,7 @@ async def get_room_workload(
     id: int = Path(..., description="Id аудитории"),
 ) -> WorkloadGet:
     room = (await db.execute(select(tables.Room).where(tables.Room.id == id))).scalar()
-    workload = WorkloadGet(id=room.id, workload=await schedule_crud.get_room_workload(db, room.id))
-    return workload
+    return WorkloadGet(id=room.id, workload=await schedule_crud.get_room_workload(db, room.id))
 
 
 @router.get(

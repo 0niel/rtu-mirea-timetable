@@ -36,8 +36,7 @@ def parse_file(file_path: str, institute: str, degree: int) -> None:
 async def _sync_schedule(
     from_file: bool = False, file_path: str = None, institute: str = None, degree: int = None
 ) -> None:
-    async with async_session() as db_session:
-        logger.debug("Получена сессия БД")
-        await ScheduleParsingService.parse_schedule(
-            db=db_session, from_file=from_file, file_path=file_path, institute=institute, degree=degree
-        )
+    logger.debug("Получена сессия БД")
+    await ScheduleParsingService.parse_schedule(
+        from_file=from_file, file_path=file_path, institute=institute, degree=degree
+    )
