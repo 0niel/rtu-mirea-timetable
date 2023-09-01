@@ -24,6 +24,7 @@ async def parse_schedule(secret_key: str = Query(..., description="Ключ до
     if secret_key != config.SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
     await FastAPICache.clear(namespace="groups")
+    await FastAPICache.clear(namespace="rooms")
     app.send_task("worker.tasks.parse_schedule")
     return Response(status_code=204)
 
@@ -44,6 +45,7 @@ async def parse_file(
         await file.write(schedule.file.read())
 
     await FastAPICache.clear(namespace="groups")
+    await FastAPICache.clear(namespace="rooms")
 
     app.send_task(
         "worker.tasks.parse_file",

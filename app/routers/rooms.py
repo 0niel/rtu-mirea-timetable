@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Path, Query
+from fastapi_cache.decorator import cache
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -13,6 +14,7 @@ from app.database import tables
 from app.database.connection import get_session
 from app.models import RoomStatusGet, WorkloadGet
 from app.services.api import RoomService
+from app.utils.cache import key_builder_exclude_db
 
 router = APIRouter(prefix=config.PREFIX)
 
@@ -64,6 +66,7 @@ async def get_status_by_id(
     description="Получить загруженность аудиторий",
     summary="Получение загруженности аудиторий",
 )
+@cache(namespace="rooms", expire=60 * 60 * 24, key_builder=key_builder_exclude_db)
 async def get_rooms_workload(
     db: AsyncSession = Depends(get_session),
     campus_id: int = Query(..., description="Id кампуса"),
@@ -103,6 +106,7 @@ async def get_room_workload(
     description="Получить все аудитории РТУ МИРЭА",
     summary="Получение всех аудиторий РТУ МИРЭА",
 )
+@cache(namespace="rooms", expire=60 * 60 * 24, key_builder=key_builder_exclude_db)
 async def get_rooms(
     db: AsyncSession = Depends(get_session),
     ids: Optional[List[int]] = Query(None, description="Id аудиторий"),
