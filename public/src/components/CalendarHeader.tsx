@@ -10,6 +10,10 @@ interface CalendarHeaderProps {
   eventsByDate: { [key: string]: { name: string }[] };
 }
 
+const getDayString = (day: Date) => {
+  return day.toISOString().split("T")[0] ?? "";
+};
+
 export const CalendarHeader = (props: CalendarHeaderProps) => {
   return (
     <div className="sticky top-0 z-10 grid flex-none grid-cols-7 bg-white text-xs text-gray-500 shadow ring-1 ring-black ring-opacity-5 md:hidden">
@@ -30,19 +34,15 @@ export const CalendarHeader = (props: CalendarHeaderProps) => {
             {day.getDate()}
           </span>
           <div className="flex flex-row justify-center">
-            {props.eventsByDate[day.toISOString().split("T")[0]] !==
-              undefined &&
-              props.eventsByDate[day.toISOString().split("T")[0]]?.map(
-                (event, eventIdx) => (
-                  <div
-                    key={eventIdx}
-                    className={classNames(
-                      "mx-0.5 mt-1 h-1.5 w-1.5 rounded-full",
-                      getColorByEvent(event)
-                    )}
-                  ></div>
-                )
-              )}
+            {props.eventsByDate[getDayString(day)]?.map((event, eventIdx) => (
+              <div
+                key={eventIdx}
+                className={classNames(
+                  "mx-0.5 mt-1 h-1.5 w-1.5 rounded-full",
+                  getColorByEvent(event)
+                )}
+              ></div>
+            ))}
           </div>
         </button>
       ))}

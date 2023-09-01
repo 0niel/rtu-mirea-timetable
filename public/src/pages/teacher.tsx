@@ -13,15 +13,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { components } from "../api/schemas/openapi";
-import {
-  classNames,
-  getLessonTypeColor,
-  getWeekByDate,
-  getWeekDaysByDate,
-} from "../utils";
+import { getLessonTypeColor, getWeekByDate } from "../utils";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
 import { CalendarHeader } from "../components/CalendarHeader";
+import CalendarTitle from "../components/CalendarTitle";
+import Link from "next/link";
 
 const generateDays = (
   currentDate = new Date(),
@@ -272,45 +269,28 @@ const Teacher: NextPage = () => {
           Расписание преподавателя {name}
         </h2>
         <div className="flex flex-1 flex-col">
-          {/* Header with date */}
-          <header className="relative z-20 flex flex-none items-center justify-between border-b border-gray-200 py-4 px-6">
-            <div>
-              <h1 className="text-lg font-semibold leading-6 text-gray-900">
-                <time className="sm:hidden" dateTime="2022-01-22">
-                  {/* by selected date */}
-                  {selectedDate.toLocaleDateString("ru-RU", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-                <time dateTime="2022-01-22" className="hidden sm:inline">
-                  {selectedDate.toLocaleDateString("ru-RU", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-              </h1>
-              <p className="mt-1 text-sm text-gray-500">
-                {selectedDate.toLocaleDateString("ru-RU", {
-                  weekday: "long",
-                })}{" "}
-                {getWeekByDate(selectedDate)} неделя
-              </p>
-            </div>
-          </header>
+          <CalendarTitle
+            onClickLeft={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000)
+              );
+            }}
+            onClickRight={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000)
+              );
+            }}
+            selectedDate={selectedDate}
+          />
+
           <div className="flex flex-auto overflow-hidden bg-white">
             <div className="flex flex-auto flex-col overflow-auto">
-              {/* Calendar Header start */}
               <CalendarHeader
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 eventsByDate={getEventsByDate()}
               />
-              {/* Calendar Header end */}
               <ol className="mt-4 divide-y divide-gray-100 text-sm leading-6 lg:col-span-7 xl:col-span-8">
-                {/* if teacher, then map it lessons */}
                 {teacher &&
                   joinLessonsByGroups(
                     getLessonsForDate(teacher.lessons, selectedDate)
@@ -364,7 +344,14 @@ const Teacher: NextPage = () => {
                               </time>
                             </dd>
                           </div>
-                          <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
+                          <Link
+                            className="mt-2 flex cursor-pointer items-start space-x-3 text-blue-600 hover:text-blue-500 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5"
+                            href={`https://map.mirea.ru/?room=${
+                              lesson.room?.name
+                            }&campus=${
+                              lesson.room?.campus?.short_name
+                            }&date=${selectedDate.toISOString()}`}
+                          >
                             <dt className="mt-0.5">
                               <span className="sr-only">Аудитория</span>
                               <MapIcon
@@ -373,7 +360,7 @@ const Teacher: NextPage = () => {
                               />
                             </dt>
                             <dd>{lesson.room?.name}</dd>
-                          </div>
+                          </Link>
                           {/* Список групп */}
                           <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
                             <dt className="mt-0.5">

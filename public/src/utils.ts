@@ -12,8 +12,8 @@ export function getWeek(date: Date) {
 }
 
 export function getWeekByDate(date: Date) {
-    // 9 февраля 2023 года
-    const start_date = new Date(2023, 9, 1);
+    // 1 сентября 2023 года
+    const start_date = new Date(2023, 8, 1);
     const now = date;
 
     if (now < start_date) {
@@ -71,3 +71,7 @@ export function getLessonTypeBackgroundColor(type: string) {
             return "bg-gray-50 hover:bg-gray-100";
     }
 }
+
+export const getDayString = (day: Date) => {
+    return day.toISOString().split("T")[0] ?? "";
+};
