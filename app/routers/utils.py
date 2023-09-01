@@ -1,8 +1,10 @@
 from pathlib import Path
 
 import aiofiles
+import aiohttp
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, Response, UploadFile
 from fastapi_cache import FastAPICache
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -23,8 +25,7 @@ async def parse_schedule(secret_key: str = Query(..., description="Ключ до
         raise HTTPException(400, "Функция ручного обновления расписания отключена")
     if secret_key != config.SECRET_KEY:
         raise HTTPException(401, "Неверный ключ доступа")
-    await FastAPICache.clear(namespace="groups")
-    await FastAPICache.clear(namespace="rooms")
+
     app.send_task("worker.tasks.parse_schedule")
     return Response(status_code=204)
 
@@ -44,9 +45,6 @@ async def parse_file(
     async with aiofiles.open(schedule_file_path, 'wb+') as file:
         await file.write(schedule.file.read())
 
-    await FastAPICache.clear(namespace="groups")
-    await FastAPICache.clear(namespace="rooms")
-
     app.send_task(
         "worker.tasks.parse_file",
         kwargs={
@@ -55,6 +53,19 @@ async def parse_file(
             "degree": degree,
         },
     )
+    return Response(status_code=204)
+
+
+@router.post("/clear-cache/", status_code=204)
+async def clear_cache(secret_key: str = Query(..., description="Ключ доступа")) -> Response:
+    if secret_key != config.SECRET_KEY:
+        raise HTTPException(401, "Неверный ключ доступа")
+
+    await FastAPICache.clear(namespace="groups")
+    await FastAPICache.clear(namespace="rooms")
+
+    logger.info("Кэш был очищен")
+
     return Response(status_code=204)
 
 

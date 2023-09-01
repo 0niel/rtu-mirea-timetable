@@ -16,6 +16,7 @@ import app.services.crud_schedule as schedule_crud
 from app import config, models
 from app.database.connection import async_session
 from app.services.db import DegreeDBService, GroupDBService, InstituteDBService, LessonCallDBService, PeriodDBService
+from app.utils.cache import send_clear_cache_request
 
 
 class ScheduleParsingService:
@@ -174,6 +175,8 @@ class ScheduleParsingService:
                         await db.rollback()
                     else:
                         await db.commit()
+
+        await send_clear_cache_request()
 
     @classmethod
     def _parse(cls) -> Generator[List[Union[LessonsSchedule, ExamsSchedule]], None, None]:
