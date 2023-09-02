@@ -345,6 +345,7 @@ const Teacher: NextPage = () => {
                             </dd>
                           </div>
                           <Link
+                            target="_blank"
                             className="mt-2 flex cursor-pointer items-start space-x-3 text-blue-600 hover:text-blue-500 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5"
                             href={`https://map.mirea.ru/?room=${
                               lesson.room?.name

@@ -251,6 +251,7 @@ const Schedule: NextPage = () => {
                             }}
                           >
                             <Link
+                              target="_blank"
                               href={`https://map.mirea.ru/?room=${
                                 lesson.room?.name
                               }&campus=${

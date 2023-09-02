@@ -1,5 +1,5 @@
 import React from "react";
-import { classNames, getWeekDaysByDate } from "../utils";
+import { classNames, getDayString, getWeekDaysByDate } from "../utils";
 import { getColorByEvent } from "./Calendar";
 
 interface CalendarHeaderProps {
@@ -9,10 +9,6 @@ interface CalendarHeaderProps {
   // key - isoString даты
   eventsByDate: { [key: string]: { name: string }[] };
 }
-
-const getDayString = (day: Date) => {
-  return day.toISOString().split("T")[0] ?? "";
-};
 
 export const CalendarHeader = (props: CalendarHeaderProps) => {
   return (
