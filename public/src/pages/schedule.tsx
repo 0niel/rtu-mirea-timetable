@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
 import { CalendarHeader } from "../components/CalendarHeader";
 import CalendarTitle from "../components/CalendarTitle";
+import RoomsLinks from "../components/RoomsLinks";
 
 const getSchedule = async (group: string) => {
   const url = "/api/groups/name/{name}";
@@ -250,13 +251,7 @@ const Schedule: NextPage = () => {
                               gridRow: getLessonGridRow(lesson),
                             }}
                           >
-                            <Link
-                              target="_blank"
-                              href={`https://map.mirea.ru/?room=${
-                                lesson.room?.name
-                              }&campus=${
-                                lesson.room?.campus?.short_name
-                              }&date=${selectedDate.toISOString()}`}
+                            <div
                               className={
                                 "group absolute inset-1 flex flex-col overflow-y-auto rounded-lg p-2 text-xs leading-5 " +
                                 getLessonTypeBackgroundColor(
@@ -282,7 +277,12 @@ const Schedule: NextPage = () => {
                                   </p>
 
                                   <p className="text-sm font-medium text-gray-900">
-                                    {lesson.room?.name}
+                                    {lesson.room && (
+                                      <RoomsLinks
+                                        room={lesson.room}
+                                        selectedDate={selectedDate}
+                                      />
+                                    )}
                                   </p>
                                 </div>
 
@@ -299,7 +299,7 @@ const Schedule: NextPage = () => {
                                   </span>
                                 </p>
                               </div>
-                            </Link>
+                            </div>
                           </li>
                         )
                       )}
