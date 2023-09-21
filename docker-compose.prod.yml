@@ -81,6 +81,7 @@ services:
     volumes:
       - .:/app
       - ./docs:/app/docs # schedule docs
+      - ./firebase:/app/app/firebase # firebase key
     networks:
       - application
       - default
