@@ -9,14 +9,52 @@ from loguru import logger
 from rtu_schedule_parser import ExamsSchedule, ExcelScheduleParser, LessonEmpty, LessonsSchedule
 from rtu_schedule_parser.constants import Degree, Institute, ScheduleType
 from rtu_schedule_parser.downloader import ScheduleDownloader
+from rtu_schedule_parser.schedule import Lesson as ParserLesson
 from rtu_schedule_parser.utils import academic_calendar
 from sqlalchemy.ext.asyncio import AsyncSession
+from transliterate import translit
 
 import app.services.crud_schedule as schedule_crud
 from app import config, models
 from app.database.connection import async_session
+from app.services.api.group import GroupService
 from app.services.db import DegreeDBService, GroupDBService, InstituteDBService, LessonCallDBService, PeriodDBService
 from app.utils.cache import send_clear_cache_request
+
+
+def _is_db_lesson_in_parsed_lessons(lessons: List[ParserLesson], lesson: models.Lesson) -> models.Lesson:
+    get_room = lambda lesson: lesson.room.name if lesson.room else None
+    return any(
+        lesson.calls.num == lesson_.num
+        and lesson.weekday == lesson_.weekday.value[0]
+        and set([teacher.name for teacher in lesson.teachers]) == set(lesson_.teachers)
+        and set(lesson.weeks) == set(lesson_.weeks)
+        and lesson.discipline.name == lesson_.name
+        and get_room(lesson) == get_room(lesson_)
+        for lesson_ in lessons
+    )
+
+
+async def _compare_schedule_and_send_push(group: str, schedule: LessonsSchedule, lessons_in_db: List[models.Lesson]):
+    try:
+        from app.services.push_notifications import send_push_notification
+
+        lessons = [lesson for lesson in schedule.lessons if type(lesson) is not LessonEmpty]
+        for lesson_in_db in lessons_in_db:
+            if not _is_db_lesson_in_parsed_lessons(lessons, lesson_in_db):
+                logger.info(
+                    f"Отправка push-уведомления о изменении расписания группы {group} [ScheduleUpdates__{translit(group, 'ru', reversed=True)}]"
+                )
+                await send_push_notification(
+                    f"ScheduleUpdates__{translit(group, 'ru', reversed=True)}",
+                    f"Обновилось расписание {group}",
+                    f"В расписании вашей группы произошли изменения. Проверьте расписание в приложении.",
+                )
+                return
+
+    except Exception as e:
+        logger.warning(f"Не удалось отправить push-уведомление. Ошибка: {str(e)}")
+        return
 
 
 class ScheduleParsingService:
@@ -34,6 +72,20 @@ class ScheduleParsingService:
             for schedule in schedules:
                 async with async_session() as db:
                     try:
+                        try:
+                            group_schedule_in_db = await GroupService.get_group_by_name(db=db, name=schedule.group)
+
+                            if group_schedule_in_db:
+                                await _compare_schedule_and_send_push(
+                                    schedule.group, schedule, group_schedule_in_db.lessons
+                                )
+                        except Exception as e:
+                            logger.warning(
+                                f"Не удалось получить расписание группы {schedule.group} для отправки пуш уведомления. "
+                                f"Возможно, такой группы ещё не было Ошибка: {str(e)}"
+                            )
+                            pass
+
                         logger.info(f"Сохраняем расписание группы {schedule.group} в БД")
                         period = await PeriodDBService.get_period_by_params(
                             db,

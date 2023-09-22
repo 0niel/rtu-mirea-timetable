@@ -1,26 +1,20 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { Fragment, useEffect, useRef, useState } from "react";
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 import type { components } from "../api/schemas/openapi";
 import {
   getLessonTypeBackgroundColor,
   getLessonTypeColor,
-  getWeek,
-  getWeekByDate,
-  getWeekDaysByDate,
+  getAcademicWeek,
 } from "../utils";
-import { Menu, Transition } from "@headlessui/react";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
 import { CalendarHeader } from "../components/CalendarHeader";
+import CalendarTitle from "../components/CalendarTitle";
+import RoomsLinks from "../components/RoomsLinks";
 
 const getSchedule = async (group: string) => {
   const url = "/api/groups/name/{name}";
@@ -46,7 +40,7 @@ const getLessonsForDate = (
   lessons: components["schemas"]["Group"]["lessons"],
   date: Date
 ) => {
-  const week = getWeekByDate(date);
+  const week = getAcademicWeek(date);
   const day = date.getDay();
 
   if (day === -1) {
@@ -135,7 +129,7 @@ const Schedule: NextPage = () => {
         if (key === undefined) {
           return;
         }
-        
+
         eventsByDate[key] = lessonsForDate.map((lesson) => ({
           name: lesson.lesson_type?.name || "",
         }));
@@ -159,42 +153,27 @@ const Schedule: NextPage = () => {
       </Head>
       <div className="flex h-screen flex-col">
         <div className="flex flex-1 flex-col">
-          <header className="relative z-20 flex flex-none items-center justify-between border-b border-gray-200 py-4 px-6">
-            <div>
-              <h1 className="text-lg font-semibold leading-6 text-gray-900">
-                <time className="sm:hidden" dateTime="2022-01-22">
-                  {/* by selected date */}
-                  {selectedDate.toLocaleDateString("ru-RU", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-                <time dateTime="2023-09-01" className="hidden sm:inline">
-                  {selectedDate.toLocaleDateString("ru-RU", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-              </h1>
-              <p className="mt-1 text-sm text-gray-500">
-                {selectedDate.toLocaleDateString("ru-RU", {
-                  weekday: "long",
-                })}{" "}
-                {getWeekByDate(selectedDate)} неделя
-              </p>
-            </div>
-          </header>
+          <CalendarTitle
+            onClickLeft={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000)
+              );
+            }}
+            onClickRight={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000)
+              );
+            }}
+            selectedDate={selectedDate}
+          />
+
           <div className="flex flex-auto overflow-hidden bg-white">
             <div className="flex flex-auto flex-col overflow-auto">
-              {/* Calendar Header start */}
               <CalendarHeader
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 eventsByDate={getEventsByDate()}
               />
-              {/* Calendar Header end */}
 
               <div className="flex w-full flex-auto">
                 <div className="w-14 flex-none bg-white ring-1 ring-gray-100" />
@@ -260,7 +239,6 @@ const Schedule: NextPage = () => {
                         "1.75rem repeat(16, minmax(0, 1fr)) auto",
                     }}
                   >
-                    {/* for lesson in schedule.lessons if schedule != null */}
                     {schedule != null &&
                       getLessonsForDate(schedule.lessons, selectedDate).map(
                         (lesson) => (
@@ -272,8 +250,7 @@ const Schedule: NextPage = () => {
                               gridRow: getLessonGridRow(lesson),
                             }}
                           >
-                            <a
-                              href="#"
+                            <div
                               className={
                                 "group absolute inset-1 flex flex-col overflow-y-auto rounded-lg p-2 text-xs leading-5 " +
                                 getLessonTypeBackgroundColor(
@@ -299,7 +276,12 @@ const Schedule: NextPage = () => {
                                   </p>
 
                                   <p className="text-sm font-medium text-gray-900">
-                                    {lesson.room?.name}
+                                    {lesson.room && (
+                                      <RoomsLinks
+                                        room={lesson.room}
+                                        selectedDate={selectedDate}
+                                      />
+                                    )}
                                   </p>
                                 </div>
 
@@ -316,7 +298,7 @@ const Schedule: NextPage = () => {
                                   </span>
                                 </p>
                               </div>
-                            </a>
+                            </div>
                           </li>
                         )
                       )}

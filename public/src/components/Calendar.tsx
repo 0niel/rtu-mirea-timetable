@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useEffect, useState } from "react";
-import { classNames } from "../utils";
+import { classNames, getDayString } from "../utils";
 
 export const getColorByEvent = (event: { name: string }) => {
   switch (event.name) {
@@ -239,19 +239,15 @@ export const Calendar = (props: CalendarProps) => {
             </time>
 
             <div className="flex flex-row justify-center">
-              {props.eventsByDate[day.date?.toISOString().split("T")[0]] !==
-                undefined &&
-                props.eventsByDate[day.date?.toISOString().split("T")[0]]?.map(
-                  (event, eventIdx) => (
-                    <div
-                      key={eventIdx}
-                      className={classNames(
-                        "mx-0.5 mt-1 h-1.5 w-1.5 rounded-full",
-                        getColorByEvent(event)
-                      )}
-                    ></div>
-                  )
-                )}
+              {props.eventsByDate[getDayString(day.date)]?.map((event, eventIdx) => (
+                <div
+                  key={eventIdx}
+                  className={classNames(
+                    "mx-0.5 mt-1 h-1.5 w-1.5 rounded-full",
+                    getColorByEvent(event)
+                  )}
+                ></div>
+              ))}
             </div>
           </button>
         ))}

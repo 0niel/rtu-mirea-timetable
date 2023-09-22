@@ -2,10 +2,6 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
-import { Fragment } from "react";
-// import { Popover, Transition } from '@headlessui/react'
-// import { MenuIcon, XIcon } from '@heroicons/react/outline'
-import { ArrowSmallRightIcon } from "@heroicons/react/20/solid";
 
 const Home: NextPage = () => {
   return (

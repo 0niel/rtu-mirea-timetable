@@ -34,3 +34,6 @@ opentelemetry-api==1.19.0
 opentelemetry-sdk==1.19.0
 
 git+https://github.com/mirea-ninja/rtu-schedule-parser.git
+
+firebase-admin==6.2.0
+transliterate==1.10.2

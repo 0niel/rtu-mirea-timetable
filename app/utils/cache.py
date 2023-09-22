@@ -32,7 +32,8 @@ def key_builder_exclude_db(
 
 
 async def send_clear_cache_request():
-    api_url = f"http://{config.HOST}:{config.PORT}{config.PREFIX}"
+    # TODO: Make api_url configurable via config.py
+    api_url = f"https://timetable.mirea.ru/api"
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{api_url}/clear-cache/?secret_key={config.SECRET_KEY}") as response:
             pass

@@ -41,6 +41,7 @@ services:
     volumes:
       - .:/app
       - ./docs:/app/app/parser/docs # schedule docs
+      - ./firebase:/app/app/firebase # firebase key
     networks:
       - default
     environment:

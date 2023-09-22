@@ -1,95 +1,22 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 
-import {
-  CalendarIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ClockIcon,
-  MapIcon,
-  UserIcon,
-} from "@heroicons/react/20/solid";
+import { ClockIcon, MapIcon, UserIcon } from "@heroicons/react/20/solid";
+import { TbNumber } from "react-icons/tb";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { components } from "../api/schemas/openapi";
+import type { components } from "../api/schemas/openapi";
 import {
-  classNames,
   getLessonTypeColor,
-  getWeekByDate,
-  getWeekDaysByDate,
+  getAcademicWeek,
+  getNormalizedWeekday,
 } from "../utils";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
 import { CalendarHeader } from "../components/CalendarHeader";
-
-const generateDays = (
-  currentDate = new Date(),
-  monthToDisplay: number,
-  yearToDisplay: number
-) => {
-  const days = [];
-
-  const firstDayOfMonth = new Date(yearToDisplay, monthToDisplay - 1, 1);
-  const lastDayOfMonth = new Date(yearToDisplay, monthToDisplay, 0);
-
-  let lastDayOfPreviousMonth = new Date(yearToDisplay, monthToDisplay - 1, 0);
-
-  if (monthToDisplay === 1) {
-    lastDayOfPreviousMonth = new Date(yearToDisplay - 1, 12, 0);
-  }
-
-  const daysInMonth = lastDayOfMonth.getDate();
-  const daysInLastMonth = lastDayOfPreviousMonth.getDate();
-
-  const dayOfWeek = firstDayOfMonth.getDay() - 1;
-
-  let daysBefore = dayOfWeek;
-
-  // Если первый день месяца - воскресенье, то нужно отобразить 6 дней предыдущего месяца
-  if (dayOfWeek === -1) {
-    daysBefore = 6;
-  }
-
-  // Начало предыдущего месяца
-  for (let i = daysBefore; i > 0; i--) {
-    days.push({
-      date: new Date(
-        yearToDisplay,
-        monthToDisplay - 2,
-        daysInLastMonth - i + 1
-      ),
-      isCurrentMonth: false,
-    });
-  }
-
-  // Текущий месяц
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push({
-      date: new Date(yearToDisplay, monthToDisplay - 1, i),
-      isCurrentMonth: true,
-      isToday:
-        currentDate.getFullYear() === yearToDisplay &&
-        currentDate.getMonth() === monthToDisplay - 1 &&
-        currentDate.getDate() === i,
-      isSelected:
-        currentDate.getFullYear() === yearToDisplay &&
-        currentDate.getMonth() === monthToDisplay - 1 &&
-        currentDate.getDate() === i,
-    });
-  }
-
-  // Конец текущего месяца
-  const daysAfter = 7 - (days.length % 7);
-
-  for (let i = 1; i <= daysAfter; i++) {
-    days.push({
-      date: new Date(yearToDisplay, monthToDisplay, i),
-    });
-  }
-
-  return days;
-};
+import CalendarTitle from "../components/CalendarTitle";
+import RoomsLinks from "../components/RoomsLinks";
 
 const searchTeacherSchedule = async (name: string) => {
   axios.defaults.baseURL = "https://timetable.mirea.ru";
@@ -130,8 +57,8 @@ const joinLessonsByGroups = (
 };
 
 const getLessonsForDate = (lessons: any, date: Date) => {
-  const week = getWeekByDate(date);
-  const day = date.getDay();
+  const week = getAcademicWeek(date);
+  const day = getNormalizedWeekday(date);
 
   if (day === -1) {
     return [];
@@ -149,13 +76,6 @@ const getLessonsForDate = (lessons: any, date: Date) => {
 
   return newLessons.sort((a, b) => a.calls.num - b.calls.num);
 };
-
-type Days = {
-  date: Date;
-  isCurrentMonth?: boolean;
-  isToday?: boolean;
-  isSelected?: boolean;
-}[];
 
 const Teacher: NextPage = () => {
   const { name } = useRouter().query as { name: string };
@@ -272,45 +192,28 @@ const Teacher: NextPage = () => {
           Расписание преподавателя {name}
         </h2>
         <div className="flex flex-1 flex-col">
-          {/* Header with date */}
-          <header className="relative z-20 flex flex-none items-center justify-between border-b border-gray-200 py-4 px-6">
-            <div>
-              <h1 className="text-lg font-semibold leading-6 text-gray-900">
-                <time className="sm:hidden" dateTime="2022-01-22">
-                  {/* by selected date */}
-                  {selectedDate.toLocaleDateString("ru-RU", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-                <time dateTime="2022-01-22" className="hidden sm:inline">
-                  {selectedDate.toLocaleDateString("ru-RU", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-              </h1>
-              <p className="mt-1 text-sm text-gray-500">
-                {selectedDate.toLocaleDateString("ru-RU", {
-                  weekday: "long",
-                })}{" "}
-                {getWeekByDate(selectedDate)} неделя
-              </p>
-            </div>
-          </header>
+          <CalendarTitle
+            onClickLeft={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000)
+              );
+            }}
+            onClickRight={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000)
+              );
+            }}
+            selectedDate={selectedDate}
+          />
+
           <div className="flex flex-auto overflow-hidden bg-white">
             <div className="flex flex-auto flex-col overflow-auto">
-              {/* Calendar Header start */}
               <CalendarHeader
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 eventsByDate={getEventsByDate()}
               />
-              {/* Calendar Header end */}
               <ol className="mt-4 divide-y divide-gray-100 text-sm leading-6 lg:col-span-7 xl:col-span-8">
-                {/* if teacher, then map it lessons */}
                 {teacher &&
                   joinLessonsByGroups(
                     getLessonsForDate(teacher.lessons, selectedDate)
@@ -342,7 +245,7 @@ const Teacher: NextPage = () => {
                           <div className="flex items-start space-x-3">
                             <dt className="mt-0.5">
                               <span className="sr-only">Номер пары</span>
-                              <ClockIcon
+                              <TbNumber
                                 className="h-5 w-5 text-gray-400"
                                 aria-hidden="true"
                               />
@@ -351,8 +254,8 @@ const Teacher: NextPage = () => {
                           </div>
                           <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
                             <dt className="mt-0.5">
-                              <span className="sr-only">Дата</span>
-                              <CalendarIcon
+                              <span className="sr-only">Время</span>
+                              <ClockIcon
                                 className="h-5 w-5 text-gray-400"
                                 aria-hidden="true"
                               />
@@ -364,7 +267,7 @@ const Teacher: NextPage = () => {
                               </time>
                             </dd>
                           </div>
-                          <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
+                          <div className="mt-2 flex items-center space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">
                             <dt className="mt-0.5">
                               <span className="sr-only">Аудитория</span>
                               <MapIcon
@@ -372,7 +275,14 @@ const Teacher: NextPage = () => {
                                 aria-hidden="true"
                               />
                             </dt>
-                            <dd>{lesson.room?.name}</dd>
+                            <dd>
+                              {lesson.room && (
+                                <RoomsLinks
+                                  room={lesson.room}
+                                  selectedDate={selectedDate}
+                                />
+                              )}
+                            </dd>
                           </div>
                           {/* Список групп */}
                           <div className="mt-2 flex items-start space-x-3 xl:mt-0 xl:ml-3.5 xl:border-l xl:border-gray-400 xl:border-opacity-50 xl:pl-3.5">

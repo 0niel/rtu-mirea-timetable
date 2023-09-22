@@ -1,5 +1,5 @@
 import React from "react";
-import { classNames, getWeekDaysByDate } from "../utils";
+import { classNames, getDayString, getWeekDaysByDate } from "../utils";
 import { getColorByEvent } from "./Calendar";
 
 interface CalendarHeaderProps {
@@ -30,19 +30,15 @@ export const CalendarHeader = (props: CalendarHeaderProps) => {
             {day.getDate()}
           </span>
           <div className="flex flex-row justify-center">
-            {props.eventsByDate[day.toISOString().split("T")[0]] !==
-              undefined &&
-              props.eventsByDate[day.toISOString().split("T")[0]]?.map(
-                (event, eventIdx) => (
-                  <div
-                    key={eventIdx}
-                    className={classNames(
-                      "mx-0.5 mt-1 h-1.5 w-1.5 rounded-full",
-                      getColorByEvent(event)
-                    )}
-                  ></div>
-                )
-              )}
+            {props.eventsByDate[getDayString(day)]?.map((event, eventIdx) => (
+              <div
+                key={eventIdx}
+                className={classNames(
+                  "mx-0.5 mt-1 h-1.5 w-1.5 rounded-full",
+                  getColorByEvent(event)
+                )}
+              ></div>
+            ))}
           </div>
         </button>
       ))}
