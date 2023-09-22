@@ -23,13 +23,14 @@ from app.utils.cache import send_clear_cache_request
 
 
 def _is_db_lesson_in_parsed_lessons(lessons: List[ParserLesson], lesson: models.Lesson) -> models.Lesson:
+    get_room = lambda lesson: lesson.room.name if lesson.room else None
     return any(
         lesson.calls.num == lesson_.num
         and lesson.weekday == lesson_.weekday.value[0]
         and set([teacher.name for teacher in lesson.teachers]) == set(lesson_.teachers)
         and set(lesson.weeks) == set(lesson_.weeks)
         and lesson.discipline.name == lesson_.name
-        and lesson.room.name == lesson.room.name
+        and get_room(lesson) == get_room(lesson_)
         for lesson_ in lessons
     )
 
@@ -80,7 +81,8 @@ class ScheduleParsingService:
                                 )
                         except Exception as e:
                             logger.warning(
-                                f"Не удалось получить расписание группы для отправки пуш уведомления. Ошибка: {str(e)}"
+                                f"Не удалось получить расписание группы {schedule.group} для отправки пуш уведомления. "
+                                f"Возможно, такой группы ещё не было Ошибка: {str(e)}"
                             )
                             pass
 
