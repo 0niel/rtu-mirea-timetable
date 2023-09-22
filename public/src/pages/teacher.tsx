@@ -2,12 +2,16 @@ import { type NextPage } from "next";
 import Head from "next/head";
 
 import { ClockIcon, MapIcon, UserIcon } from "@heroicons/react/20/solid";
-import { TbNumber } from "react-icons/tb"
+import { TbNumber } from "react-icons/tb";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 import type { components } from "../api/schemas/openapi";
-import { getLessonTypeColor, getWeekByDate } from "../utils";
+import {
+  getLessonTypeColor,
+  getAcademicWeek,
+  getNormalizedWeekday,
+} from "../utils";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
 import { CalendarHeader } from "../components/CalendarHeader";
@@ -53,8 +57,8 @@ const joinLessonsByGroups = (
 };
 
 const getLessonsForDate = (lessons: any, date: Date) => {
-  const week = getWeekByDate(date);
-  const day = date.getDay();
+  const week = getAcademicWeek(date);
+  const day = getNormalizedWeekday(date);
 
   if (day === -1) {
     return [];

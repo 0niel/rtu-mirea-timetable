@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { getWeekByDate } from "../utils";
+import { getAcademicWeek } from "../utils";
 
 interface CalendarTitleProps {
   onClickLeft: () => void;
@@ -41,7 +41,7 @@ const CalendarTitle = (props: CalendarTitleProps) => {
           {props.selectedDate.toLocaleDateString("ru-RU", {
             weekday: "long",
           })}{" "}
-          {getWeekByDate(props.selectedDate)} неделя
+          {getAcademicWeek(props.selectedDate)} неделя
         </p>
       </div>
       <button type="button" className="md:hidden">

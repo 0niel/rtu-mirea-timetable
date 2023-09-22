@@ -1,4 +1,3 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -9,7 +8,7 @@ import type { components } from "../api/schemas/openapi";
 import {
   getLessonTypeBackgroundColor,
   getLessonTypeColor,
-  getWeekByDate,
+  getAcademicWeek,
 } from "../utils";
 import { useRouter } from "next/router";
 import { Calendar } from "../components/Calendar";
@@ -41,7 +40,7 @@ const getLessonsForDate = (
   lessons: components["schemas"]["Group"]["lessons"],
   date: Date
 ) => {
-  const week = getWeekByDate(date);
+  const week = getAcademicWeek(date);
   const day = date.getDay();
 
   if (day === -1) {
