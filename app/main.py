@@ -2,10 +2,20 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.aiohttp_client import AioHttpClientInstrumentor
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from app.config import config
+from app.database.connection import engine
 from app.exceptions import add_exception_handlers, catch_unhandled_exceptions
 from app.routers.campuses import router as campuses_router
 from app.routers.degrees import router as degrees_router
@@ -18,6 +28,29 @@ from app.routers.periods import router as periods_router
 from app.routers.rooms import router as rooms_router
 from app.routers.teachers import router as teachers_router
 from app.routers.utils import router as utils_router
+
+
+def setup_profiler(app: FastAPI) -> None:
+    resource = Resource.create(attributes={"service.name": config.PROFILER_SERVICE_NAME})
+
+    tracer = TracerProvider(resource=resource)
+    trace.set_tracer_provider(tracer)
+
+    tracer.add_span_processor(
+        BatchSpanProcessor(
+            OTLPSpanExporter(
+                endpoint=config.PROFILER_JAEGER_ENDPOINT,
+                headers={"Authorization": f"Basic {config.PROFILER_AUTH_CREDENTIALS}"},
+            )
+        )
+    )
+
+    # Instrumentations
+    FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer)
+    SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
+    LoggingInstrumentor().instrument(set_logging_format=True)
+    AioHttpClientInstrumentor().instrument()
+
 
 tags_metadata = [
     {"name": "campuses", "description": "Работа с кампусами"},
@@ -74,3 +107,7 @@ app.include_router(periods_router, tags=["periods"])
 app.include_router(degrees_router, tags=["degrees"])
 app.include_router(utils_router, tags=["utils"])
 app.include_router(lks_router, tags=["lks"])
+
+
+if config.PROFILER_ENABLE:
+    setup_profiler(app)
