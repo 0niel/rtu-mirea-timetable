@@ -198,3 +198,4 @@ export function getLessonTypeBackgroundColor(type: string) {
 export const getDayString = (day: Date) => {
     return day.toISOString().split("T")[0] ?? "";
 };
+
