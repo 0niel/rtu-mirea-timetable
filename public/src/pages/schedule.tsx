@@ -253,11 +253,6 @@ const Schedule: NextPage = () => {
         <meta name="description" content="Расписание группы" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {(scheduleIsLoading || groupsIsLoading) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="h-16 w-16 animate-spin rounded-full border-t-2 border-b-2 border-blue-500" />
-        </div>
-      )}
       {scheduleError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="text-red-500">
