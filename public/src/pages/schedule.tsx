@@ -260,94 +260,94 @@ const Schedule: NextPage = () => {
           </div>
         </div>
       )}
-      {schedules && groups && (
-        <div className="flex h-screen flex-col">
-          <div className="flex flex-1 flex-col">
-            <CalendarTitle
-              onClickLeft={() => {
-                setSelectedDate(
-                  new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000)
-                );
-              }}
-              onClickRight={() => {
-                setSelectedDate(
-                  new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000)
-                );
-              }}
-              selectedDate={selectedDate}
-              selectedGroups={selectedGroups}
-              setSelectedGroups={setSelectedGroups}
-              availableGroups={
-                groups?.result.reduce((acc: string[], group) => {
-                  return acc.concat(group.groups);
-                }, []) || []
-              }
-            />
 
-            <div className="flex flex-auto overflow-hidden bg-white">
-              <div className="flex flex-auto flex-col overflow-auto">
-                <CalendarHeader
-                  selectedDate={selectedDate}
-                  setSelectedDate={setSelectedDate}
-                  eventsByDate={getEventsByDate()}
-                />
+      <div className="flex h-screen flex-col">
+        <div className="flex flex-1 flex-col">
+          <CalendarTitle
+            onClickLeft={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000)
+              );
+            }}
+            onClickRight={() => {
+              setSelectedDate(
+                new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000)
+              );
+            }}
+            selectedDate={selectedDate}
+            selectedGroups={selectedGroups}
+            setSelectedGroups={setSelectedGroups}
+            availableGroups={
+              groups?.result.reduce((acc: string[], group) => {
+                return acc.concat(group.groups);
+              }, []) || []
+            }
+          />
 
-                <div className="flex w-full flex-auto">
-                  <div className="w-14 flex-none bg-white ring-1 ring-gray-100" />
-                  <div className="grid flex-auto grid-cols-1 grid-rows-1">
-                    {/* Horizontal lines */}
-                    <div
-                      className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
-                      style={{
-                        gridTemplateRows: "repeat(16, minmax(3.85rem, 1fr))",
-                      }}
-                    >
-                      <div className="row-end-1 h-7"></div>
-                      <div>
-                        <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                          9:00 - 10:30
-                        </div>
+          <div className="flex flex-auto overflow-hidden bg-white">
+            <div className="flex flex-auto flex-col overflow-auto">
+              <CalendarHeader
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                eventsByDate={getEventsByDate()}
+              />
+
+              <div className="flex w-full flex-auto">
+                <div className="w-14 flex-none bg-white ring-1 ring-gray-100" />
+                <div className="grid flex-auto grid-cols-1 grid-rows-1">
+                  {/* Horizontal lines */}
+                  <div
+                    className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
+                    style={{
+                      gridTemplateRows: "repeat(16, minmax(3.85rem, 1fr))",
+                    }}
+                  >
+                    <div className="row-end-1 h-7"></div>
+                    <div>
+                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
+                        9:00 - 10:30
                       </div>
-                      <div />
-                      <div>
-                        <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                          10:40 - 12:10
-                        </div>
-                      </div>
-                      <div />
-                      <div>
-                        <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                          12:40 - 14:10
-                        </div>
-                      </div>
-                      <div />
-                      <div>
-                        <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                          14:20 - 15:50
-                        </div>
-                      </div>
-                      <div />
-                      <div>
-                        <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                          16:20 - 17:50
-                        </div>
-                      </div>
-                      <div />
-                      <div>
-                        <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                          18:00 - 19:30
-                        </div>
-                      </div>
-                      <div />
-                      <div>
-                        <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
-                          19:40 - 21:10
-                        </div>
-                      </div>
-                      <div />
                     </div>
-
-                    {/* Events */}
+                    <div />
+                    <div>
+                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
+                        10:40 - 12:10
+                      </div>
+                    </div>
+                    <div />
+                    <div>
+                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
+                        12:40 - 14:10
+                      </div>
+                    </div>
+                    <div />
+                    <div>
+                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
+                        14:20 - 15:50
+                      </div>
+                    </div>
+                    <div />
+                    <div>
+                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
+                        16:20 - 17:50
+                      </div>
+                    </div>
+                    <div />
+                    <div>
+                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
+                        18:00 - 19:30
+                      </div>
+                    </div>
+                    <div />
+                    <div>
+                      <div className="sticky left-0 -mt-2.5 -ml-14 w-14 pr-2 text-xs leading-5 text-gray-400">
+                        19:40 - 21:10
+                      </div>
+                    </div>
+                    <div />
+                  </div>
+                  {/* Events */}
+                  {schedules && groups && (
                     <ol
                       className="col-start-1 col-end-2 row-start-1 grid grid-cols-1"
                       style={{
@@ -413,22 +413,22 @@ const Schedule: NextPage = () => {
                           );
                         })}
                     </ol>
-                  </div>
+                  )}
                 </div>
               </div>
-              <Calendar
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                monthToDisplay={monthToDisplay}
-                setMonthToDisplay={setMonthToDisplay}
-                yearToDisplay={yearToDisplay}
-                setYearToDisplay={setYearToDisplay}
-                eventsByDate={getEventsByDate()}
-              />
             </div>
+            <Calendar
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              monthToDisplay={monthToDisplay}
+              setMonthToDisplay={setMonthToDisplay}
+              yearToDisplay={yearToDisplay}
+              setYearToDisplay={setYearToDisplay}
+              eventsByDate={getEventsByDate()}
+            />
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };
