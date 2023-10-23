@@ -56,7 +56,11 @@ class TeacherDBService:
     async def search_teachers(cls, db: AsyncSession, name: str) -> List[tables.Teacher]:
         """Поиск преподавателей по имени"""
 
-        query = select(tables.Teacher).where(func.lower(tables.Teacher.name).contains(name.lower()))
+        name = name.replace('ё', 'е').replace('Ё', 'Е')
+
+        query = select(tables.Teacher).where(
+            func.lower(func.replace(tables.Teacher.name, 'ё', 'е')).contains(name.lower())
+        )
         return (await db.execute(query)).scalars()
 
     @classmethod
