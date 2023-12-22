@@ -208,6 +208,11 @@ const Teacher: NextPage = () => {
               );
             }}
             selectedDate={selectedDate}
+            selectedGroups={[]}
+            setSelectedGroups={function (groups: string[]): void {
+              throw new Error("Function not implemented.");
+            }}
+            availableGroups={[]}
           />
 
           <div className="flex flex-auto overflow-hidden bg-white">

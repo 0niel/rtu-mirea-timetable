@@ -50,8 +50,7 @@ async def get_or_create_campus(db: AsyncSession, cmd: models.CampusCreate):
 
 
 async def get_or_create_room(db: AsyncSession, cmd: models.RoomCreate):
-    # migrated to api v2
-    res = await db.execute(select(Room).where(Room.name == cmd.name).limit(1))
+    res = await db.execute(select(Room).where(and_(Room.name == cmd.name, Room.campus_id == cmd.campus_id)).limit(1))
     room = res.scalar()
     if not room:
         room = Room(**cmd.dict())
