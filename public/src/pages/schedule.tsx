@@ -40,6 +40,11 @@ const getLessonsForDate = (
   lessons: components["schemas"]["Group"]["lessons"],
   date: Date
 ) => {
+
+  if (date >= new Date(2023, 11, 22)) {
+    return [];
+  }
+
   const week = getAcademicWeek(date);
   const day = date.getDay();
 
@@ -118,7 +123,7 @@ const Schedule: NextPage = () => {
       0
     ).getDate();
     for (let i = 0; i < daysInNextMonth; i++) {
-      daysToEvents.push(new Date(yearToDisplay, monthToDisplay + 1, i + 1));
+        daysToEvents.push(new Date(yearToDisplay, monthToDisplay + 1, i + 1));
     }
 
     daysToEvents.forEach((date) => {
@@ -130,12 +135,13 @@ const Schedule: NextPage = () => {
           return;
         }
 
-        eventsByDate[key] = lessonsForDate.map((lesson) => ({
-          name: lesson.lesson_type?.name || "",
-        }));
+        if (date <= new Date(2023, 11, 21)) {
+          eventsByDate[key] = lessonsForDate.map((lesson) => ({
+            name: lesson.lesson_type?.name || "",
+          }));
+        }
       }
     });
-
     return eventsByDate;
   };
 
