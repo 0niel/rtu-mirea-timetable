@@ -57,6 +57,10 @@ const joinLessonsByGroups = (
 };
 
 const getLessonsForDate = (lessons: any, date: Date) => {
+  if (date >= new Date(2023, 11, 22)) {
+    return [];
+  }
+
   const week = getAcademicWeek(date);
   const day = getNormalizedWeekday(date);
 
